@@ -1,0 +1,99 @@
+﻿@page
+@model Flipped_Classroom.Pages.IndexModel
+@{
+    ViewData["Title"] = "Flipped Classroom - Active Learning";
+    ViewData["IsFullWidth"] = true;
+}
+
+<section class="hero-section" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); padding: 80px 0;">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title" style="color: #1a73e8; font-weight: 800; font-size: 3rem;">Học Tập Chủ Động Với Flipped Classroom</h1>
+                <p class="hero-subtitle" style="color: #5f6368; font-size: 1.2rem; margin-bottom: 2rem;">
+                    Trải nghiệm mô hình lớp học đảo ngược: Nghiên cứu lý thuyết tại nhà, 
+                    thực hành và thảo luận chuyên sâu ngay tại lớp cùng chuyên gia.
+                </p>
+                <div class="hero-buttons">
+                    <a class="btn btn-primary btn-lg px-4 me-3" style="background-color: #1a73e8; border: none;" href="/Authentication/Login">Bắt đầu học ngay</a>
+                    <a class="btn btn-outline-primary btn-lg px-4" href="#features">Tìm hiểu thêm</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image text-center">
+                    <svg width="100%" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="400" rx="20" fill="#E8F0FE"/>
+                        <rect x="50" y="80" width="300" height="200" rx="10" fill="white" stroke="#1a73e8" stroke-width="2"/>
+                        <path d="M170 140L250 180L170 220V140Z" fill="#1a73e8"/> <rect x="70" y="310" width="100" height="10" rx="5" fill="#1a73e8" opacity="0.3"/>
+                        <rect x="230" y="310" width="100" height="10" rx="5" fill="#1a73e8" opacity="0.3"/>
+                        <circle cx="200" cy="50" r="30" fill="#4285F4" opacity="0.1"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="features-section" style="padding: 100px 0;">
+    <div class="container">
+        <h2 class="section-title text-center" style="color: #202124; margin-bottom: 60px;">Tính Năng Đột Phá</h2>
+
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px; transition: 0.3s;">
+                    <div class="feature-icon mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #E8F0FE;">
+                            <i class="bi bi-play-circle-fill" style="font-size: 30px; color: #1a73e8;"></i>
+                        </div>
+                    </div>
+                    <h3 class="h5 fw-bold">Video Bài Giảng</h3>
+                    <p class="text-muted small">Xem bài giảng mọi lúc mọi nơi trước khi lên lớp để nắm vững kiến thức nền tảng.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="feature-icon mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #E6FFFA;">
+                            <i class="bi bi-chat-dots-fill" style="font-size: 30px; color: #38B2AC;"></i>
+                        </div>
+                    </div>
+                    <h3 class="h5 fw-bold">Thảo Luận Nhóm</h3>
+                    <p class="text-muted small">Tương tác trực tiếp với giảng viên và bạn học qua diễn đàn thảo luận sôi nổi.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="feature-icon mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #FFFBEB;">
+                            <i class="bi bi-journal-check" style="font-size: 30px; color: #D97706;"></i>
+                        </div>
+                    </div>
+                    <h3 class="h5 fw-bold">Đánh Giá Năng Lực</h3>
+                    <p class="text-muted small">Hệ thống bài kiểm tra (Quiz) tức thì giúp bạn tự đánh giá mức độ hiểu bài.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 text-center">
+                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
+                    <div class="feature-icon mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #F3E8FF;">
+                            <i class="bi bi-bar-chart-steps" style="font-size: 30px; color: #9333EA;"></i>
+                        </div>
+                    </div>
+                    <h3 class="h5 fw-bold">Theo Dõi Lộ Trình</h3>
+                    <p class="text-muted small">Theo dõi tiến độ học tập và điểm số qua biểu đồ trực quan, sinh động.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section text-center" style="background-color: #1a73e8; padding: 80px 0; color: white;">
+    <div class="container">
+        <h2 class="mb-3">Sẵn sàng để nâng tầm tri thức?</h2>
+        <p class="mb-4 opacity-75">Tham gia cùng hàng ngàn sinh viên đang học tập hiệu quả mỗi ngày.</p>
+        <a class="btn btn-light btn-lg px-5 fw-bold" style="color: #1a73e8; border-radius: 30px;" href="/Authentication/login">Đăng nhập</a>
+    </div>
+</section>

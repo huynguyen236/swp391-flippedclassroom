@@ -1,0 +1,65 @@
+@page
+@model Flipped_Classroom.Pages.Authentication.LoginModel
+@{
+    ViewData["Title"] = "Login";
+    ViewData["IsFullWidth"] = true;
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Welcome Back</h1>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center mb-3">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger text-center mb-3">@TempData["ErrorMessage"]</div>
+        }
+
+        <form method="post" class="auth-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3 text-center"></div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Username" class="form-label"></label>
+                <input asp-for="Input.Username" class="form-control" placeholder="Enter your username" />
+                <span asp-validation-for="Input.Username" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Input.Password" class="form-label"></label>
+                <input asp-for="Input.Password" class="form-control" type="password"
+                       placeholder="Enter your password" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <div class="text-end mt-2">
+                    <a href="/Authentication/ForgotPassword" class="text-decoration-none small">Quên mật khẩu?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+
+        <div class="d-flex align-items-center my-3 gap-2 text-muted">
+            <hr class="flex-grow-1 m-0" />
+            <small>or</small>
+            <hr class="flex-grow-1 m-0" />
+        </div>
+
+        <a asp-page="/Authentication/GoogleLogin"    asp-route-returnUrl="@Request.Query["returnUrl"]"
+               class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg"              alt="Google" width="20" height="20" />
+            Continue with Google
+        </a>
+
+        <div class="auth-footer mt-3">
+            Don't have an account? <a asp-page="/Authentication/Register">Register now</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

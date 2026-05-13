@@ -1,0 +1,15 @@
+@page
+@model Flipped_Classroom.Pages.Authentication.AccessDeniedModel
+@{
+    ViewData["Title"] = "Access Denied";
+    ViewData["IsFullWidth"] = true;
+}
+
+<div class="auth-wrapper d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 200px);">
+    <div class="text-center p-5 bg-white shadow-sm rounded border">
+        <h1 class="display-1 text-danger fw-bold mb-3">403</h1>
+        <h3 class="mb-3">Access Denied</h3>
+        <p class="text-muted mb-4">You don't have permission to access the requested resource.</p>
+        <a asp-page="/Index" class="btn btn-primary px-4">Return Home</a>
+    </div>
+</div>
