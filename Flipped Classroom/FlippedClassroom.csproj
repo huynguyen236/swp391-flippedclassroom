@@ -35,8 +35,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Data\" />
-	  <Folder Include="Models\" />
 	  <Folder Include="Pages\Dashboard\" />
 	</ItemGroup>
 </Project>

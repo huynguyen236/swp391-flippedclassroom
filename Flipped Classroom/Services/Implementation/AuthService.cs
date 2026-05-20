@@ -11,11 +11,11 @@ namespace Flipped_Classroom.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly FlippedClassroomContext _db;
+        private readonly Swp391NihongoContext _db;
         private readonly IConfiguration _config;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(FlippedClassroomContext db, IConfiguration config, ILogger<AuthService> logger)
+        public AuthService(Swp391NihongoContext db, IConfiguration config, ILogger<AuthService> logger)
         {
             _db = db;
             _config = config;
@@ -74,7 +74,7 @@ namespace Flipped_Classroom.Services.Implementations
             try
             {
                 var user = await _db.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
-                
+
                 if (user == null)
                 {
                     _logger.LogWarning("Token không hợp lệ");
@@ -109,7 +109,7 @@ namespace Flipped_Classroom.Services.Implementations
                     return false;
 
                 // Lưu password mới không hash
-                user.Password = newPassword;
+                user.PasswordHash = newPassword;
                 user.PasswordResetToken = null;
                 user.PasswordResetTokenExpiry = null;
 

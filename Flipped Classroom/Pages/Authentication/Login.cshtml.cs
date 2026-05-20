@@ -5,15 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Authentication
 {
     public class LoginModel : PageModel
     {
-        private readonly FlippedClassroomContext _context;
+        private readonly Swp391NihongoContext _context;
 
-        public LoginModel(FlippedClassroomContext context)
+        public LoginModel(Swp391NihongoContext context)
         {
             _context = context;
         }
@@ -63,25 +64,25 @@ namespace Flipped_Classroom.Pages.Authentication
             }
 
             // Tài khoản Google (Password = null) → không cho login bằng form
-            if (user.Password == null)
+            if (user.PasswordHash == null)
             {
                 ModelState.AddModelError(string.Empty,
                     "This account uses Google Sign-In. Please use the \"Continue with Google\" button.");
                 return Page();
             }
 
-            if (user.Password != Input.Password)
+            if (user.PasswordHash != Input.Password)
             {
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                 return Page();
             }
-
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name,           user.Username),
-                new Claim("FullName",                user.FullName),
-                new Claim(ClaimTypes.Role,           user.Role)
+                new Claim("FullName",                GetFullName(user)),
+                new Claim(ClaimTypes.Role,           user.Role),
+                new Claim(ClaimTypes.Email,          user.Email ?? string.Empty)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -100,6 +101,12 @@ namespace Flipped_Classroom.Pages.Authentication
                 return Redirect(returnUrl);
 
             return RedirectToPage("/Index");
+        }
+
+        private static string GetFullName(Models.User user)
+        {
+            return string.Join(" ", new[] { user.FirstName, user.LastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
         }
     }
 }

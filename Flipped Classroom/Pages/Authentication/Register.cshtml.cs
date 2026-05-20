@@ -9,9 +9,9 @@ namespace Flipped_Classroom.Pages.Authentication
 {
     public class RegisterModel : PageModel
     {
-        private readonly FlippedClassroomContext _context;
+        private readonly Swp391NihongoContext _context;
 
-        public RegisterModel(FlippedClassroomContext context)
+        public RegisterModel(Swp391NihongoContext context)
         {
             _context = context;
         }
@@ -21,10 +21,15 @@ namespace Flipped_Classroom.Pages.Authentication
 
         public class InputModel
         {
-            [Required(ErrorMessage = "Full Name is required.")]
-            [StringLength(150, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
-            [Display(Name = "Full Name")]
-            public string FullName { get; set; } = string.Empty;
+            [Required(ErrorMessage = "First name is required.")]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+            [Display(Name = "First Name")]
+            public string FirstName { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Last name is required.")]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+            [Display(Name = "Last Name")]
+            public string LastName { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Email is required.")]
             [EmailAddress(ErrorMessage = "Invalid email format.")]
@@ -71,10 +76,11 @@ namespace Flipped_Classroom.Pages.Authentication
                 // Create new user
                 var user = new User
                 {
-                    FullName = Input.FullName,
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
                     Email = Input.Email,
                     Username = Input.Username,
-                    Password = Input.Password, // Simple insert as requested. In production, use hashed passwords.
+                    PasswordHash = Input.Password, // Simple insert as requested. In production, use hashed passwords.
                     Role = "Student", // Default role
                     CreatedAt = DateTime.Now
                 };
