@@ -6,11 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Flipped_Classroom</RootNamespace>
   </PropertyGroup>
-	<ItemGroup>
-		<Content Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Google.Apis.Core" Version="1.73.0" />
 		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.73.0.4029" />
@@ -29,12 +28,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+	  <Folder Include="Pages\Dashboard\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Pages\Dashboard\" />
+	  <None Include="appsettings.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>
