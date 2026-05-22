@@ -1,0 +1,219 @@
+@page
+@model Flipped_Classroom.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-0 text-dark">Dashboard Thống Kê</h2>
+        <p class="text-muted">Tổng quan số liệu người dùng và lớp học trên hệ thống.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="badge bg-light text-dark p-2 border border-secondary border-opacity-10 shadow-sm">
+            <i class="bi bi-clock-history me-1"></i> Cập nhật mới nhất: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <!-- Total Users -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card-custom p-4 h-100 position-relative overflow-hidden border-start border-4 border-primary">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Tổng thành viên</h6>
+                    <h2 class="fw-bold mb-0 text-dark">@Model.TotalUsers</h2>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                    <i class="bi bi-people-fill fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
+                <span class="text-success fw-medium"><i class="bi bi-person-fill-check"></i> Hoạt động</span> trong hệ thống Flipped
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Classes -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card-custom p-4 h-100 position-relative overflow-hidden border-start border-4 border-success">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Lớp học đang hoạt động</h6>
+                    <h2 class="fw-bold mb-0 text-dark">@Model.ActiveClassesCount</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
+                    <i class="bi bi-book-half fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
+                <span class="text-success fw-medium"><i class="bi bi-check-circle-fill"></i> Active</span> trạng thái lớp học khả dụng
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin/Manager Ratio card or general info -->
+    <div class="col-md-12 col-lg-4">
+        <div class="card-custom p-4 h-100 position-relative overflow-hidden border-start border-4 border-info">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Ban điều hành & hỗ trợ</h6>
+                    <h2 class="fw-bold mb-0 text-dark">@(Model.AdminCount + Model.ManagerCount + Model.SupportCount)</h2>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info rounded-3 p-3">
+                    <i class="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
+                Gồm Admin, Manager và Support Team
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Roles Breakdown -->
+    <div class="col-lg-4">
+        <div class="card-custom p-4 h-100">
+            <h5 class="fw-bold text-dark mb-4"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Phân bố vai trò</h5>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
+                    <span class="fw-medium text-dark"><i class="bi bi-person-workspace text-primary me-1"></i> Admin</span>
+                    <span class="fw-semibold">@Model.AdminCount (@(Model.TotalUsers > 0 ? (Model.AdminCount * 100 / Model.TotalUsers) : 0)%)</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.AdminCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.AdminCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
+                    <span class="fw-medium text-dark"><i class="bi bi-briefcase text-success me-1"></i> Manager</span>
+                    <span class="fw-semibold">@Model.ManagerCount (@(Model.TotalUsers > 0 ? (Model.ManagerCount * 100 / Model.TotalUsers) : 0)%)</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.ManagerCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.ManagerCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
+                    <span class="fw-medium text-dark"><i class="bi bi-mortarboard text-warning me-1"></i> Teacher</span>
+                    <span class="fw-semibold">@Model.TeacherCount (@(Model.TotalUsers > 0 ? (Model.TeacherCount * 100 / Model.TotalUsers) : 0)%)</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.TeacherCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.TeacherCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
+                    <span class="fw-medium text-dark"><i class="bi bi-person-check text-info me-1"></i> Student</span>
+                    <span class="fw-semibold">@Model.StudentCount (@(Model.TotalUsers > 0 ? (Model.StudentCount * 100 / Model.TotalUsers) : 0)%)</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.StudentCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.StudentCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
+                    <span class="fw-medium text-dark"><i class="bi bi-headset text-secondary me-1"></i> Support</span>
+                    <span class="fw-semibold">@Model.SupportCount (@(Model.TotalUsers > 0 ? (Model.SupportCount * 100 / Model.TotalUsers) : 0)%)</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-secondary" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.SupportCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.SupportCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Newest Users Table -->
+    <div class="col-lg-8">
+        <div class="card-custom p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-person-plus-fill text-primary me-2"></i>Thành viên mới nhất</h5>
+                <a href="/Admin/Users" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem tất cả</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tài khoản</th>
+                            <th>Họ và Tên</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.NewestUsers != null && Model.NewestUsers.Any())
+                        {
+                            foreach (var user in Model.NewestUsers)
+                            {
+                                <tr>
+                                    <td class="fw-semibold text-dark">#@user.Id</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-light rounded-circle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                @user.Username.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium text-dark">@user.Username</div>
+                                                <div class="text-muted small">@user.Email</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@user.FirstName @user.LastName</td>
+                                    <td>
+                                        @{
+                                            var badgeClass = user.Role switch
+                                            {
+                                                "Admin" => "bg-danger bg-opacity-10 text-danger",
+                                                "Manager" => "bg-success bg-opacity-10 text-success",
+                                                "Teacher" => "bg-warning bg-opacity-10 text-dark",
+                                                "Student" => "bg-info bg-opacity-10 text-info",
+                                                _ => "bg-secondary bg-opacity-10 text-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                            @user.Role
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (user.IsActive == true)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                                <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i> Active
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                                <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i> Inactive
+                                            </span>
+                                        }
+                                    </td>
+                                    <td style="font-size: 0.9rem;" class="text-muted">
+                                        @(user.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Không có người dùng mới nào.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
