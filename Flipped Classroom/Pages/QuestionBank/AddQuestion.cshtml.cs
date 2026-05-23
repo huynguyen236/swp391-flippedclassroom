@@ -1,59 +1,130 @@
-﻿using Flipped_Classroom.Services.Interfaces;
+﻿using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Flipped_Classroom.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flipped_Classroom.Pages.QuestionBank
 {
     public class AddQuestionModel : PageModel
     {
         private readonly IQuestionService _questionService;
+        private readonly Swp391NihongoContext _context;
 
-        public AddQuestionModel(IQuestionService questionService)
+        public AddQuestionModel(IQuestionService questionService, Swp391NihongoContext context)
         {
             _questionService = questionService;
+            _context = context;
         }
 
-        public Question NewQuestion { get; set; }
-        public List<QuestionOption> Options { get; set; }
+        [BindProperty]
+        public Question NewQuestion { get; set; } = null!;
 
+        [BindProperty]
+        public List<QuestionOption> Options { get; set; } = new();
 
-        public void OnGet()
+        public SelectList NodeSelectList { get; set; }
+
+        public async Task OnGetAsync()
         {
-            NewQuestion = new Question();
-            Options = new List<QuestionOption>
-            {
-                new QuestionOption(),
-                new QuestionOption(),
-                new QuestionOption(),
-                new QuestionOption()
-            };
+            NewQuestion = new Question { QuestionType = "MCQ" };
+            EnsureMcqOptionSlots();
+            await LoadNodesAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
+            if (string.Equals(NewQuestion.QuestionType, "Text", StringComparison.OrdinalIgnoreCase))
             {
-                return Page();
+                NewQuestion.QuestionType = "Writing";
             }
 
-            // Bước làm sạch sơ bộ: Xóa bỏ những option mà người dùng bỏ trống không nhập chữ
-            var validOptions = Options.Where(o => !string.IsNullOrWhiteSpace(o.OptionContent)).ToList();
-
-            bool isSuccess = await _questionService.CreateQuestionAsync(NewQuestion, validOptions);
-
-            if (isSuccess)
+            // Validate NodeId
+            if (NewQuestion.NodeId <= 0 || !await _context.Nodes.AnyAsync(n => n.Id == NewQuestion.NodeId))
             {
-                TempData["SuccessMessage"] = "Thêm câu hỏi mới vào kho thành công!";
-                // Chuyển hướng về trang danh sách (View Question)
-                return RedirectToPage("/QuestionBank/Index");
+                ModelState.AddModelError(nameof(NewQuestion.NodeId), "Vui lòng chọn một chủ đề hợp lệ.");
+                await LoadNodesAsync();
+                return PageWithForm();
+            }
+
+            if (IsMcq(NewQuestion.QuestionType))
+            {
+                EnsureMcqOptionSlots();
+
+                if (Options.Take(4).Any(o => string.IsNullOrWhiteSpace(o.OptionContent)))
+                {
+                    ModelState.AddModelError(string.Empty, "Câu trắc nghiệm (MCQ) phải có đủ 4 đáp án A, B, C, D.");
+                    await LoadNodesAsync();
+                    return PageWithForm();
+                }
+
+                if (!Options.Take(4).Any(o => o.IsCorrect))
+                {
+                    ModelState.AddModelError(string.Empty, "Vui lòng chọn ít nhất một đáp án đúng.");
+                    await LoadNodesAsync();
+                    return PageWithForm();
+                }
+
+                if (!await _questionService.CreateQuestionAsync(NewQuestion, Options.Take(4).ToList()))
+                {
+                    ModelState.AddModelError(string.Empty, "Không lưu được câu hỏi. Kiểm tra dữ liệu.");
+                    await LoadNodesAsync();
+                    return PageWithForm();
+                }
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi khi lưu câu hỏi. Vui lòng thử lại.");
-                return Page();
+                if (string.IsNullOrWhiteSpace(NewQuestion.CorrectAnswer))
+                {
+                    ModelState.AddModelError(nameof(NewQuestion.CorrectAnswer), "Vui lòng nhập đáp án tham khảo.");
+                    await LoadNodesAsync();
+                    return PageWithForm();
+                }
+
+                if (!await _questionService.CreateQuestionAsync(NewQuestion, new List<QuestionOption>()))
+                {
+                    ModelState.AddModelError(string.Empty, "Không lưu được câu hỏi. Kiểm tra dữ liệu.");
+                    await LoadNodesAsync();
+                    return PageWithForm();
+                }
             }
 
+            TempData["SuccessMessage"] = "Thêm câu hỏi mới vào kho thành công!";
+            return RedirectToPage("/QuestionBank/QuestionList");
+        }
+
+        private async Task LoadNodesAsync()
+        {
+            var nodes = await _context.Nodes
+                .OrderBy(n => n.Title)
+                .Select(n => new { n.Id, n.Title })
+                .ToListAsync();
+
+            NodeSelectList = new SelectList(nodes, "Id", "Title");
+        }
+
+        private void EnsureMcqOptionSlots()
+        {
+            while (Options.Count < 4)
+            {
+                Options.Add(new QuestionOption());
+            }
+
+            if (Options.Count > 4)
+            {
+                Options = Options.Take(4).ToList();
+            }
+        }
+
+        private static bool IsMcq(string? questionType) =>
+            string.Equals(questionType, "MCQ", StringComparison.OrdinalIgnoreCase);
+
+        private IActionResult PageWithForm()
+        {
+            EnsureMcqOptionSlots();
+            return Page();
         }
     }
 }

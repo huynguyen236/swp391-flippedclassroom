@@ -18,12 +18,16 @@ namespace Flipped_Classroom.Pages.QuestionBank
 
         public List<Question> Questions { get; set; } = new List<Question>();
 
+        [BindProperty(SupportsGet = true)]
         public string SearchKeyword { get; set; }
 
+        [BindProperty(SupportsGet = true)]
         public string QuestionType { get; set; }
 
+        [BindProperty(SupportsGet = true)]  
         public string Category { get; set; }
 
+        [BindProperty(SupportsGet = true)]
         public int CurrentPage { get; set; }
 
         public int TotalPages { get; set; }

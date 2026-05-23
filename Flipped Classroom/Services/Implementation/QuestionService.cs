@@ -24,19 +24,34 @@ namespace Flipped_Classroom.Services.Implementation
             try
             {
                 question.IsQuestionBank = true;
-                _context.Questions.Add(question);
 
-                await _context.SaveChangesAsync();
-
-                if (questionOption != null && questionOption.Any())
+                if (!await EnsureQuestionNodeIdAsync(question))
                 {
-                    foreach (var option in questionOption)
+                    return false;
+                }
+
+                if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
+                {
+                    question.CorrectAnswer = null;
+                    _context.Questions.Add(question);
+                    await _context.SaveChangesAsync();
+
+                    if (questionOption != null)
                     {
-                        option.QuestionId = question.Id;
-                        _context.QuestionOptions.Add(option);
+                        foreach (var option in questionOption)
+                        {
+                            option.QuestionId = question.Id;
+                            _context.QuestionOptions.Add(option);
+                        }
+                        await _context.SaveChangesAsync();
                     }
+                }
+                else
+                {
+                    _context.Questions.Add(question);
                     await _context.SaveChangesAsync();
                 }
+
                 await transaction.CommitAsync();
                 return true;
             }
@@ -48,6 +63,19 @@ namespace Flipped_Classroom.Services.Implementation
             }
         }
 
+      
+        // Question bank items require FK_Question_Node. Form does not set NodeId, so resolve a valid node.
+        private async Task<bool> EnsureQuestionNodeIdAsync(Question question)
+        {
+            // If NodeId is already set and valid, use it
+            if (question.NodeId > 0 && await _context.Nodes.AnyAsync(n => n.Id == question.NodeId))
+                return true;
+
+            // If no valid NodeId is set, this method will return false
+            // The form should handle setting NodeId before calling CreateQuestion
+            return false;
+        }
+
 
         // Using naming tuple to return both the list of questions and the total number of pages for pagination
         public async Task<(List<Question> questions, int totalPages)> getQuestionAsync(
@@ -55,7 +83,7 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var query = _context.Questions
                 .Include(q => q.QuestionOptions)
-                .Where(q => q.IsQuestionBank == true) // Chỉ lấy các câu trong ngân hàng 
+                .Where(q => q.IsQuestionBank == true && q.IsDeleted == false) // Only include questions that are in the question bank and not deleted
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchKeyword))
@@ -92,25 +120,32 @@ namespace Flipped_Classroom.Services.Implementation
                 .FirstOrDefaultAsync(q => q.Id == questionId);
         }
 
-        // Delete a question from the question bank, and if it's a multiple-choice question, also delete the related options from the QuestionOptions table.
+        
         public async Task<bool> DeleteQuestionAsync(int questionId)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var question = await _context.Questions.FindAsync(questionId);
                 if (question == null)
                 {
-                    return false; // Question not found
+                    Console.WriteLine($"Question with ID {questionId} not found.");
+                    return false;
                 }
-                _context.Questions.Remove(question);
+                // Soft delete: Mark the question as deleted instead of removing it from the database
+                question.IsDeleted = true;
+                _context.Questions.Update(question);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
                 return true;
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 Console.WriteLine($"Error deleting question: {ex.Message}");
                 return false;
             }
+
         }
 
 
@@ -127,20 +162,29 @@ namespace Flipped_Classroom.Services.Implementation
                 {
                     return false;
                 }
-                // Update question properties
                 existingQuestion.Content = question.Content;
                 existingQuestion.QuestionType = question.QuestionType;
                 existingQuestion.Category = question.Category;
-                // Update options
-                if (questionOptions != null && questionOptions.Any())
+
+                if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Remove existing options
+                    existingQuestion.CorrectAnswer = null;
                     _context.QuestionOptions.RemoveRange(existingQuestion.QuestionOptions);
-                    // Add new options
-                    foreach (var option in questionOptions)
+                    if (questionOptions != null)
                     {
-                        option.QuestionId = existingQuestion.Id;
-                        _context.QuestionOptions.Add(option);
+                        foreach (var option in questionOptions)
+                        {
+                            option.QuestionId = existingQuestion.Id;
+                            _context.QuestionOptions.Add(option);
+                        }
+                    }
+                }
+                else
+                {
+                    existingQuestion.CorrectAnswer = question.CorrectAnswer;
+                    if (existingQuestion.QuestionOptions.Count > 0)
+                    {
+                        _context.QuestionOptions.RemoveRange(existingQuestion.QuestionOptions);
                     }
                 }
                 await _context.SaveChangesAsync();

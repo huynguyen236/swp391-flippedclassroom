@@ -19,6 +19,8 @@ public partial class Question
 
     public bool? IsQuestionBank { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public string? CorrectAnswer { get; set; }
 
     public string? Explanation { get; set; }

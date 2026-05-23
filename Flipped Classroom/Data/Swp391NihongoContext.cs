@@ -70,7 +70,7 @@ public partial class Swp391NihongoContext : DbContext
     */
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    => optionsBuilder.UseSqlServer(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("MyCnn"));
+    => optionsBuilder.UseSqlServer(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection"));
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Assignment>(entity =>
@@ -345,6 +345,7 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.Property(e => e.DifficultyLevel).HasDefaultValue(1);
             entity.Property(e => e.IsQuestionBank).HasDefaultValue(false);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.QuestionType).HasMaxLength(50);
             entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Visibility)
