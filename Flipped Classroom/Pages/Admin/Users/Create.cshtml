@@ -1,0 +1,140 @@
+@page
+@model Flipped_Classroom.Pages.Admin.Users.CreateModel
+@{
+    ViewData["Title"] = "Thêm tài khoản mới";
+}
+
+<div class="mb-4">
+    <a href="/Admin/Users" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 small fw-medium">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+    </a>
+    <h2 class="fw-bold mt-2 text-dark">Thêm Tài Khoản Mới</h2>
+    <p class="text-muted">Điền đầy đủ thông tin để khởi tạo một tài khoản mới trên hệ thống.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-custom p-4">
+            <form method="post" autocomplete="off">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3 mb-3">
+                    <!-- Username -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.Username" class="form-label fw-semibold text-dark"></label>
+                        <input asp-for="Input.Username" class="form-control" placeholder="Ví dụ: nva_student" />
+                        <span asp-validation-for="Input.Username" class="text-danger small d-block mt-1"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.Email" class="form-label fw-semibold text-dark"></label>
+                        <input asp-for="Input.Email" class="form-control" type="email" placeholder="Ví dụ: student@gmail.com" />
+                        <span asp-validation-for="Input.Email" class="text-danger small d-block mt-1"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- FirstName -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.FirstName" class="form-label fw-semibold text-dark">Họ (First Name)</label>
+                        <input asp-for="Input.FirstName" class="form-control" placeholder="Ví dụ: Nguyễn Hữu" />
+                        <span asp-validation-for="Input.FirstName" class="text-danger small d-block mt-1"></span>
+                    </div>
+
+                    <!-- LastName -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.LastName" class="form-label fw-semibold text-dark">Tên (Last Name)</label>
+                        <input asp-for="Input.LastName" class="form-control" placeholder="Ví dụ: Anh" />
+                        <span asp-validation-for="Input.LastName" class="text-danger small d-block mt-1"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.Password" class="form-label fw-semibold text-dark"></label>
+                        <div class="input-group">
+                            <input asp-for="Input.Password" class="form-control" id="passwordInput" placeholder="Nhập mật khẩu..." />
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye-slash" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Input.Password" class="text-danger small d-block mt-1"></span>
+                    </div>
+
+                    <!-- Role -->
+                    <div class="col-md-6">
+                        <label asp-for="Input.Role" class="form-label fw-semibold text-dark"></label>
+                        <select asp-for="Input.Role" class="form-select">
+                            <option value="Student">Student (Học viên)</option>
+                            <option value="Teacher">Teacher (Giáo viên)</option>
+                            <option value="Support">Support (Hỗ trợ)</option>
+                            <option value="Manager">Manager (Quản lý)</option>
+                            <option value="Admin">Admin (Quản trị viên)</option>
+                        </select>
+                        <span asp-validation-for="Input.Role" class="text-danger small d-block mt-1"></span>
+                    </div>
+                </div>
+
+                <!-- IsActive Checkbox -->
+                <div class="card bg-light border-0 p-3 mb-4">
+                    <div class="form-check form-switch d-flex align-items-center gap-3">
+                        <input class="form-check-input ms-0" type="checkbox" role="switch" asp-for="Input.IsActive" id="isActiveSwitch" style="width: 2.5em; height: 1.25em;">
+                        <label class="form-check-label fw-semibold text-dark mb-0" for="isActiveSwitch">
+                            Kích hoạt tài khoản này ngay lập tức
+                            <span class="d-block text-muted fw-normal small">Cho phép người dùng đăng nhập ngay sau khi tạo tài khoản.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="/Admin/Users" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-custom-primary px-4">
+                        <i class="bi bi-check2-circle"></i> Khởi tạo tài khoản
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Info Card on the right -->
+    <div class="col-lg-4">
+        <div class="card-custom p-4 bg-light border-0">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-exclamation text-warning me-1"></i> Quy định tài khoản</h5>
+            <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
+                <li class="mb-2"><strong>Tên tài khoản:</strong> Phải là duy nhất, chỉ chứa ký tự chữ không dấu, chữ số và dấu gạch dưới.</li>
+                <li class="mb-2"><strong>Email:</strong> Phải là duy nhất, dùng để liên hệ và phục vụ tính năng lấy lại mật khẩu.</li>
+                <li class="mb-2"><strong>Mật khẩu:</strong> Độ dài tối thiểu 6 ký tự.</li>
+                <li class="mb-2"><strong>Bảo mật:</strong> Mật khẩu sẽ được lưu trữ an toàn trong cơ sở dữ liệu của hệ thống.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Password visibility toggle
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#passwordInput');
+        const toggleIcon = document.querySelector('#toggleIcon');
+
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    toggleIcon.classList.remove('bi-eye');
+                    toggleIcon.classList.add('bi-eye-slash');
+                } else {
+                    toggleIcon.classList.remove('bi-eye-slash');
+                    toggleIcon.classList.add('bi-eye');
+                }
+            });
+        }
+    </script>
+}

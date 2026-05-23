@@ -84,6 +84,14 @@ namespace Flipped_Classroom.Services.Implementation
             return (items, totalPages);
         }
 
+        // Get a question by its ID, including the related options if it's a multiple-choice question.
+        public async Task<Question> GetQuestionByIdAsync(int questionId)
+        {
+            return await _context.Questions
+                .Include(q => q.QuestionOptions)
+                .FirstOrDefaultAsync(q => q.Id == questionId);
+        }
+
         // Delete a question from the question bank, and if it's a multiple-choice question, also delete the related options from the QuestionOptions table.
         public async Task<bool> DeleteQuestionAsync(int questionId)
         {

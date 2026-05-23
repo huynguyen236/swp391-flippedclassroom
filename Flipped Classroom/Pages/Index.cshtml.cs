@@ -5,8 +5,13 @@ namespace Flipped_Classroom.Pages
 {
     public class IndexModel : PageModel
     {
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+            {
+                return RedirectToPage("/Admin/Dashboard");
+            }
+            return Page();
         }
     }
 }

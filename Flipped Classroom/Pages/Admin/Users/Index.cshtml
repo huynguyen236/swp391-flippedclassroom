@@ -1,0 +1,247 @@
+@page
+@model Flipped_Classroom.Pages.Admin.Users.IndexModel
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark">Quản Lý Tài Khoản</h2>
+        <p class="text-muted mb-0">Xem, tìm kiếm, lọc và quản trị tài khoản người dùng trên hệ thống.</p>
+    </div>
+    <div>
+        <a href="/Admin/Users/Create" class="btn btn-custom-primary d-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i> Thêm tài khoản mới
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+        <div>@TempData["SuccessMessage"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card-custom p-4 mb-4">
+    <form method="get" id="filterForm">
+        <input type="hidden" name="pageIndex" value="1" />
+
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" asp-for="SearchTerm" class="form-control border-start-0 bg-light" placeholder="Nhập Họ, Tên, Email hoặc Username..." />
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Vai trò (Role)</label>
+                <select asp-for="RoleFilter" class="form-select bg-light">
+                    <option value="All">Tất cả vai trò (All)</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Teacher">Teacher</option>
+                    <option value="Student">Student</option>
+                    <option value="Support">Support</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-muted" style="font-size: 0.85rem;">Trạng thái (IsActive)</label>
+                <select asp-for="ActiveFilter" class="form-select bg-light">
+                    <option value="All">Tất cả (All)</option>
+                    <option value="Active">Kích hoạt (Active)</option>
+                    <option value="Inactive">Vô hiệu hóa (Inactive)</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-filter"></i> Lọc
+                </button>
+                @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.RoleFilter != "All" || Model.ActiveFilter != "All")
+                {
+                    <a href="/Admin/Users" class="btn btn-outline-secondary" title="Xóa bộ lọc">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card-custom overflow-hidden mb-4">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
+                <tr>
+                    <th class="ps-4" style="width: 80px;">ID</th>
+                    <th>Tài khoản</th>
+                    <th>Họ và Tên</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th class="pe-4 text-end" style="width: 180px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Users != null && Model.Users.Any())
+                {
+                    foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-semibold text-dark">#@user.Id</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-light rounded-circle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                        @(!string.IsNullOrEmpty(user.Username) ? user.Username.Substring(0, 1).ToUpper() : "?")
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">@user.Username</div>
+                                        <div class="text-muted small">@user.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@user.FirstName @user.LastName</td>
+                            <td>
+                                @{
+                                    var badgeClass = user.Role switch
+                                    {
+                                        "Manager" => "bg-success bg-opacity-10 text-success",
+                                        "Teacher" => "bg-warning bg-opacity-10 text-dark",
+                                        "Student" => "bg-info bg-opacity-10 text-info",
+                                        _ => "bg-secondary bg-opacity-10 text-secondary"
+                                    };
+                                }
+                                <span class="badge @badgeClass fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                    @user.Role
+                                </span>
+                            </td>
+                            <td>
+                                @if (user.IsActive == true)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                        <i class="bi bi-x-circle-fill me-1"></i> Inactive
+                                    </span>
+                                }
+                            </td>
+                            <td style="font-size: 0.9rem;" class="text-muted">
+                                @(user.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                            </td>
+                            <td class="pe-4 text-end">
+                                <form asp-page="/Admin/Users/ToggleStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                    <input type="hidden" name="roleFilter" value="@Model.RoleFilter" />
+                                    <input type="hidden" name="activeFilter" value="@Model.ActiveFilter" />
+                                    <input type="hidden" name="pageIndex" value="@Model.PageIndex" />
+
+                                    @if (user.IsActive == true)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill d-inline-flex align-items-center gap-1"
+                                                onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa tài khoản @user.Username?')">
+                                            <i class="bi bi-person-x-fill"></i> Vô hiệu hóa
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-outline-success px-3 rounded-pill d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-person-check-fill"></i> Kích hoạt
+                                        </button>
+                                    }
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-people fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            Không tìm thấy tài khoản phù hợp với bộ lọc.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-top py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+            <span class="text-muted" style="font-size: 0.9rem;">
+                Hiển thị trang <strong>@Model.PageIndex</strong> trên tổng số <strong>@Model.TotalPages</strong> trang (Tổng số <strong>@Model.TotalItems</strong> kết quả)
+            </span>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-page="/Admin/Users/Index"
+                           asp-route-SearchTerm="@Model.SearchTerm"
+                           asp-route-RoleFilter="@Model.RoleFilter"
+                           asp-route-ActiveFilter="@Model.ActiveFilter"
+                           asp-route-PageIndex="1" title="Trang đầu">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+
+                    <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-page="/Admin/Users/Index"
+                           asp-route-SearchTerm="@Model.SearchTerm"
+                           asp-route-RoleFilter="@Model.RoleFilter"
+                           asp-route-ActiveFilter="@Model.ActiveFilter"
+                           asp-route-PageIndex="@(Model.PageIndex - 1)">
+                            Trước
+                        </a>
+                    </li>
+
+                    @{
+                        int startPage = Math.Max(1, Model.PageIndex - 2);
+                        int endPage = Math.Min(Model.TotalPages, Model.PageIndex + 2);
+                    }
+
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                            <a class="page-link" asp-page="/Admin/Users/Index"
+                               asp-route-SearchTerm="@Model.SearchTerm"
+                               asp-route-RoleFilter="@Model.RoleFilter"
+                               asp-route-ActiveFilter="@Model.ActiveFilter"
+                               asp-route-PageIndex="@i">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-page="/Admin/Users/Index"
+                           asp-route-SearchTerm="@Model.SearchTerm"
+                           asp-route-RoleFilter="@Model.RoleFilter"
+                           asp-route-ActiveFilter="@Model.ActiveFilter"
+                           asp-route-PageIndex="@(Model.PageIndex + 1)">
+                            Sau
+                        </a>
+                    </li>
+
+                    <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-page="/Admin/Users/Index"
+                           asp-route-SearchTerm="@Model.SearchTerm"
+                           asp-route-RoleFilter="@Model.RoleFilter"
+                           asp-route-ActiveFilter="@Model.ActiveFilter"
+                           asp-route-PageIndex="@Model.TotalPages" title="Trang cuối">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
