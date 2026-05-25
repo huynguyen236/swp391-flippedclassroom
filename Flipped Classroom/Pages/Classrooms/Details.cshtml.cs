@@ -60,6 +60,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                 .ToListAsync();
 
             AvailableUsers = availableUsers;
+            NumberOfGroupsToCreate = classroom.Groups?.Count ?? 0;
 
             return Page();
         }
@@ -107,17 +108,41 @@ namespace Flipped_Classroom.Pages.Classrooms
             var classExists = await _context.Classes.Include(c => c.Groups).FirstOrDefaultAsync(c => c.Id == id);
             if (classExists == null) return NotFound();
 
-            int currentGroupCount = classExists.Groups.Count;
+            int groupsToAdd = NumberOfGroupsToCreate - classExists.Groups.Count;
 
-            for (int i = 1; i <= NumberOfGroupsToCreate; i++)
+            if (groupsToAdd > 0)
             {
-                var newGroup = new Group
+                for (int i = 1; i <= groupsToAdd; i++)
                 {
-                    ClassId = id,
-                    GroupName = $"Nhóm {currentGroupCount + i}",
-                    CreatedAt = DateTime.Now
-                };
-                _context.Groups.Add(newGroup);
+                    var newGroup = new Group
+                    {
+                        ClassId = id,
+                        GroupName = "temp", // Name will be updated below
+                        CreatedAt = DateTime.Now
+                    };
+                    classExists.Groups.Add(newGroup);
+                    _context.Groups.Add(newGroup);
+                }
+            }
+            else if (groupsToAdd < 0)
+            {
+                var groupsToRemove = classExists.Groups
+                    .OrderByDescending(g => g.Id)
+                    .Take(Math.Abs(groupsToAdd))
+                    .ToList();
+
+                foreach (var g in groupsToRemove)
+                {
+                    classExists.Groups.Remove(g);
+                }
+                _context.Groups.RemoveRange(groupsToRemove);
+            }
+
+            // Standardize all group names sequentially (Nhóm 1, Nhóm 2, ...)
+            var allGroups = classExists.Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id).ToList();
+            for (int i = 0; i < allGroups.Count; i++)
+            {
+                allGroups[i].GroupName = $"Nhóm {i + 1}";
             }
 
             await _context.SaveChangesAsync();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +23,12 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public IActionResult OnGet()
         {
-            ViewData["ManagerId"] = new SelectList(_context.Users, "Id", "Username");
+            var managers = _context.Users
+                           .Where(u => u.Role == "Manager" || u.Role == "Admin")
+                           .ToList();
+
+            // 2. Nạp danh sách đã lọc vào ViewData dưới dạng SelectList
+            ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
             return Page();
         }
 

@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model Flipped_Classroom.Pages.Classrooms.DetailsModel
 
 @{
@@ -12,14 +12,14 @@
                 <div class="card-header text-white p-5 text-center" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
                     <h2 class="fw-bold mb-2">@Html.DisplayFor(model => model.Class.ClassName)</h2>
                     <span class="badge bg-light text-primary rounded-pill px-4 py-2 fs-6 mb-3">@Html.DisplayFor(model => model.Class.Status)</span>
-                    <p class="mb-0 text-white-50">M� Tham Gia (Invite Code): <strong class="text-white fs-5">@Html.DisplayFor(model => model.Class.InviteCode)</strong></p>
+                    <p class="mb-0 text-white-50">Mã Tham Gia (Invite Code): <strong class="text-white fs-5">@Html.DisplayFor(model => model.Class.InviteCode)</strong></p>
                 </div>
 
                 <div class="card-body p-5">
                     <div class="mb-4">
-                        <h5 class="fw-bold text-muted mb-3">M� t? L?p H?c</h5>
+                        <h5 class="fw-bold text-muted mb-3">Mô tả Lớp Học</h5>
                         <p class="text-secondary" style="line-height: 1.6;">
-                            @(string.IsNullOrEmpty(Model.Class.Description) ? "Ch?a c� m� t? cho l?p h?c n�y." : Model.Class.Description)
+                            @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
                         </p>
                     </div>
 
@@ -30,7 +30,7 @@
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
-                                    <div class="text-muted small">Ng�y B?t ??u</div>
+                                    <div class="text-muted small">Ngày Bắt Đầu</div>
                                     <div class="fw-medium">@Html.DisplayFor(model => model.Class.StartDate)</div>
                                 </div>
                             </div>
@@ -41,7 +41,7 @@
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
-                                    <div class="text-muted small">Ng�y K?t Th�c</div>
+                                    <div class="text-muted small">Ngày Kết Thúc</div>
                                     <div class="fw-medium">@Html.DisplayFor(model => model.Class.EndDate)</div>
                                 </div>
                             </div>
@@ -54,19 +54,19 @@
                                 @(Model.Class.Manager?.Username?.FirstOrDefault() ?? '?')
                             </div>
                             <div>
-                                <div class="text-muted small">Ng??i Qu?n L�</div>
+                                <div class="text-muted small">Người Quản Lý</div>
                                 <div class="fw-bold">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
                             </div>
                         </div>
                         <div class="text-end text-muted small">
-                            T?o ng�y: @Html.DisplayFor(model => model.Class.CreatedAt)
+                            Tạo ngày: @Html.DisplayFor(model => model.Class.CreatedAt)
                         </div>
                     </div>
                 </div>
 
                 <div class="card-footer bg-light p-4 text-center border-0 d-flex justify-content-center gap-3">
-                    <a asp-page="./Index" class="btn btn-outline-secondary px-4 rounded-pill">Tr? l?i Danh s�ch</a>
-                    <a asp-page="./Edit" asp-route-id="@Model.Class?.Id" class="btn btn-primary px-4 rounded-pill shadow-sm" style="background-color: #1a73e8; border: none;">Ch?nh s?a</a>
+                    <a asp-page="./Index" class="btn btn-outline-secondary px-4 rounded-pill">Trở lại Danh sách</a>
+                    <a asp-page="./Edit" asp-route-id="@Model.Class?.Id" class="btn btn-primary px-4 rounded-pill shadow-sm" style="background-color: #1a73e8; border: none;">Chỉnh sửa</a>
                 </div>
             </div>
         </div>
@@ -74,13 +74,13 @@
         <div class="col-lg-8 mt-4">
             <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
                 <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh S�ch H?c Vi�n (@(Model.Class.ClassMembers?.Count ?? 0))</h4>
+                    <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))</h4>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-outline-primary px-4 shadow-sm text-nowrap" style="border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#createGroupModal">
-                            <i class="bi bi-people-fill"></i> Chia Nh�m (@(Model.Class.Groups?.Count ?? 0))
+                            <i class="bi bi-people-fill"></i> Chia Nhóm (@(Model.Class.Groups?.Count ?? 0))
                         </button>
                         <button type="button" class="btn btn-primary px-4 shadow-sm text-nowrap" style="background-color: #1a73e8; border: none; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                            + Th�m H?c Vi�n
+                            + Thêm Học Viên
                         </button>
                     </div>
                 </div>
@@ -89,11 +89,11 @@
                         <table class="table table-hover mb-0">
                             <thead class="bg-light text-muted">
                                 <tr>
-                                    <th class="px-4 py-3 border-0 fw-semibold">H?c Vi�n</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold">Học Viên</th>
                                     <th class="px-4 py-3 border-0 fw-semibold">Email</th>
-                                    <th class="px-4 py-3 border-0 fw-semibold">Nh�m</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold">Nhóm</th>
                                     <th class="px-4 py-3 border-0 fw-semibold text-center">Support Team</th>
-                                    <th class="px-4 py-3 border-0 fw-semibold text-end">Thao T�c</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold text-end">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,7 +118,7 @@
                                                 <form method="post" asp-page-handler="AssignGroup" asp-route-id="@Model.Class.Id">
                                                     <input type="hidden" name="studentId" value="@member.UserId" />
                                                     <select name="groupId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px;" onchange="this.form.submit()">
-                                                        <option value="">Ch?a c� nh�m</option>
+                                                        <option value="">Chưa có nhóm</option>
                                                         @if (Model.Class.Groups != null)
                                                         {
                                                             foreach (var group in Model.Class.Groups)
@@ -139,17 +139,17 @@
                                             <td class="px-4 py-3 text-center">
                                                 @if (member.IsSupportTeam == true)
                                                 {
-                                                    <span class="badge bg-success rounded-pill px-3">C�</span>
+                                                    <span class="badge bg-success rounded-pill px-3">Có</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-secondary rounded-pill px-3">Kh�ng</span>
+                                                    <span class="badge bg-secondary rounded-pill px-3">Không</span>
                                                 }
                                             </td>
                                             <td class="px-4 py-3 text-end">
                                                 <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
                                                     <input type="hidden" name="memberUserId" value="@member.UserId" />
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('B?n c� ch?c ch?n mu?n x�a @(member.User?.Username) kh?i l?p?');">X�a</button>
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">Xóa</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -160,7 +160,7 @@
                                     <tr>
                                         <td colspan="4" class="text-center py-5 text-muted">
                                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                            <h6 class="text-muted">Ch?a c� h?c vi�n n�o trong l?p</h6>
+                                            <h6 class="text-muted">Chưa có học viên nào trong lớp</h6>
                                         </td>
                                     </tr>
                                 }
@@ -179,11 +179,11 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="AddStudents" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="addStudentModalLabel">Th�m H?c Vi�n M?i</h5>
+                    <h5 class="modal-title fw-bold text-primary" id="addStudentModalLabel">Thêm Học Viên Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-muted small mb-3">Ch?n c�c h?c vi�n b?n mu?n th�m v�o l?p h?c n�y:</p>
+                    <p class="text-muted small mb-3">Chọn các học viên bạn muốn thêm vào lớp học này:</p>
                     @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
                     {
                         <div class="list-group list-group-flush border rounded" style="max-height: 350px; overflow-y: auto;">
@@ -210,13 +210,13 @@
                     else
                     {
                         <div class="text-center py-4 bg-light rounded">
-                            <p class="text-muted mb-0">Kh�ng c� h?c vi�n n�o kh? d?ng ?? th�m.</p>
+                            <p class="text-muted mb-0">Không có học viên nào khả dụng ?? thêm.</p>
                         </div>
                     }
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">H?y</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">X�c Nh?n Th�m</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Thêm</button>
                 </div>
             </form>
         </div>
@@ -229,12 +229,12 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="createGroupModalLabel">T?o Nh�m M?i</h5>
+                    <h5 class="modal-title fw-bold text-primary" id="createGroupModalLabel">Tạo Nhóm Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark">Danh S�ch H?c Vi�n Hi?n T?i (@(Model.Class.ClassMembers?.Count ?? 0))</label>
+                        <label class="form-label fw-bold text-dark">Danh Sách Học Viên Hiện Tại (@(Model.Class.ClassMembers?.Count ?? 0))</label>
                         <div class="list-group list-group-flush border rounded" style="max-height: 200px; overflow-y: auto;">
                             @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
                             {
@@ -256,20 +256,20 @@
                             }
                             else
                             {
-                                <div class="p-3 text-center text-muted small">Ch?a c� h?c vi�n n�o ?? chia nh�m.</div>
+                                <div class="p-3 text-center text-muted small">Chưa có học viên nào đã chia nhóm.</div>
                             }
                         </div>
                     </div>
 
-                    <p class="text-muted small mb-3">Nh?p s? l??ng nh�m b?n mu?n t?o cho l?p h?c n�y:</p>
+                    <p class="text-muted small mb-3">Nhập số lượng nhóm bạn muốn tạo cho lớp học này:</p>
                     <div class="mb-3">
-                        <label for="NumberOfGroupsToCreate" class="form-label fw-medium">S? l??ng nh�m</label>
-                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="20" required value="1" style="border-radius: 8px; border-color: #ced4da;" />
+                        <label for="NumberOfGroupsToCreate" class="form-label fw-medium">Số lượng nhóm</label>
+                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="6" required style="border-radius: 8px; border-color: #ced4da;" />
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">H?y</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">X�c Nh?n T?o</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Tạo</button>
                 </div>
             </form>
         </div>
