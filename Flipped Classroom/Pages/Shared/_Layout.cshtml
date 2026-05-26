@@ -83,17 +83,26 @@
                     </a>
                 }
 
-                @if (User.IsInRole("Teacher") || isAdmin || User.IsInRole("Manager"))
+                @if (User.IsInRole("Manager"))
                 {
                     <div class="sidebar-section-title">Quản lý đào tạo</div>
-                    
-                    <a href="/Classes" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Classes") ? "active" : "")">
+
+                    <a href="/QuestionBank/QuestionList" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/QuestionBank/QuestionList") ? "active" : "")">
+                        <i class="bi bi-book-fill"></i>
+                        <span>Ngân hàng câu hỏi</span>
+                    </a>
+                    <a href="/Classrooms/index" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/QuestionBank/QuestionList") ? "active" : "")">
                         <i class="bi bi-journal-bookmark-fill"></i>
                         <span>Quản lý lớp học</span>
                     </a>
-                    <a href="/Courses" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Courses") ? "active" : "")">
+                }
+                @if (User.IsInRole("Teacher"))
+                {
+                    <div class="sidebar-section-title">Quản lý đào tạo</div>
+
+                    <a href="/QuestionBank/QuestionList" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/QuestionBank/QuestionList") ? "active" : "")">
                         <i class="bi bi-book-fill"></i>
-                        <span>Quản lý khóa học</span>
+                        <span>Ngân hàng câu hỏi</span>
                     </a>
                 }
 
