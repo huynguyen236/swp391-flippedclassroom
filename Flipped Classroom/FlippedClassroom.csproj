@@ -36,5 +36,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Pages\Dashboard\" />
+	  <Folder Include="Pages\Users\" />
 	</ItemGroup>
 </Project>

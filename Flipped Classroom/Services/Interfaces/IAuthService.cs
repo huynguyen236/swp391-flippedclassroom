@@ -31,6 +31,21 @@ namespace Flipped_Classroom.Services.Interfaces
         /// <summary>
         /// Gửi email reset password
         /// </summary>
-        Task<bool> SendResetEmailAsync(string email, string resetToken);
+        Task<bool> SendResetEmailAsync(string email, string resetLink);
+
+        /// <summary>
+        /// Đăng ký người dùng mới
+        /// </summary>
+        Task<(bool Success, string? ErrorMessage)> RegisterAsync(
+            string firstName,
+            string lastName,
+            string email,
+            string username,
+            string password);
+
+        /// <summary>
+        /// Xác thực đăng nhập
+        /// </summary>
+        Task<(User? User, string? ErrorMessage)> AuthenticateAsync(string username, string password);
     }
 }

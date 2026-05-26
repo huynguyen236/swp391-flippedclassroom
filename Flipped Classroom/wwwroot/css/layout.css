@@ -194,3 +194,16 @@ body {
         display: block;
     }
 }
+
+/* Sidebar Section Titles for Categorized Navigation */
+.sidebar-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sidebar-color);
+    opacity: 0.6;
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
