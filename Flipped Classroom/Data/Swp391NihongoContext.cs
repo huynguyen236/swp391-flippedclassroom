@@ -62,10 +62,15 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=SWP391_Nihongo;Trusted_Connection=SSPI;Encrypt=false");
+    public virtual DbSet<ClassSchedule> ClassSchedules { get; set; }
 
+    /*   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+   #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+           => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=SWP391_Nihongo;Trusted_Connection=SSPI;Encrypt=false");
+    */
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    => optionsBuilder.UseSqlServer(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection"));
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Assignment>(entity =>
@@ -340,7 +345,9 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.Property(e => e.DifficultyLevel).HasDefaultValue(1);
             entity.Property(e => e.IsQuestionBank).HasDefaultValue(false);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.QuestionType).HasMaxLength(50);
+            entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Visibility)
                 .HasMaxLength(50)
                 .HasDefaultValue("Always");
@@ -349,6 +356,21 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.NodeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Question_Node");
+        });
+
+        modelBuilder.Entity<ClassSchedule>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ClassSche__3214EC07");
+
+            entity.Property(e => e.StudyDate).HasColumnType("date");
+            entity.Property(e => e.StartTime).HasColumnType("time");
+            entity.Property(e => e.EndTime).HasColumnType("time");
+            entity.Property(e => e.Room).HasMaxLength(100);
+
+            entity.HasOne(d => d.Class).WithMany(p => p.ClassSchedules)
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Schedule_Class");
         });
 
         modelBuilder.Entity<QuestionOption>(entity =>

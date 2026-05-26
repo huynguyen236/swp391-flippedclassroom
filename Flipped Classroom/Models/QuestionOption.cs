@@ -11,7 +11,7 @@ public partial class QuestionOption
 
     public string OptionContent { get; set; } = null!;
 
-    public bool? IsCorrect { get; set; }
+    public bool IsCorrect { get; set; }
 
     public virtual Question Question { get; set; } = null!;
 }
