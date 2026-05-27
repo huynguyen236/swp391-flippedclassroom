@@ -1,9 +1,8 @@
-using Flipped_Classroom.Data;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
@@ -12,11 +11,11 @@ namespace Flipped_Classroom.Pages.Authentication
 {
     public class LoginModel : PageModel
     {
-        private readonly Swp391NihongoContext _context;
+        private readonly IAuthService _authService;
 
-        public LoginModel(Swp391NihongoContext context)
+        public LoginModel(IAuthService authService)
         {
-            _context = context;
+            _authService = authService;
         }
 
         [BindProperty]
@@ -54,26 +53,10 @@ namespace Flipped_Classroom.Pages.Authentication
             if (!ModelState.IsValid)
                 return Page();
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == Input.Username);
-
+            var (user, errorMessage) = await _authService.AuthenticateAsync(Input.Username, Input.Password);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return Page();
-            }
-
-            // Tài khoản Google (Password = null) → không cho login bằng form
-            if (user.PasswordHash == null)
-            {
-                ModelState.AddModelError(string.Empty,
-                    "This account uses Google Sign-In. Please use the \"Continue with Google\" button.");
-                return Page();
-            }
-
-            if (user.PasswordHash != Input.Password)
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                ModelState.AddModelError(string.Empty, errorMessage ?? "Invalid login attempt.");
                 return Page();
             }
             var claims = new List<Claim>

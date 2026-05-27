@@ -47,7 +47,20 @@ namespace Flipped_Classroom.Pages.Authentication
                 }
 
                 // Gửi email
-                var emailSent = await _authService.SendResetEmailAsync(Email.Trim(), token);
+                var resetLink = Url.Page(
+                    "/Authentication/ResetPassword",
+                    pageHandler: null,
+                    values: new { token },
+                    protocol: Request.Scheme);
+
+                if (string.IsNullOrWhiteSpace(resetLink))
+                {
+                    _logger.LogWarning("Không tạo được reset link cho email: {Email}", Email);
+                    ErrorMessage = "Có lỗi xảy ra. Vui lòng thử lại sau.";
+                    return Page();
+                }
+
+                var emailSent = await _authService.SendResetEmailAsync(Email.Trim(), resetLink);
                 if (!emailSent)
                 {
                     _logger.LogWarning("Gửi email thất bại cho: {Email}", Email);

@@ -1,0 +1,139 @@
+﻿@page
+@model Flipped_Classroom.Pages.QuestionBank.AddQuestionModel
+@{
+    ViewData["Title"] = "Thêm câu hỏi mới";
+    var isMcq = string.Equals(Model.NewQuestion?.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase)
+        || string.IsNullOrEmpty(Model.NewQuestion?.QuestionType);
+}
+
+<div class="mb-4">
+    <a href="/QuestionBank/QuestionList" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 small fw-medium">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách
+    </a>
+    <h2 class="fw-bold mt-2 text-dark">Thêm Câu Hỏi Mới</h2>
+    <p class="text-muted">Nhập nội dung, phân loại và các đáp án cho câu hỏi vào ngân hàng dữ liệu.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card-custom p-4">
+            <form method="post" autocomplete="off" id="addQuestionForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="NewQuestion.NodeId" class="form-label fw-semibold text-dark">Chủ đề / Node <span class="text-danger">*</span></label>
+                    <select asp-for="NewQuestion.NodeId" asp-items="Model.NodeSelectList" class="form-select" required>
+                        <option value="">-- Chọn chủ đề --</option>
+                    </select>
+                    <small class="text-muted d-block mt-1">Chọn chủ đề nơi câu hỏi này sẽ được lưu trong ngân hàng câu hỏi</small>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewQuestion.Content" class="form-label fw-semibold text-dark">Nội dung câu hỏi</label>
+                    <textarea asp-for="NewQuestion.Content" class="form-control" rows="3" placeholder="Nhập câu hỏi tại đây..." required></textarea>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="NewQuestion.Category" class="form-label fw-semibold text-dark">Phân loại (Category)</label>
+                        <select asp-for="NewQuestion.Category" class="form-select" required>
+                            <option value="">-- Chọn phân loại --</option>
+                            <option value="Vocabulary">Từ vựng (Vocabulary)</option>
+                            <option value="Grammar">Ngữ pháp (Grammar)</option>
+                            <option value="Kanji">Chữ Hán (Kanji)</option>
+                            <option value="Keigo">Kính ngữ (Keigo)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NewQuestion.QuestionType" class="form-label fw-semibold text-dark">Loại câu hỏi (Type)</label>
+                        <select asp-for="NewQuestion.QuestionType" class="form-select" required id="questionType">
+                            <option value="MCQ">Trắc nghiệm (MCQ)</option>
+                            <option value="Writing">Viết (Writing)</option>
+                            <option value="Reading">Đọc (Reading)</option>
+                            <option value="Listening">Nghe (Listening)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="my-4 text-muted" />
+                <h5 class="fw-bold mb-3 text-dark">Thiết lập Đáp án</h5>
+
+                <div id="mcqAnswers" class="row g-3 mb-4" style="@(isMcq ? "" : "display:none")">
+                    @for (int i = 0; i < Model.Options.Count; i++)
+                    {
+                        <div class="col-md-6">
+                            <div class="card bg-light border-0 p-3 h-100">
+                                <label class="form-label fw-semibold text-dark">Đáp án @(char.ConvertFromUtf32(65 + i)) <span class="text-danger">*</span></label>
+                                <input asp-for="Options[i].OptionContent" class="form-control mb-2" placeholder="Nhập nội dung đáp án..." />
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" asp-for="Options[i].IsCorrect" id="check_@i">
+                                    <label class="form-check-label text-success fw-medium" for="check_@i">
+                                        Đây là đáp án đúng
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div id="nonMcqAnswer" class="mb-4" style="@(isMcq ? "display:none" : "")">
+                    <label asp-for="NewQuestion.CorrectAnswer" class="form-label fw-semibold text-dark">Đáp án tham khảo <span class="text-danger">*</span></label>
+                    <textarea asp-for="NewQuestion.CorrectAnswer" class="form-control" rows="3" placeholder="Nhập đáp án mẫu / đáp án tham khảo..."></textarea>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end mt-4">
+                    <a href="/QuestionBank/QuestionList" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-custom-primary px-4">
+                        <i class="bi bi-check2-circle"></i> Lưu vào ngân hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-custom p-4 bg-light border-0 sticky-top" style="top: 20px;">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Mẹo thiết kế câu hỏi</h5>
+            <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
+                <li class="mb-2"><strong>Trắc nghiệm (MCQ):</strong> Nhập đủ 4 đáp án A–D và chọn ít nhất một đáp án đúng.</li>
+                <li class="mb-2"><strong>Writing / Reading / Listening:</strong> Chỉ cần một đáp án tham khảo, lưu vào CorrectAnswer.</li>
+                <li class="mb-2"><strong>Đa đáp án:</strong> MCQ có thể chọn nhiều hơn một đáp án đúng nếu cần.</li>
+                <li class="mb-2"><strong>Chủ đề:</strong> Luôn chọn chủ đề phù hợp trước khi lưu câu hỏi.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const typeSelect = document.getElementById('questionType');
+            const mcqSection = document.getElementById('mcqAnswers');
+            const nonMcqSection = document.getElementById('nonMcqAnswer');
+
+            function toggleAnswerSections() {
+                const isMcq = typeSelect.value === 'MCQ';
+                mcqSection.style.display = isMcq ? '' : 'none';
+                nonMcqSection.style.display = isMcq ? 'none' : '';
+
+                mcqSection.querySelectorAll('input, textarea').forEach(el => {
+                    el.disabled = !isMcq;
+                    if (el.tagName === 'INPUT' && el.type !== 'hidden') {
+                        el.required = isMcq && el.name.includes('OptionContent');
+                    }
+                });
+                const correctAnswer = document.getElementById('NewQuestion_CorrectAnswer');
+                if (correctAnswer) {
+                    correctAnswer.disabled = isMcq;
+                    correctAnswer.required = !isMcq;
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleAnswerSections);
+            toggleAnswerSections();
+        })();
+    </script>
+}
