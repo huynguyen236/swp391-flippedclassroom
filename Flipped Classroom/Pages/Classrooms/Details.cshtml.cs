@@ -55,7 +55,7 @@ namespace Flipped_Classroom.Pages.Classrooms
             // Get available users who are not currently in the classroom
             var existingMemberIds = classroom.ClassMembers.Select(cm => cm.UserId).ToList();
             var availableUsers = await _context.Users
-                .Where(u => !existingMemberIds.Contains(u.Id))
+                .Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
                 .OrderBy(u => u.Username)
                 .ToListAsync();
 

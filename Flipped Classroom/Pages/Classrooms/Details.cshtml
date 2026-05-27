@@ -186,10 +186,13 @@
                     <p class="text-muted small mb-3">Chọn các học viên bạn muốn thêm vào lớp học này:</p>
                     @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
                     {
-                        <div class="list-group list-group-flush border rounded" style="max-height: 350px; overflow-y: auto;">
+                        <div class="mb-3 position-relative">
+                            <input type="text" class="form-control" id="studentSearchInput" placeholder="Tìm kiếm học viên..." autocomplete="off" style="border-radius: 8px; border-color: #ced4da; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22none%22 stroke=%22%23343a40%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222%22 d=%22M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z%22/></svg>'); background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 16px; padding-right: 2.5rem;" />
+                        </div>
+                        <div class="list-group list-group-flush border rounded" id="studentListGroup" style="max-height: 350px; overflow-y: auto;">
                             @foreach (var user in Model.AvailableUsers)
                             {
-                                <label class="list-group-item d-flex gap-3 align-items-center p-3 list-group-item-action" style="cursor: pointer;">
+                                <label class="list-group-item d-flex gap-3 align-items-center p-3 list-group-item-action student-option" style="cursor: pointer;">
                                     <input class="form-check-input flex-shrink-0" type="checkbox" name="SelectedStudentIds" value="@user.Id" style="font-size: 1.2em;">
                                     <div class="d-flex align-items-center">
                                         <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 32px; height: 32px; font-size: 14px; background-color: #5f6368;">
@@ -275,3 +278,28 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const studentSearchInput = document.getElementById('studentSearchInput');
+            if (studentSearchInput) {
+                studentSearchInput.addEventListener('keyup', function() {
+                    const filter = this.value.toLowerCase();
+                    const options = document.querySelectorAll('.student-option');
+
+                    options.forEach(function(item) {
+                        const text = item.textContent.toLowerCase();
+                        if (text.includes(filter)) {
+                            item.classList.remove('d-none');
+                            item.classList.add('d-flex');
+                        } else {
+                            item.classList.remove('d-flex');
+                            item.classList.add('d-none');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+}
