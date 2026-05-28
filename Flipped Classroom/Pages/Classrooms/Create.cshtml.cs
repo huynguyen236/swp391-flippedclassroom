@@ -24,7 +24,7 @@ namespace Flipped_Classroom.Pages.Classrooms
         public IActionResult OnGet()
         {
             var managers = _context.Users
-                           .Where(u => u.Role == "Manager" || u.Role == "Admin")
+                           .Where(u => u.Role == "Teacher")
                            .ToList();
 
             // 2. Nạp danh sách đã lọc vào ViewData dưới dạng SelectList
@@ -37,14 +37,20 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // Remove navigation properties from validation
+            ModelState.Remove("Class.Manager");
+
             if (!ModelState.IsValid || _context.Classes == null || Class == null)
             {
-                ViewData["ManagerId"] = new SelectList(_context.Users, "Id", "Username");
+                var managers = _context.Users.Where(u => u.Role == "Teacher").ToList();
+                ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
                 return Page();
             }
 
             Class.CreatedAt = DateTime.Now;
             Class.Status = "Active";
+            // Generate an 8-character uppercase alphanumeric invite code
+            Class.InviteCode = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
 
             _context.Classes.Add(Class);
             await _context.SaveChangesAsync();
