@@ -1,0 +1,275 @@
+@page
+@model Flipped_Classroom.Pages.Users.ProfileModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    
+    // Display Avatar Initials
+    string displayName = $"{Model.CurrentUser?.FirstName} {Model.CurrentUser?.LastName}".Trim();
+    if (string.IsNullOrWhiteSpace(displayName))
+    {
+        displayName = Model.CurrentUser?.Username ?? "User";
+    }
+    
+    string displayInitial = !string.IsNullOrWhiteSpace(displayName) 
+        ? displayName.Substring(0, 1).ToUpper() 
+        : "?";
+
+    var roleName = Model.CurrentUser?.Role ?? string.Empty;
+    var displayRole = roleName switch
+    {
+        "Admin" => "Quản trị viên",
+        "Manager" => "Quản lý",
+        "Teacher" => "Giảng viên",
+        "Student" => "Học viên",
+        "Support" => "Hỗ trợ",
+        _ => roleName
+    };
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Page -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-dark mb-1">Cài đặt Tài khoản</h2>
+            <p class="text-muted mb-0">Quản lý thông tin hồ sơ cá nhân và cài đặt bảo mật của bạn.</p>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <div>@Model.SuccessMessage</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <div>@Model.ErrorMessage</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Left Column: User Summary Card -->
+        <div class="col-lg-4">
+            <div class="card-custom p-4 text-center h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <!-- Avatar Preview -->
+                    <div class="position-relative d-inline-block mb-3">
+                        @if (!string.IsNullOrWhiteSpace(Model.CurrentUser?.AvatarUrl))
+                        {
+                            <img src="@Model.CurrentUser.AvatarUrl" alt="Avatar" class="rounded-circle border border-4 border-white shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm mx-auto fw-bold" style="width: 120px; height: 120px; font-size: 3rem;">
+                                @displayInitial
+                            </div>
+                        }
+                    </div>
+
+                    <h4 class="fw-bold text-dark mb-1">@displayName</h4>
+                    <p class="text-muted small mb-3">@@@Model.CurrentUser?.Username</p>
+                    
+                    <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-4" style="font-size: 0.85rem;">
+                        <i class="bi bi-shield-fill-check me-1"></i> @displayRole
+                    </span>
+
+                    <div class="border-top pt-3 text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Email:</span>
+                            <span class="fw-medium text-dark small text-truncate" style="max-width: 180px;">@Model.CurrentUser?.Email</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Điện thoại:</span>
+                            <span class="fw-medium text-dark small">@(Model.CurrentUser?.PhoneNumber ?? "Chưa thiết lập")</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Ngày tham gia:</span>
+                            <span class="fw-medium text-dark small">@(Model.CurrentUser?.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-muted small border-top pt-3">
+                    <i class="bi bi-info-circle me-1"></i> Nhấn Lưu sau khi thực hiện bất kỳ thay đổi nào.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Tabs/Forms -->
+        <div class="col-lg-8">
+            <div class="card-custom p-0 overflow-hidden h-100">
+                <!-- Navigation Tabs -->
+                <div class="bg-light border-bottom px-4 pt-3">
+                    <ul class="nav nav-tabs border-0" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-semibold border-0 px-3 pb-3 position-relative" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab" aria-controls="info-pane" aria-selected="true" style="background: transparent;">
+                                <i class="bi bi-person-fill me-1"></i> Thông tin cá nhân
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-semibold border-0 px-3 pb-3 position-relative" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-pane" type="button" role="tab" aria-controls="security-pane" aria-selected="false" style="background: transparent;">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Đổi mật khẩu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content p-4" id="profileTabsContent">
+                    
+                    <!-- Tab 1: Profile Info -->
+                    <div class="tab-pane fade show active" id="info-pane" role="tabpanel" aria-labelledby="info-tab">
+                        <form method="post" asp-page-handler="UpdateProfile" enctype="multipart/form-data" class="needs-validation">
+                            <h5 class="fw-bold text-dark mb-4">Cập nhật thông tin hồ sơ</h5>
+                            
+                            <div class="row g-3">
+                                <!-- First Name -->
+                                <div class="col-md-6">
+                                    <label asp-for="ProfileInput.FirstName" class="form-label fw-semibold text-muted small mb-1">Tên</label>
+                                    <input asp-for="ProfileInput.FirstName" class="form-control rounded-3 border-secondary border-opacity-25" placeholder="Nhập tên" />
+                                    <span asp-validation-for="ProfileInput.FirstName" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-md-6">
+                                    <label asp-for="ProfileInput.LastName" class="form-label fw-semibold text-muted small mb-1">Họ</label>
+                                    <input asp-for="ProfileInput.LastName" class="form-control rounded-3 border-secondary border-opacity-25" placeholder="Nhập họ" />
+                                    <span asp-validation-for="ProfileInput.LastName" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Phone Number -->
+                                <div class="col-md-12">
+                                    <label asp-for="ProfileInput.PhoneNumber" class="form-label fw-semibold text-muted small mb-1">Số điện thoại</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-secondary border-opacity-25"><i class="bi bi-telephone"></i></span>
+                                        <input asp-for="ProfileInput.PhoneNumber" class="form-control rounded-end border-secondary border-opacity-25" placeholder="Nhập số điện thoại" />
+                                    </div>
+                                    <span asp-validation-for="ProfileInput.PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Avatar File -->
+                                <div class="col-md-12">
+                                    <label asp-for="ProfileInput.AvatarFile" class="form-label fw-semibold text-muted small mb-1">Ảnh đại diện mới</label>
+                                    <input asp-for="ProfileInput.AvatarFile" type="file" class="form-control rounded-3 border-secondary border-opacity-25" accept=".jpg,.jpeg,.png,.gif" />
+                                    <div class="form-text text-muted small mt-1">Hỗ trợ các định dạng .jpg, .jpeg, .png, .gif. Kích thước tối đa 5MB.</div>
+                                    <span asp-validation-for="ProfileInput.AvatarFile" class="text-danger small mt-1 d-block"></span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-custom-primary px-4 rounded-pill">
+                                    <i class="bi bi-save2 me-1"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 2: Security / Change Password -->
+                    <div class="tab-pane fade" id="security-pane" role="tabpanel" aria-labelledby="security-tab">
+                        <form method="post" asp-page-handler="ChangePassword">
+                            <h5 class="fw-bold text-dark mb-3">Đổi mật khẩu tài khoản</h5>
+                            
+                            @if (Model.CurrentUser?.PasswordHash == null)
+                            {
+                                <div class="alert alert-info border-0 rounded-3 mb-4 small">
+                                    <i class="bi bi-info-circle-fill me-1"></i> Tài khoản của bạn được liên kết qua Google Sign-In và chưa có mật khẩu trực tiếp. Hãy thiết lập mật khẩu mới ngay dưới đây để có thể đăng nhập bằng tài khoản/mật khẩu.
+                                </div>
+                            }
+
+                            <div class="row g-3">
+                                <!-- Current Password -->
+                                @if (Model.CurrentUser?.PasswordHash != null)
+                                {
+                                    <div class="col-md-12">
+                                        <label asp-for="PasswordInput.CurrentPassword" class="form-label fw-semibold text-muted small mb-1">Mật khẩu hiện tại</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light text-muted border-secondary border-opacity-25"><i class="bi bi-lock-fill"></i></span>
+                                            <input asp-for="PasswordInput.CurrentPassword" class="form-control rounded-end border-secondary border-opacity-25" type="password" placeholder="Nhập mật khẩu hiện tại" />
+                                        </div>
+                                        <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger small mt-1 d-block"></span>
+                                    </div>
+                                }
+
+                                <!-- New Password -->
+                                <div class="col-md-12">
+                                    <label asp-for="PasswordInput.NewPassword" class="form-label fw-semibold text-muted small mb-1">Mật khẩu mới</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-secondary border-opacity-25"><i class="bi bi-key-fill"></i></span>
+                                        <input asp-for="PasswordInput.NewPassword" class="form-control rounded-end border-secondary border-opacity-25" type="password" placeholder="Nhập mật khẩu mới" />
+                                    </div>
+                                    <span asp-validation-for="PasswordInput.NewPassword" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-md-12">
+                                    <label asp-for="PasswordInput.ConfirmPassword" class="form-label fw-semibold text-muted small mb-1">Xác nhận mật khẩu mới</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light text-muted border-secondary border-opacity-25"><i class="bi bi-shield-fill-check"></i></span>
+                                        <input asp-for="PasswordInput.ConfirmPassword" class="form-control rounded-end border-secondary border-opacity-25" type="password" placeholder="Nhập lại mật khẩu mới" />
+                                    </div>
+                                    <span asp-validation-for="PasswordInput.ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-custom-primary px-4 rounded-pill">
+                                    <i class="bi bi-shield-check me-1"></i> Thay đổi mật khẩu
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <!-- Script to keep active tab on page reload/form submit -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Restore active tab from localStorage if exists
+            var activeTab = localStorage.getItem('profileActiveTab');
+            if (activeTab) {
+                var tabTrigger = document.querySelector('#profileTabs button[id="' + activeTab + '"]');
+                if (tabTrigger) {
+                    var tab = new bootstrap.Tab(tabTrigger);
+                    tab.show();
+                }
+            }
+
+            // Save active tab to localStorage on click
+            var tabElList = [].slice.call(document.querySelectorAll('#profileTabs button[data-bs-toggle="tab"]'))
+            tabElList.forEach(function(tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function(event) {
+                    localStorage.setItem('profileActiveTab', event.target.id);
+                });
+            });
+        });
+    </script>
+    
+    <!-- Adding visual border behavior for active tab -->
+    <style>
+        #profileTabs .nav-link {
+            color: #64748b;
+            border-bottom: 2px solid transparent !important;
+            transition: all 0.2s ease;
+        }
+        #profileTabs .nav-link:hover {
+            color: #1e293b;
+        }
+        #profileTabs .nav-link.active {
+            color: #2563eb !important;
+            border-bottom: 2px solid #2563eb !important;
+        }
+    </style>
+}

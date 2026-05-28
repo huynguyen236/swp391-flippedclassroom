@@ -38,4 +38,6 @@ public partial class Class
     public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
 
     public virtual ICollection<QaThread> QaThreads { get; set; } = new List<QaThread>();
+
+    public virtual ICollection<ClassSchedule> ClassSchedules { get; set; } = new List<ClassSchedule>();
 }

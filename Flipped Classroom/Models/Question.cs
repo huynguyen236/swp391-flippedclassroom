@@ -13,9 +13,13 @@ public partial class Question
 
     public string QuestionType { get; set; } = null!;
 
+    public string Category { get; set; } = null!;
+
     public string? Visibility { get; set; }
 
     public bool? IsQuestionBank { get; set; }
+
+    public bool IsDeleted { get; set; }
 
     public string? CorrectAnswer { get; set; }
 

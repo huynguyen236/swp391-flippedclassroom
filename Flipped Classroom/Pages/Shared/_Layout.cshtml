@@ -2,10 +2,11 @@
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated == true;
     var isAdmin = User.IsInRole("Admin");
-    var isAdminPage = Context.Request.Path.StartsWithSegments("/Admin") || (ViewData["IsAdminPage"] is bool isAdminPageVal && isAdminPageVal);
+    var showSidebar = isAuthenticated && (ViewData["HideSidebar"] is not bool hideSidebar || !hideSidebar);
 
     string displayName = string.Empty;
     string displayInitial = "?";
+    string userRole = string.Empty;
 
     if (isAuthenticated)
     {
@@ -13,7 +14,18 @@
         displayInitial = !string.IsNullOrWhiteSpace(displayName)
             ? displayName.Substring(0, 1).ToUpper()
             : "?";
+        userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
     }
+
+    var displayRole = userRole switch
+    {
+        "Admin" => "Quản trị viên",
+        "Manager" => "Quản lý",
+        "Teacher" => "Giảng viên",
+        "Student" => "Học viên",
+        "Support" => "Hỗ trợ",
+        _ => userRole
+    };
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -24,49 +36,88 @@
     
     <!-- CSS Core & Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
-    @if (isAdminPage)
-    {
-        <!-- Bootstrap Icons -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <!-- Premium Google Font -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-       
-    }
-    else
-    {
-        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/Flipped_Classroom.styles.css" asp-append-version="true" />
-    }
+    <!-- Premium Google Fonts (Outfit & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Flipped_Classroom.styles.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    @if (isAdminPage)
+    @if (showSidebar)
     {
         <!-- Sidebar Navigation -->
         <aside class="admin-sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <a href="/Index" class="text-decoration-none">
                     <span class="sidebar-brand-text">
-                        <i class="bi bi-mortarboard-fill text-primary"></i> Nihongo Admin
+                        <i class="bi bi-mortarboard-fill text-primary"></i> Nihongo Portal
                     </span>
                 </a>
             </div>
+            
             <div class="sidebar-menu">
-                <a href="/Admin/Dashboard" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
-                    <i class="bi bi-grid-1x2-fill"></i>
-                    <span>Dashboard</span>
+                <!-- Shared Home Page -->
+                <a href="/Index" class="sidebar-link @(Context.Request.Path == "/Index" || Context.Request.Path == "/" ? "active" : "")">
+                    <i class="bi bi-house-door-fill"></i>
+                    <span>Trang chủ</span>
                 </a>
-                <a href="/Admin/Users" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Admin/Users") ? "active" : "")">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Quản lý tài khoản</span>
+
+                @if (isAdmin)
+                {
+                    <div class="sidebar-section-title">Hệ thống</div>
+                    
+                    <a href="/Admin/Dashboard" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Admin/Dashboard") ? "active" : "")">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/Admin/Users" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Admin/Users") ? "active" : "")">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Quản lý tài khoản</span>
+                    </a>
+                }
+
+                @if (User.IsInRole("Teacher") || isAdmin || User.IsInRole("Manager"))
+                {
+                    <div class="sidebar-section-title">Quản lý đào tạo</div>
+                    
+                    <a href="/Classes" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Classes") ? "active" : "")">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>Quản lý lớp học</span>
+                    </a>
+                    <a href="/Courses" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Courses") ? "active" : "")">
+                        <i class="bi bi-book-fill"></i>
+                        <span>Quản lý khóa học</span>
+                    </a>
+                }
+
+                @if (User.IsInRole("Student"))
+                {
+                    <div class="sidebar-section-title">Học tập</div>
+                    
+                    <a href="/MyClasses" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/MyClasses") ? "active" : "")">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span>Lớp học của tôi</span>
+                    </a>
+                    <a href="/Schedule" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Schedule") ? "active" : "")">
+                        <i class="bi bi-calendar-event-fill"></i>
+                        <span>Lịch học</span>
+                    </a>
+                }
+
+                <div class="sidebar-section-title">Cá nhân</div>
+                <a asp-page="/Users/Profile" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Users/Profile") ? "active" : "")">
+                    <i class="bi bi-person-fill-gear"></i>
+                    <span>Hồ sơ cá nhân</span>
                 </a>
             </div>
+
             <div class="sidebar-footer">
                 <div class="d-flex align-items-center gap-2">
                     <div class="navbar-user-avatar bg-primary text-white">
@@ -74,7 +125,7 @@
                     </div>
                     <div class="overflow-hidden">
                         <div class="fw-semibold text-white text-truncate" style="font-size: 0.875rem;">@displayName</div>
-                        <div class="text-muted text-truncate" style="font-size: 0.75rem;">Administrator</div>
+                        <div class="text-muted text-truncate" style="font-size: 0.75rem;">@displayRole</div>
                     </div>
                 </div>
             </div>
@@ -88,12 +139,12 @@
                     <button class="sidebar-toggle-btn" id="sidebarToggle">
                         <i class="bi bi-list"></i>
                     </button>
-                    <h5 class="mb-0 fw-bold d-none d-sm-block text-dark">Hệ thống Quản trị Flipped Classroom</h5>
+                    <h5 class="mb-0 fw-bold d-none d-sm-block text-dark">Hệ thống Flipped Classroom</h5>
                 </div>
                 
                 <div class="d-flex align-items-center gap-3">
                     <span class="text-muted d-none d-md-inline" style="font-size: 0.875rem;">
-                        Vai trò: <strong class="text-primary">Admin</strong>
+                        Vai trò: <strong class="text-primary">@displayRole</strong>
                     </span>
                     <form asp-page="/Authentication/Logout" method="post" class="d-inline">
                         <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 d-flex align-items-center gap-1">
@@ -104,14 +155,14 @@
             </header>
 
             <!-- Main Content -->
-            <main class="admin-content">
+            <main class="@(ViewData["IsFullWidth"] is bool isFullWidth && isFullWidth ? "" : "admin-content")">
                 @RenderBody()
             </main>
         </div>
     }
     else
     {
-        <!-- Standard Layout -->
+        <!-- Standard Layout (No sidebar, used for Landing Page / Auth / Public) -->
         <header>
             <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom navbar-clean">
                 <div class="container">
@@ -141,19 +192,16 @@
                                         <span class="fw-medium d-none d-md-inline">@displayName</span>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="userDropdown">
-                                        @if (isAdmin)
-                                        {
-                                            <li>
-                                                <a class="dropdown-item py-2 d-flex align-items-center gap-2"
-                                                   href="/Admin/Dashboard">
-                                                    🛠️ Admin Panel
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider my-1" /></li>
-                                        }
                                         <li>
                                             <a class="dropdown-item py-2 d-flex align-items-center gap-2"
-                                               asp-page="/Profile/Index">
+                                               href="/Index">
+                                                🖥️ Portal Dashboard
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider my-1" /></li>
+                                        <li>
+                                            <a class="dropdown-item py-2 d-flex align-items-center gap-2"
+                                               asp-page="/Users/Profile">
                                                 👤 My Profile
                                             </a>
                                         </li>
@@ -211,7 +259,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    @if (isAdminPage)
+    @if (showSidebar)
     {
         <script>
             // Sidebar Toggle Script for Mobile
