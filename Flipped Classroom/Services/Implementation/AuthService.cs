@@ -4,18 +4,22 @@ using Flipped_Classroom.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using System.Net.Mail;
-using System.Net;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Services;
+using Google.Apis.Auth.OAuth2.Flows;
 
 namespace Flipped_Classroom.Services.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly FlippedClassroomContext _db;
+        private readonly Swp391NihongoContext _db;
         private readonly IConfiguration _config;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(FlippedClassroomContext db, IConfiguration config, ILogger<AuthService> logger)
+        public AuthService(Swp391NihongoContext db, IConfiguration config, ILogger<AuthService> logger)
         {
             _db = db;
             _config = config;
@@ -74,7 +78,7 @@ namespace Flipped_Classroom.Services.Implementations
             try
             {
                 var user = await _db.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
-                
+
                 if (user == null)
                 {
                     _logger.LogWarning("Token không hợp lệ");
@@ -108,8 +112,7 @@ namespace Flipped_Classroom.Services.Implementations
                 if (user == null)
                     return false;
 
-                // Lưu password mới không hash
-                user.Password = newPassword;
+                user.PasswordHash = HashPassword(newPassword);
                 user.PasswordResetToken = null;
                 user.PasswordResetTokenExpiry = null;
 
@@ -136,56 +139,157 @@ namespace Flipped_Classroom.Services.Implementations
             }
         }
 
-        /// <summary>
-        /// Gửi email reset password (cần cấu hình SMTP)
-        /// </summary>
-        public async Task<bool> SendResetEmailAsync(string email, string resetToken)
+        public async Task<(bool Success, string? ErrorMessage)> RegisterAsync(
+            string firstName,
+            string lastName,
+            string email,
+            string username,
+            string password)
         {
             try
             {
-                // Lấy cấu hình SMTP từ appsettings.json
-                var smtpHost = _config["EmailSettings:SmtpHost"];
-                var smtpPort = int.Parse(_config["EmailSettings:SmtpPort"] ?? "587");
-                var smtpUser = _config["EmailSettings:SmtpUser"];
-                var smtpPassword = _config["EmailSettings:SmtpPassword"];
-                var fromEmail = _config["EmailSettings:FromEmail"];
-                var appUrl = _config["AppSettings:AppUrl"] ?? "http://localhost:5036";
-
-                if (string.IsNullOrEmpty(smtpHost))
+                var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+                if (existingUser != null)
                 {
-                    _logger.LogWarning("SMTP chưa cấu hình");
-                    return false;
+                    return (false, "Username is already taken.");
                 }
 
-                using (var client = new SmtpClient(smtpHost, smtpPort))
+                var user = new User
                 {
-                    client.EnableSsl = true;
-                    client.Credentials = new NetworkCredential(smtpUser, smtpPassword);
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    Username = username,
+                    PasswordHash = HashPassword(password),
+                    Role = "Student",
+                    CreatedAt = DateTime.Now
+                };
 
-                    var resetLink = $"{appUrl}/Authentication/ResetPassword?token={Uri.EscapeDataString(resetToken)}";
-                    var message = new MailMessage(fromEmail, email)
-                    {
-                        Subject = "Đặt lại mật khẩu - Convenient Store Management",
-                        Body = $@"
-                            <h2>Đặt lại mật khẩu</h2>
-                            <p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
-                            <p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
-                            <p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
-                            <p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>
-                        ",
-                        IsBodyHtml = true
-                    };
+                _db.Users.Add(user);
+                await _db.SaveChangesAsync();
 
-                    await client.SendMailAsync(message);
-                    _logger.LogInformation("Gửi email reset password cho: {Email}", email);
-                    return true;
-                }
+                return (true, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi gửi email");
+                _logger.LogError(ex, "Lỗi đăng ký tài khoản");
+                return (false, "Có lỗi xảy ra. Vui lòng thử lại sau.");
+            }
+        }
+
+        public async Task<(User? User, string? ErrorMessage)> AuthenticateAsync(string username, string password)
+        { 
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+            {
+                return (null, "Wrong Username or Password.");
+            }
+
+            if (user.PasswordHash == null)
+            {
+                return (null, "This account uses Google Sign-In. Please use the \"Continue with Google\" button.");
+            }
+
+            if (HashPassword(password) != user.PasswordHash)
+            {
+                return (null, "Wrong Username or Password.");
+            }
+
+            return (user, null);
+        }
+
+    
+        public async Task<bool> SendResetEmailAsync(string email, string resetLink)
+        {
+            try
+            {
+                var fromEmail = _config["EmailSettings:GmailApi:FromEmail"];
+
+                if (string.IsNullOrWhiteSpace(fromEmail))
+                {
+                    _logger.LogWarning("Gmail API chưa cấu hình");
+                    return false;
+                }
+
+                var subject = "NihongoFlipedClassroom";
+                var bodyHtml = $@"
+<h2>Đặt lại mật khẩu</h2>
+<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
+<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
+<p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
+<p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>";
+
+                var gmailService = await CreateGmailServiceAsync(fromEmail);
+                var raw = BuildRawMimeMessage(fromEmail, email, subject, bodyHtml);
+                var message = new Message { Raw = raw };
+
+                await gmailService.Users.Messages.Send(message, "me").ExecuteAsync();
+                _logger.LogInformation("Gửi email reset password cho: {Email}", email);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi gửi email bằng Gmail API");
                 return false;
             }
+        }
+
+        private async Task<GmailService> CreateGmailServiceAsync(string userEmail)
+        {
+            var clientId = _config["EmailSettings:GmailApi:ClientId"];
+            var clientSecret = _config["EmailSettings:GmailApi:ClientSecret"];
+            var refreshToken = _config["EmailSettings:GmailApi:RefreshToken"];
+
+            if (string.IsNullOrWhiteSpace(clientId) ||
+                string.IsNullOrWhiteSpace(clientSecret) ||
+                string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new InvalidOperationException("Thiếu cấu hình Gmail API (ClientId/ClientSecret/RefreshToken).");
+            }
+
+            var token = new TokenResponse { RefreshToken = refreshToken };
+            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = new ClientSecrets
+                {
+                    ClientId = clientId,
+                    ClientSecret = clientSecret
+                },
+                Scopes = new[] { GmailService.Scope.GmailSend }
+            });
+
+            var credential = new UserCredential(flow, userEmail, token);
+            await credential.RefreshTokenAsync(CancellationToken.None);
+
+            return new GmailService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "FlippedClassroom"
+            });
+        }
+
+        private static string BuildRawMimeMessage(string from, string to, string subject, string htmlBody)
+        {
+            var mime = new StringBuilder()
+                .AppendLine($"From: {from}")
+                .AppendLine($"To: {to}")
+                .AppendLine($"Subject: {subject}")
+                .AppendLine("MIME-Version: 1.0")
+                .AppendLine("Content-Type: text/html; charset=utf-8")
+                .AppendLine()
+                .AppendLine(htmlBody)
+                .ToString();
+
+            var bytes = Encoding.UTF8.GetBytes(mime);
+            return Base64UrlEncode(bytes);
+        }
+
+        private static string Base64UrlEncode(byte[] input)
+        {
+            return Convert.ToBase64String(input)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .Replace("=", "");
         }
     }
 }

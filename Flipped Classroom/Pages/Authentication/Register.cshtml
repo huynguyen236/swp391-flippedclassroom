@@ -5,20 +5,26 @@
     ViewData["IsFullWidth"] = true;
 }
 
+
 <div class="auth-wrapper">
     <div class="auth-card" style="max-width: 500px;">
         <div class="auth-header">
             <h1 class="auth-title">Create an Account</h1>
-            <p class="auth-subtitle">Join us to manage tasks efficiently</p>
         </div>
         
         <form method="post" class="auth-form">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3 text-center"></div>
             
             <div class="mb-3">
-                <label asp-for="Input.FullName" class="form-label">Full Name</label>
-                <input asp-for="Input.FullName" class="form-control" placeholder="Enter your full name" />
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                <label asp-for="Input.FirstName" class="form-label">First Name</label>
+                <input asp-for="Input.FirstName" class="form-control" placeholder="Enter your first name" />
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.LastName" class="form-label">Last Name</label>
+                <input asp-for="Input.LastName" class="form-control" placeholder="Enter your last name" />
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
 
             <div class="mb-3">

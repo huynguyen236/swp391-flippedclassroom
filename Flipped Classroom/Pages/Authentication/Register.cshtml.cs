@@ -1,19 +1,17 @@
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Flipped_Classroom.Pages.Authentication
 {
     public class RegisterModel : PageModel
     {
-        private readonly FlippedClassroomContext _context;
+        private readonly IAuthService _authService;
 
-        public RegisterModel(FlippedClassroomContext context)
+        public RegisterModel(IAuthService authService)
         {
-            _context = context;
+            _authService = authService;
         }
 
         [BindProperty]
@@ -21,10 +19,15 @@ namespace Flipped_Classroom.Pages.Authentication
 
         public class InputModel
         {
-            [Required(ErrorMessage = "Full Name is required.")]
-            [StringLength(150, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
-            [Display(Name = "Full Name")]
-            public string FullName { get; set; } = string.Empty;
+            [Required(ErrorMessage = "First name is required.")]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+            [Display(Name = "First Name")]
+            public string FirstName { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Last name is required.")]
+            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 1)]
+            [Display(Name = "Last Name")]
+            public string LastName { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Email is required.")]
             [EmailAddress(ErrorMessage = "Invalid email format.")]
@@ -60,27 +63,26 @@ namespace Flipped_Classroom.Pages.Authentication
         {
             if (ModelState.IsValid)
             {
-                // Check if username already exists
-                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == Input.Username);
-                if (existingUser != null)
+                var (success, errorMessage) = await _authService.RegisterAsync(
+                    Input.FirstName,
+                    Input.LastName,
+                    Input.Email,
+                    Input.Username,
+                    Input.Password);
+
+                if (!success)
                 {
-                    ModelState.AddModelError("Input.Username", "Username is already taken.");
+                    if (errorMessage == "Username is already taken.")
+                    {
+                        ModelState.AddModelError("Input.Username", errorMessage);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        ModelState.AddModelError(string.Empty, errorMessage);
+                    }
+
                     return Page();
                 }
-
-                // Create new user
-                var user = new User
-                {
-                    FullName = Input.FullName,
-                    Email = Input.Email,
-                    Username = Input.Username,
-                    Password = Input.Password, // Simple insert as requested. In production, use hashed passwords.
-                    Role = "Student", // Default role
-                    CreatedAt = DateTime.Now
-                };
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
 
                 // Redirect to login with a success message (optional: use TempData)
                 TempData["SuccessMessage"] = "Registration successful! You can now log in.";

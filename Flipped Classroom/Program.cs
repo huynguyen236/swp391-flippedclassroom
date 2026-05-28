@@ -1,4 +1,5 @@
 using Flipped_Classroom.Data;
+using Flipped_Classroom.Services.Implementation;
 using Flipped_Classroom.Services.Implementations;
 using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,10 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddDbContext<FlippedClassroomContext>(options =>
+builder.Services.AddDbContext<Swp391NihongoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddAuthentication(options =>
 {
     // Cookie là scheme chính — mọi request authenticated đều dùng cookie
@@ -30,17 +32,17 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
 
-    // Middleware tự xử lý /signin-google, sau đó redirect về RedirectUri
-    // mà ta truyền vào lúc Challenge() — là /Authentication/GoogleCallback
+    
     options.CallbackPath = "/signin-google";
+
+    options.AccessType = "offline"; // Quan trọng: Để lấy Refresh Token
+    options.Scope.Add("https://www.googleapis.com/auth/gmail.send");
 
     options.Scope.Add("email");
     options.Scope.Add("profile");
     options.SaveTokens = true;
 
-    // Bắt lỗi cancel/deny từ Google trước khi middleware throw exception.
-    // Khi user bấm Cancel, Google redirect về /signin-google?error=access_denied
-    // — OnRemoteFailure intercept và redirect về Login thay vì crash.
+  
     options.Events.OnRemoteFailure = context =>
     {
         context.Response.Redirect("/Authentication/Login?cancelled=true");
@@ -48,6 +50,9 @@ builder.Services.AddAuthentication(options =>
         return Task.CompletedTask;
     };
 });
+
+
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 builder.Services.AddAuthorization();
 var app = builder.Build();
@@ -59,6 +64,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

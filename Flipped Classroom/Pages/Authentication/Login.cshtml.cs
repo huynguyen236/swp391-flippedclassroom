@@ -1,21 +1,21 @@
-using Flipped_Classroom.Data;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Authentication
 {
     public class LoginModel : PageModel
     {
-        private readonly FlippedClassroomContext _context;
+        private readonly IAuthService _authService;
 
-        public LoginModel(FlippedClassroomContext context)
+        public LoginModel(IAuthService authService)
         {
-            _context = context;
+            _authService = authService;
         }
 
         [BindProperty]
@@ -53,35 +53,19 @@ namespace Flipped_Classroom.Pages.Authentication
             if (!ModelState.IsValid)
                 return Page();
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == Input.Username);
-
+            var (user, errorMessage) = await _authService.AuthenticateAsync(Input.Username, Input.Password);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                ModelState.AddModelError(string.Empty, errorMessage ?? "Invalid login attempt.");
                 return Page();
             }
-
-            // Tài khoản Google (Password = null) → không cho login bằng form
-            if (user.Password == null)
-            {
-                ModelState.AddModelError(string.Empty,
-                    "This account uses Google Sign-In. Please use the \"Continue with Google\" button.");
-                return Page();
-            }
-
-            if (user.Password != Input.Password)
-            {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return Page();
-            }
-
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name,           user.Username),
-                new Claim("FullName",                user.FullName),
-                new Claim(ClaimTypes.Role,           user.Role)
+                new Claim("FullName",                GetFullName(user)),
+                new Claim(ClaimTypes.Role,           user.Role),
+                new Claim(ClaimTypes.Email,          user.Email ?? string.Empty)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -100,6 +84,12 @@ namespace Flipped_Classroom.Pages.Authentication
                 return Redirect(returnUrl);
 
             return RedirectToPage("/Index");
+        }
+
+        private static string GetFullName(Models.User user)
+        {
+            return string.Join(" ", new[] { user.FirstName, user.LastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
         }
     }
 }
