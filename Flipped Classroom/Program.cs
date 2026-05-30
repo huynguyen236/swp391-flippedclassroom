@@ -4,6 +4,7 @@ using Flipped_Classroom.Services.Implementations;
 using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -53,6 +54,7 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
 
 builder.Services.AddAuthorization();
 var app = builder.Build();
@@ -71,7 +73,35 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+    var isStudent = context.User.Identity?.IsAuthenticated == true && context.User.IsInRole("Student");
+    var isAllowedPath = path.StartsWithSegments("/Quizzes/DailyReview")
+        || path.StartsWithSegments("/Authentication")
+        || path.StartsWithSegments("/Users/Profile");
+
+    if (isStudent && !isAllowedPath)
+    {
+        var userIdValue = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (int.TryParse(userIdValue, out var studentId))
+        {
+            using var scope = context.RequestServices.CreateScope();
+            var quizService = scope.ServiceProvider.GetRequiredService<IQuizService>();
+
+            if (await quizService.IsDailyReviewRequiredAsync(studentId))
+            {
+                context.Response.Redirect("/Quizzes/DailyReview");
+                return;
+            }
+        }
+    }
+
+    await next();
+});
 
 app.MapRazorPages();
 

@@ -4,6 +4,7 @@ using Flipped_Classroom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    partial class Swp391NihongoContextModelSnapshot : ModelSnapshot
+    [Migration("20260530053827_AddQuizAnswers")]
+    partial class AddQuizAnswers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,43 +190,6 @@ namespace Flipped_Classroom.Migrations
                     b.HasIndex("ClassId");
 
                     b.ToTable("ClassSchedule");
-                });
-
-            modelBuilder.Entity("Flipped_Classroom.Models.DailyReviewLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<int>("CorrectCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MasteredCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("ReviewDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("ReviewedCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PK_DailyReviewLogs");
-
-                    b.HasIndex(new[] { "StudentId", "ReviewDate" }, "UQ_DailyReviewLog_Student_Date")
-                        .IsUnique();
-
-                    b.ToTable("DailyReviewLogs");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.FeedbackComment", b =>
@@ -1143,17 +1109,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Class");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.DailyReviewLog", b =>
-                {
-                    b.HasOne("Flipped_Classroom.Models.User", "Student")
-                        .WithMany("DailyReviewLogs")
-                        .HasForeignKey("StudentId")
-                        .IsRequired()
-                        .HasConstraintName("FK_DailyReviewLog_Student");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.FeedbackComment", b =>
                 {
                     b.HasOne("Flipped_Classroom.Models.User", "Reviewer")
@@ -1591,8 +1546,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("ClassMembers");
 
                     b.Navigation("Classes");
-
-                    b.Navigation("DailyReviewLogs");
 
                     b.Navigation("FeedbackComments");
 

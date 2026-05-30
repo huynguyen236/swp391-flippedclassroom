@@ -1,0 +1,132 @@
+@page "{questionId:int}"
+@model Flipped_Classroom.Pages.Quizzes.MistakeDetailModel
+@{
+    ViewData["Title"] = "Chi tiết câu sai";
+    var detail = Model.Detail!;
+    var isMcq = string.Equals(detail.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase);
+}
+
+<div class="mb-4">
+    <a asp-page="/Quizzes/MistakeStats" asp-route-classId="@Model.ReturnClassId"
+       class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 small fw-medium">
+        <i class="bi bi-arrow-left"></i> Quay lại thống kê
+    </a>
+    <h2 class="fw-bold mt-2 text-dark">Chi Tiết Câu Hỏi #@detail.QuestionId</h2>
+    <p class="text-muted mb-0">@detail.ClassName — @detail.NodeTitle</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-custom p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                <div>
+                    <span class="badge bg-info bg-opacity-10 text-info me-1">@detail.Category</span>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary">@detail.QuestionType</span>
+                </div>
+                <span class="badge bg-danger bg-opacity-10 text-danger">
+                    @detail.WrongStudentCount/@detail.ClassStudentCount học viên sai (@detail.WrongStudentPercent%)
+                </span>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-3">Nội dung câu hỏi</h5>
+            <p class="fs-5 mb-4">@detail.QuestionContent</p>
+
+            @if (isMcq && detail.Options.Any())
+            {
+                <h6 class="fw-semibold text-dark mb-3">Các đáp án</h6>
+                <div class="d-flex flex-column gap-2">
+                    @{
+                        var optionIndex = 0;
+                    }
+                    @foreach (var option in detail.Options)
+                    {
+                        var label = char.ConvertFromUtf32(65 + optionIndex);
+                        <div class="d-flex align-items-start gap-2 border rounded-3 p-3 @(option.IsCorrect ? "border-success bg-success bg-opacity-10" : "bg-light")">
+                            <span class="fw-bold text-muted">@label.</span>
+                            <div class="flex-grow-1">
+                                <span>@option.OptionContent</span>
+                                @if (option.IsCorrect)
+                                {
+                                    <span class="badge bg-success ms-2">Đáp án đúng</span>
+                                }
+                            </div>
+                        </div>
+                        optionIndex++;
+                    }
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(detail.CorrectAnswer))
+            {
+                <h6 class="fw-semibold text-dark mb-2">Đáp án đúng</h6>
+                <p class="mb-0 text-success fw-medium">@detail.CorrectAnswer</p>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(detail.Explanation))
+            {
+                <hr class="my-4 text-muted" />
+                <h6 class="fw-semibold text-dark mb-2">Giải thích</h6>
+                <p class="text-muted mb-0">@detail.Explanation</p>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-custom p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3">Tổng quan</h6>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Học viên sai</span>
+                    <span class="fw-semibold">@detail.WrongStudentCount / @detail.ClassStudentCount</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Tổng lượt sai</span>
+                    <span class="fw-semibold text-danger">@detail.TotalMistakeCount</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Tỷ lệ sai</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger">@detail.WrongStudentPercent%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom overflow-hidden">
+            <div class="px-4 py-3 border-bottom bg-light">
+                <h6 class="fw-bold text-dark mb-0">Học viên làm sai</h6>
+            </div>
+            @if (detail.Students.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="table-light text-muted small">
+                            <tr>
+                                <th class="ps-4">Học viên</th>
+                                <th class="text-center">Lượt sai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in detail.Students)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold text-dark">@student.StudentName</div>
+                                        @if (!string.IsNullOrWhiteSpace(student.MistakeType))
+                                        {
+                                            <div class="text-muted small">@student.MistakeType</div>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">@student.ErrorCount</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted small">Chưa có học viên nào ghi nhận lỗi sai.</div>
+            }
+        </div>
+    </div>
+</div>

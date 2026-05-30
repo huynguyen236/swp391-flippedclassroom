@@ -11,6 +11,12 @@ public partial class Quiz
 
     public string Title { get; set; } = null!;
 
+    public int? DurationMinutes { get; set; }
+
+    public string? Status { get; set; }
+
+    public DateTime? PublishedAt { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public virtual Node Node { get; set; } = null!;
