@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Flipped_Classroom.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +17,8 @@ public partial class Swp391NihongoContext : DbContext
     }
 
     public virtual DbSet<Assignment> Assignments { get; set; }
+
+    public virtual DbSet<Curriculum> Curriculums { get; set; }
 
     public virtual DbSet<Class> Classes { get; set; }
 
@@ -138,6 +140,22 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Member_User");
+        });
+
+        modelBuilder.Entity<Curriculum>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Curriculums");
+
+            entity.Property(e => e.CurriculumName).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Manager).WithMany(p => p.Curriculums)
+                .HasForeignKey(d => d.ManagerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Curriculum_Manager");
         });
 
         modelBuilder.Entity<FeedbackComment>(entity =>
@@ -268,8 +286,15 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.HasOne(d => d.Class).WithMany(p => p.Nodes)
                 .HasForeignKey(d => d.ClassId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Node_Class");
+
+            entity.HasOne(d => d.Curriculum).WithMany(p => p.Nodes)
+                .HasForeignKey(d => d.CurriculumId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Node_Curriculum");
 
             entity.HasOne(d => d.ParentNode).WithMany(p => p.InverseParentNode)
                 .HasForeignKey(d => d.ParentNodeId)
