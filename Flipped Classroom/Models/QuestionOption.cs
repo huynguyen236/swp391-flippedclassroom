@@ -14,4 +14,6 @@ public partial class QuestionOption
     public bool IsCorrect { get; set; }
 
     public virtual Question Question { get; set; } = null!;
+
+    public virtual ICollection<QuizAnswer> QuizAnswers { get; set; } = new List<QuizAnswer>();
 }
