@@ -84,7 +84,7 @@
                     <th>Vai trò</th>
                     <th>Trạng thái</th>
                     <th>Ngày tạo</th>
-                    <th class="pe-4 text-end" style="width: 180px;">Thao tác</th>
+                    <th class="pe-4 text-end" style="width: 440px;text-align:center">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -137,28 +137,36 @@
                             <td style="font-size: 0.9rem;" class="text-muted">
                                 @(user.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")
                             </td>
-                            <td class="pe-4 text-end">
-                                <form asp-page="/Admin/Users/ToggleStatus" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@user.Id" />
-                                    <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
-                                    <input type="hidden" name="roleFilter" value="@Model.RoleFilter" />
-                                    <input type="hidden" name="activeFilter" value="@Model.ActiveFilter" />
-                                    <input type="hidden" name="pageIndex" value="@Model.PageIndex" />
+                            <td class="pe-4">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <a href="/Admin/Users/Update/@user.Id" class="btn btn-sm btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center gap-1" style="width: 135px;" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil-square"></i> Cập nhật
+                                    </a>
+                                    <form asp-page="/Admin/Users/ToggleStatus" method="post" class="m-0">
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                                        <input type="hidden" name="roleFilter" value="@Model.RoleFilter" />
+                                        <input type="hidden" name="activeFilter" value="@Model.ActiveFilter" />
+                                        <input type="hidden" name="pageIndex" value="@Model.PageIndex" />
 
-                                    @if (user.IsActive == true)
-                                    {
-                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill d-inline-flex align-items-center gap-1"
-                                                onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa tài khoản @user.Username?')">
-                                            <i class="bi bi-person-x-fill"></i> Vô hiệu hóa
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="btn btn-sm btn-outline-success px-3 rounded-pill d-inline-flex align-items-center gap-1">
-                                            <i class="bi bi-person-check-fill"></i> Kích hoạt
-                                        </button>
-                                    }
-                                </form>
+                                        @if (user.IsActive == true)
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center justify-content-center gap-1" style="width: 135px;"
+                                                    onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa tài khoản @user.Username?')">
+                                                <i class="bi bi-person-x-fill"></i> Vô hiệu hóa
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill d-inline-flex align-items-center justify-content-center gap-1" style="width: 135px;">
+                                                <i class="bi bi-person-check-fill"></i> Kích hoạt
+                                            </button>
+                                        }
+                                    </form>
+                                    <a href="/Admin/Users/Delete/@user.Id" class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center justify-content-center gap-1" style="width: 135px;" title="Xóa tài khoản">
+                                        <i class="bi bi-trash3"></i> Xóa
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     }
