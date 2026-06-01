@@ -194,8 +194,6 @@ namespace Flipped_Classroom.Services.Implementations
             {
                 return (null, "Wrong Username or Password.");
             }
-
-            // Kiểm tra tài khoản có bị vô hiệu hóa không
             if (user.IsActive == false)
             {
                 return (null, "Your account has been deactivated. Please contact the administrator.");
