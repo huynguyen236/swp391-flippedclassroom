@@ -159,6 +159,7 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.ManagerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Curriculum_Manager");
+        });
 
         modelBuilder.Entity<DailyReviewLog>(entity =>
         {

@@ -59,7 +59,7 @@ namespace Flipped_Classroom.Services.Implementation
                 .Include(q => q.Node)
                     .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
-                .Where(q => q.Status == PublishedStatus && classIds.Contains(q.Node.ClassId))
+                .Where(q => q.Status == PublishedStatus && q.Node.ClassId != null && classIds.Contains(q.Node.ClassId.Value))
                 .OrderByDescending(q => q.PublishedAt)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
@@ -79,7 +79,7 @@ namespace Flipped_Classroom.Services.Implementation
                         .ThenInclude(question => question.QuestionOptions)
                 .FirstOrDefaultAsync(q => q.Id == quizId
                     && q.Status == PublishedStatus
-                    && classIds.Contains(q.Node.ClassId));
+                    && q.Node.ClassId != null && classIds.Contains(q.Node.ClassId.Value));
         }
 
         public async Task<int> CountAvailableQuestionsAsync(int nodeId, string category)
@@ -503,7 +503,7 @@ namespace Flipped_Classroom.Services.Implementation
 
             return rows.Select(row =>
             {
-                classStudentCounts.TryGetValue(row.ClassId, out var classStudentCount);
+                classStudentCounts.TryGetValue(row.ClassId ?? 0, out var classStudentCount);
                 var percent = classStudentCount == 0
                     ? 0
                     : Math.Round(row.WrongStudentCount * 100m / classStudentCount, 2);
@@ -566,7 +566,7 @@ namespace Flipped_Classroom.Services.Implementation
                 Explanation = question.Explanation,
                 NodeTitle = question.Node.Title,
                 ClassName = question.Node.Class.ClassName,
-                ClassId = question.Node.ClassId,
+                ClassId = question.Node.ClassId ?? 0,
                 WrongStudentCount = wrongStudentCount,
                 TotalMistakeCount = totalMistakeCount,
                 ClassStudentCount = classStudentCount,
