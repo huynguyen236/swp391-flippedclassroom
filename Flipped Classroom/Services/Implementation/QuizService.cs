@@ -2,6 +2,7 @@ using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Flipped_Classroom.Services.Implementation
 {
@@ -59,7 +60,7 @@ namespace Flipped_Classroom.Services.Implementation
                 .Include(q => q.Node)
                     .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
-                .Where(q => q.Status == PublishedStatus && q.Node.ClassId != null && classIds.Contains(q.Node.ClassId.Value))
+                .Where(q => q.Status == PublishedStatus && classIds.Contains(q.Node.ClassId ?? 0))
                 .OrderByDescending(q => q.PublishedAt)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
@@ -79,7 +80,7 @@ namespace Flipped_Classroom.Services.Implementation
                         .ThenInclude(question => question.QuestionOptions)
                 .FirstOrDefaultAsync(q => q.Id == quizId
                     && q.Status == PublishedStatus
-                    && q.Node.ClassId != null && classIds.Contains(q.Node.ClassId.Value));
+                    && classIds.Contains(q.Node.ClassId ?? 0));
         }
 
         public async Task<int> CountAvailableQuestionsAsync(int nodeId, string category)
@@ -566,7 +567,7 @@ namespace Flipped_Classroom.Services.Implementation
                 Explanation = question.Explanation,
                 NodeTitle = question.Node.Title,
                 ClassName = question.Node.Class.ClassName,
-                ClassId = question.Node.ClassId ?? 0,
+                ClassId = (int)question.Node.ClassId,
                 WrongStudentCount = wrongStudentCount,
                 TotalMistakeCount = totalMistakeCount,
                 ClassStudentCount = classStudentCount,

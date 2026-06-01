@@ -1652,6 +1652,7 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Classes");
 
                     b.Navigation("Curriculums");
+
                     b.Navigation("DailyReviewLogs");
 
                     b.Navigation("FeedbackComments");

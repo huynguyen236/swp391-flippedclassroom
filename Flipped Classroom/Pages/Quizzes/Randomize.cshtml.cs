@@ -76,7 +76,7 @@ namespace Flipped_Classroom.Pages.Quizzes
                 .Select(n => new SelectListItem
                 {
                     Value = n.Id.ToString(),
-                    Text = $"{n.Class.ClassName} - {n.Title}"
+                    Text = $"{n.Title}"
                 })
                 .ToList();
 

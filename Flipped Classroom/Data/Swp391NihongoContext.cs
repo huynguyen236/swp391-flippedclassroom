@@ -176,7 +176,22 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.StudentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DailyReviewLog_Student");
+        });
 
+        modelBuilder.Entity<Curriculum>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Curriculums");
+
+            entity.Property(e => e.CurriculumName).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Manager).WithMany(p => p.Curriculums)
+                .HasForeignKey(d => d.ManagerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Curriculum_Manager");
         });
 
         modelBuilder.Entity<FeedbackComment>(entity =>
