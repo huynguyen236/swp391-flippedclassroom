@@ -231,6 +231,10 @@
     </div>
 </div>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     
@@ -257,19 +261,5 @@
         });
     </script>
     
-    <!-- Adding visual border behavior for active tab -->
-    <style>
-        #profileTabs .nav-link {
-            color: #64748b;
-            border-bottom: 2px solid transparent !important;
-            transition: all 0.2s ease;
-        }
-        #profileTabs .nav-link:hover {
-            color: #1e293b;
-        }
-        #profileTabs .nav-link.active {
-            color: #2563eb !important;
-            border-bottom: 2px solid #2563eb !important;
-        }
-    </style>
+
 }

@@ -194,6 +194,10 @@ namespace Flipped_Classroom.Services.Implementations
             {
                 return (null, "Wrong Username or Password.");
             }
+            if (user.IsActive == false)
+            {
+                return (null, "Your account has been deactivated. Please contact the administrator.");
+            }
 
             return (user, null);
         }

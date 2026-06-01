@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Flipped_Classroom.Models;
@@ -15,7 +15,6 @@ public partial class Material
 
     public string Url { get; set; } = null!;
 
-    public long? FileSize { get; set; }
 
     public int? Duration { get; set; }
 

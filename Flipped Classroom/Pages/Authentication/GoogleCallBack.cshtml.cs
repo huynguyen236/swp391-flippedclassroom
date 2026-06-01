@@ -98,6 +98,16 @@ namespace Flipped_Classroom.Pages.Authentication
                 }
             }
 
+            // ── Kiểm tra tài khoản có bị vô hiệu hóa không ──────────────────────
+            if (user.IsActive == false)
+            {
+                _logger.LogWarning("GoogleCallback: User {Email} is deactivated.", email);
+                // Sign out Google scheme để clear temp cookie
+                await HttpContext.SignOutAsync();
+                TempData["ErrorMessage"] = "Your account has been deactivated. Please contact the administrator.";
+                return RedirectToPage("/Authentication/Login");
+            }
+
             // ── Đăng nhập bằng Cookie scheme chính ───────────────────────────────
             var claims = new List<Claim>
             {
