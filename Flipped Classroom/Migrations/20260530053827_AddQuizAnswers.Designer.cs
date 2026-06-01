@@ -4,6 +4,7 @@ using Flipped_Classroom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    partial class Swp391NihongoContextModelSnapshot : ModelSnapshot
+    [Migration("20260530053827_AddQuizAnswers")]
+    partial class AddQuizAnswers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,63 +192,6 @@ namespace Flipped_Classroom.Migrations
                     b.ToTable("ClassSchedule");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.Curriculum", b =>
-            modelBuilder.Entity("Flipped_Classroom.Models.DailyReviewLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                    b.Property<DateTime?>("CompletedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("CurriculumName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("ManagerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Curriculums");
-
-                    b.HasIndex("ManagerId");
-
-                    b.ToTable("Curriculums");
-                    b.Property<int>("CorrectCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MasteredCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("ReviewDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("ReviewedCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id")
-                        .HasName("PK_DailyReviewLogs");
-
-                    b.HasIndex(new[] { "StudentId", "ReviewDate" }, "UQ_DailyReviewLog_Student_Date")
-                        .IsUnique();
-
-                    b.ToTable("DailyReviewLogs");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.FeedbackComment", b =>
                 {
                     b.Property<int>("Id")
@@ -414,6 +360,9 @@ namespace Flipped_Classroom.Migrations
                     b.Property<int?>("Duration")
                         .HasColumnType("int");
 
+                    b.Property<long?>("FileSize")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("MaterialType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -477,10 +426,7 @@ namespace Flipped_Classroom.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClassId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CurriculumId")
+                    b.Property<int>("ClassId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -522,8 +468,6 @@ namespace Flipped_Classroom.Migrations
                         .HasName("PK__Nodes__3214EC07510306F0");
 
                     b.HasIndex("ClassId");
-
-                    b.HasIndex("CurriculumId");
 
                     b.HasIndex("ParentNodeId");
 
@@ -1165,26 +1109,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Class");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.Curriculum", b =>
-                {
-                    b.HasOne("Flipped_Classroom.Models.User", "Manager")
-                        .WithMany("Curriculums")
-                        .HasForeignKey("ManagerId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Curriculum_Manager");
-
-                    b.Navigation("Manager");
-            modelBuilder.Entity("Flipped_Classroom.Models.DailyReviewLog", b =>
-                {
-                    b.HasOne("Flipped_Classroom.Models.User", "Student")
-                        .WithMany("DailyReviewLogs")
-                        .HasForeignKey("StudentId")
-                        .IsRequired()
-                        .HasConstraintName("FK_DailyReviewLog_Student");
-
-                    b.Navigation("Student");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.FeedbackComment", b =>
                 {
                     b.HasOne("Flipped_Classroom.Models.User", "Reviewer")
@@ -1291,14 +1215,8 @@ namespace Flipped_Classroom.Migrations
                     b.HasOne("Flipped_Classroom.Models.Class", "Class")
                         .WithMany("Nodes")
                         .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired()
                         .HasConstraintName("FK_Node_Class");
-
-                    b.HasOne("Flipped_Classroom.Models.Curriculum", "Curriculum")
-                        .WithMany("Nodes")
-                        .HasForeignKey("CurriculumId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK_Node_Curriculum");
 
                     b.HasOne("Flipped_Classroom.Models.Node", "ParentNode")
                         .WithMany("InverseParentNode")
@@ -1306,8 +1224,6 @@ namespace Flipped_Classroom.Migrations
                         .HasConstraintName("FK_Node_Parent");
 
                     b.Navigation("Class");
-
-                    b.Navigation("Curriculum");
 
                     b.Navigation("ParentNode");
                 });
@@ -1551,11 +1467,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("QaThreads");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.Curriculum", b =>
-                {
-                    b.Navigation("Nodes");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.GradeCategory", b =>
                 {
                     b.Navigation("Grades");
@@ -1635,9 +1546,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("ClassMembers");
 
                     b.Navigation("Classes");
-
-                    b.Navigation("Curriculums");
-                    b.Navigation("DailyReviewLogs");
 
                     b.Navigation("FeedbackComments");
 

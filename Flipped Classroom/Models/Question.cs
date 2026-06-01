@@ -31,6 +31,8 @@ public partial class Question
 
     public virtual ICollection<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
 
+    public virtual ICollection<QuizAnswer> QuizAnswers { get; set; } = new List<QuizAnswer>();
+
     public virtual ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
 
     public virtual ICollection<StudentMistake> StudentMistakes { get; set; } = new List<StudentMistake>();
