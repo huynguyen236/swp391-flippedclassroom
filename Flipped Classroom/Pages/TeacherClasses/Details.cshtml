@@ -112,11 +112,36 @@
                                     var collapseId = $"tc-collapse-{chapter.Id}";
                                     var headingId = $"tc-heading-{chapter.Id}";
 
+                                    var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
                                     <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                                        <h2 class="accordion-header" id="@headingId">
+                                        <h2 class="accordion-header d-flex align-items-center" id="@headingId">
                                             <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
                                                 <i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title
                                                 <span class="badge bg-light text-muted rounded-pill ms-2 small">@lessons.Count bài</span>
+                                                <span class="node-lock-badge badge rounded-pill ms-2 @(chapterUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")" data-node-id="@chapter.Id">
+                                                    @if (chapterUnlocked)
+                                                    {
+                                                        <i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>
+                                                    }
+                                                </span>
+                                            </button>
+                                            <button type="button"
+                                                    class="node-lock-toggle btn btn-sm rounded-pill px-3 me-3 flex-shrink-0 @(chapterUnlocked ? "btn-outline-warning" : "btn-outline-success")"
+                                                    data-node-id="@chapter.Id"
+                                                    data-unlocked="@(chapterUnlocked ? "true" : "false")"
+                                                    title="@(chapterUnlocked ? "Khóa chương này (khóa toàn bộ bài học bên trong)" : "Mở chương này cho học sinh (mở toàn bộ bài học bên trong)")">
+                                                @if (chapterUnlocked)
+                                                {
+                                                    <i class="bi bi-lock"></i> <span class="label">Khóa</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-unlock"></i> <span class="label">Mở</span>
+                                                }
                                             </button>
                                         </h2>
                                         <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
@@ -130,22 +155,13 @@
                                                     <ul class="list-group list-group-flush">
                                                         @foreach (var lesson in lessons)
                                                         {
-                                                            var isUnlocked = Model.NodeUnlockStatus.TryGetValue(lesson.Id, out var u) && u;
+                                                            // Bài học (node con) kế thừa trạng thái mở/khóa từ chương (node cha).
+                                                            var isUnlocked = chapterUnlocked;
                                                             var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var c) ? c : 0;
                                                             <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
                                                                 <div class="d-flex align-items-center gap-2">
                                                                     <i class="bi bi-file-earmark-text text-primary"></i>
                                                                     <span class="fw-medium">@lesson.Title</span>
-                                                                    <span class="node-lock-badge badge rounded-pill @(isUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")" data-node-id="@lesson.Id">
-                                                                        @if (isUnlocked)
-                                                                        {
-                                                                            <i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>
-                                                                        }
-                                                                    </span>
                                                                     @if (lesson.Materials.Any())
                                                                     {
                                                                         <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
@@ -153,20 +169,6 @@
                                                                     <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
                                                                 </div>
                                                                 <div class="d-flex align-items-center gap-2">
-                                                                    <button type="button"
-                                                                            class="node-lock-toggle btn btn-sm rounded-pill px-3 @(isUnlocked ? "btn-outline-warning" : "btn-outline-success")"
-                                                                            data-node-id="@lesson.Id"
-                                                                            data-unlocked="@(isUnlocked ? "true" : "false")"
-                                                                            title="@(isUnlocked ? "Khóa bài học này" : "Mở bài học này cho học sinh")">
-                                                                        @if (isUnlocked)
-                                                                        {
-                                                                            <i class="bi bi-lock"></i> <span class="label">Khóa</span>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <i class="bi bi-unlock"></i> <span class="label">Mở</span>
-                                                                        }
-                                                                    </button>
                                                                     <a asp-page="/StudentClasses/Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
                                                                        class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                                                         Xem bài <i class="bi bi-eye ms-1"></i>
@@ -427,6 +429,10 @@
                 accordion.addEventListener('click', async function (e) {
                     const btn = e.target.closest('.node-lock-toggle');
                     if (!btn) return;
+
+                    // Ngăn click nút khóa/mở vô tình mở/đóng accordion của chương.
+                    e.preventDefault();
+                    e.stopPropagation();
 
                     const nodeId = btn.dataset.nodeId;
                     const originalHtml = btn.innerHTML;

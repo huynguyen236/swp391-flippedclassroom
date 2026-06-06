@@ -105,6 +105,8 @@
                                     var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
                                     var collapseId = $"lp-collapse-{chapter.Id}";
                                     var headingId = $"lp-heading-{chapter.Id}";
+                                    // Bài học (con) kế thừa trạng thái mở/khóa từ chương (cha).
+                                    var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
 
                                     <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
                                         <h2 class="accordion-header" id="@headingId">
@@ -123,7 +125,7 @@
                                                     <ul class="list-group list-group-flush">
                                                         @foreach (var lesson in lessons)
                                                         {
-                                                            var isUnlocked = Model.NodeUnlockStatus.TryGetValue(lesson.Id, out var u) && u;
+                                                            var isUnlocked = chapterUnlocked;
                                                             var isCompleted = Model.NodeCompletionStatus.TryGetValue(lesson.Id, out var c) && c;
                                                             <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4 @(isUnlocked ? "" : "bg-light text-muted")">
                                                                 <div class="d-flex align-items-center gap-2">

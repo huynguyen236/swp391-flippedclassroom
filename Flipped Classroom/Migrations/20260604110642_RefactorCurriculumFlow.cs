@@ -31,29 +31,14 @@ namespace Flipped_Classroom.Migrations
                 oldType: "int",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "CurriculumId",
-                table: "Classes",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            // CurriculumId on Classes (column, index, FK) is already created by
+            // 20260603135815_AddCurriculumIdToClass, which was merged in after this
+            // migration was authored. Skip re-creating it here to avoid duplicate column/object errors.
 
             migrationBuilder.CreateIndex(
                 name: "IX_Quizzes_ClassId",
                 table: "Quizzes",
                 column: "ClassId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Classes_CurriculumId",
-                table: "Classes",
-                column: "CurriculumId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Class_Curriculum",
-                table: "Classes",
-                column: "CurriculumId",
-                principalTable: "Curriculums",
-                principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Nodes_Classes_ClassId",
@@ -74,10 +59,6 @@ namespace Flipped_Classroom.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Class_Curriculum",
-                table: "Classes");
-
-            migrationBuilder.DropForeignKey(
                 name: "FK_Nodes_Classes_ClassId",
                 table: "Nodes");
 
@@ -89,17 +70,9 @@ namespace Flipped_Classroom.Migrations
                 name: "IX_Quizzes_ClassId",
                 table: "Quizzes");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Classes_CurriculumId",
-                table: "Classes");
-
             migrationBuilder.DropColumn(
                 name: "ClassId",
                 table: "Quizzes");
-
-            migrationBuilder.DropColumn(
-                name: "CurriculumId",
-                table: "Classes");
 
             migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
