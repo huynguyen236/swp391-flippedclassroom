@@ -98,6 +98,11 @@ namespace Flipped_Classroom.Services.Implementation
                 return FailCreate("Vui lòng chọn bài học hợp lệ.");
             }
 
+            if (request.ClassId <= 0)
+            {
+                return FailCreate("Vui lòng chọn lớp học hợp lệ.");
+            }
+
             if (string.IsNullOrWhiteSpace(normalizedTitle))
             {
                 return FailCreate("Vui lòng nhập tên bài test.");
@@ -122,6 +127,12 @@ namespace Flipped_Classroom.Services.Implementation
             if (!nodeExists)
             {
                 return FailCreate("Không tìm thấy bài học được chọn.");
+            }
+
+            var classExists = await _context.Classes.AnyAsync(c => c.Id == request.ClassId);
+            if (!classExists)
+            {
+                return FailCreate("Không tìm thấy lớp học được chọn.");
             }
 
             var availableQuestionCount = await CountAvailableQuestionsAsync(request.NodeId, normalizedCategory);
@@ -159,6 +170,7 @@ namespace Flipped_Classroom.Services.Implementation
                 var quiz = new Quiz
                 {
                     NodeId = request.NodeId,
+                    ClassId = request.ClassId,
                     Title = normalizedTitle,
                     DurationMinutes = request.DurationMinutes,
                     Status = request.PublishNow ? PublishedStatus : DraftStatus,

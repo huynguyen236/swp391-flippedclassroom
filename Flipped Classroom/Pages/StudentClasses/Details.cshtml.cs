@@ -20,19 +20,24 @@ namespace Flipped_Classroom.Pages.MyClasses
         private readonly Swp391NihongoContext _context;
         private readonly IAssignmentService _assignmentService;
         private readonly ISubmissionService _submissionService;
+        private readonly ILessonService _lessonService;
 
         public DetailsModel(
             Swp391NihongoContext context,
             IAssignmentService assignmentService,
-            ISubmissionService submissionService)
+            ISubmissionService submissionService,
+            ILessonService lessonService)
         {
             _context = context;
             _assignmentService = assignmentService;
             _submissionService = submissionService;
+            _lessonService = lessonService;
         }
 
         public Class Class { get; set; } = default!; 
         public List<StudentAssignmentDto> Assignments { get; set; } = new();
+        public Dictionary<int, bool> NodeUnlockStatus { get; set; } = new();
+        public Dictionary<int, bool> NodeCompletionStatus { get; set; } = new();
 
         [BindProperty]
         public int AssignmentId { get; set; }
@@ -115,6 +120,9 @@ namespace Flipped_Classroom.Pages.MyClasses
         private async Task<bool> LoadClassroomDataAsync(int id, int userId)
         {
             var classroom = await _context.Classes
+                .Include(c => c.Curriculum)
+                    .ThenInclude(curr => curr.Nodes)
+                        .ThenInclude(n => n.Materials)
                 .Include(c => c.Manager)
                 .Include(c => c.ClassMembers)
                     .ThenInclude(cm => cm.User)
@@ -133,6 +141,13 @@ namespace Flipped_Classroom.Pages.MyClasses
             }
 
             Class = classroom;
+
+            // Tải trạng thái khóa/mở bài học và tiến độ hoàn thành
+            NodeUnlockStatus = await _lessonService.GetNodeUnlockStatusAsync(id);
+            NodeCompletionStatus = await _context.StudentProgresses
+                .AsNoTracking()
+                .Where(p => p.ClassId == id && p.StudentId == userId && p.IsCompleted == true)
+                .ToDictionaryAsync(p => p.NodeId, p => true);
 
             // Tải danh sách bài tập của lớp
             var assignments = await _assignmentService.GetAssignmentsByClassAsync(id);

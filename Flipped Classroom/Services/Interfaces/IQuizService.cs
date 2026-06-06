@@ -42,12 +42,14 @@ namespace Flipped_Classroom.Services.Interfaces
     {
         public int NodeId { get; set; }
 
+        public int ClassId { get; set; }
+
         public string Category { get; set; } = string.Empty;
 
         public string Title { get; set; } = string.Empty;
 
         public int QuestionCount { get; set; }
-
+                
         public int DurationMinutes { get; set; }
 
         public bool PublishNow { get; set; }

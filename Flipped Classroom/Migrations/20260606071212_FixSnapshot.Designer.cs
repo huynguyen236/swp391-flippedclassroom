@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    [Migration("20260606031732_AddClassNodeStatusAndClassId")]
-    partial class AddClassNodeStatusAndClassId
+    [Migration("20260606071212_FixSnapshot")]
+    partial class FixSnapshot
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,7 +93,7 @@ namespace Flipped_Classroom.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<int?>("CurriculumId")
+                    b.Property<int>("CurriculumId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -525,7 +525,7 @@ namespace Flipped_Classroom.Migrations
                     b.Property<int?>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CurriculumId")
+                    b.Property<int>("CurriculumId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -777,6 +777,9 @@ namespace Flipped_Classroom.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -804,6 +807,8 @@ namespace Flipped_Classroom.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__Quizzes__3214EC078FCFA5F4");
+
+                    b.HasIndex("ClassId");
 
                     b.HasIndex("NodeId");
 
@@ -1184,7 +1189,7 @@ namespace Flipped_Classroom.Migrations
                     b.HasOne("Flipped_Classroom.Models.Curriculum", "Curriculum")
                         .WithMany("Classes")
                         .HasForeignKey("CurriculumId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired()
                         .HasConstraintName("FK_Class_Curriculum");
 
                     b.HasOne("Flipped_Classroom.Models.User", "Manager")
@@ -1376,14 +1381,13 @@ namespace Flipped_Classroom.Migrations
                 {
                     b.HasOne("Flipped_Classroom.Models.Class", "Class")
                         .WithMany("Nodes")
-                        .HasForeignKey("ClassId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("FK_Node_Class");
+                        .HasForeignKey("ClassId");
 
                     b.HasOne("Flipped_Classroom.Models.Curriculum", "Curriculum")
                         .WithMany("Nodes")
                         .HasForeignKey("CurriculumId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_Node_Curriculum");
 
                     b.HasOne("Flipped_Classroom.Models.Node", "ParentNode")
@@ -1476,11 +1480,19 @@ namespace Flipped_Classroom.Migrations
 
             modelBuilder.Entity("Flipped_Classroom.Models.Quiz", b =>
                 {
+                    b.HasOne("Flipped_Classroom.Models.Class", "Class")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("ClassId")
+                        .IsRequired()
+                        .HasConstraintName("FK_Quiz_Class");
+
                     b.HasOne("Flipped_Classroom.Models.Node", "Node")
                         .WithMany("Quizzes")
                         .HasForeignKey("NodeId")
                         .IsRequired()
                         .HasConstraintName("FK_Quiz_Node");
+
+                    b.Navigation("Class");
 
                     b.Navigation("Node");
                 });
@@ -1652,6 +1664,8 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Projects");
 
                     b.Navigation("QaThreads");
+
+                    b.Navigation("Quizzes");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.Curriculum", b =>

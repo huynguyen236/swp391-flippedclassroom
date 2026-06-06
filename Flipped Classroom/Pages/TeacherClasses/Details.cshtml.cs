@@ -97,8 +97,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             // Tổng số học sinh và số HS hoàn thành mỗi node
             TotalStudents = Class.ClassMembers?.Count ?? 0;
-            NodeCompletionCounts = await _context.StudentProgresses
-                .AsNoTracking()
+            NodeCompletionCounts = await _context
+                .StudentProgresses.AsNoTracking()
                 .Where(p => p.ClassId == Class.Id && p.IsCompleted == true)
                 .GroupBy(p => p.NodeId)
                 .Select(g => new { NodeId = g.Key, Count = g.Count() })
@@ -209,11 +209,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             return RedirectToPage(new { id });
         }
 
-        public async Task<IActionResult> OnPostAssignGroupAsync(
-            int id,
-            int studentId,
-            int? groupId
-        )
+        public async Task<IActionResult> OnPostAssignGroupAsync(int id, int studentId, int? groupId)
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdStr, out int userId))
@@ -475,18 +471,31 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdStr, out int userId))
             {
-                return new JsonResult(new { success = false, message = "Phiên đăng nhập đã hết hạn." }) { StatusCode = 401 };
+                return new JsonResult(
+                    new { success = false, message = "Phiên đăng nhập đã hết hạn." }
+                )
+                {
+                    StatusCode = 401,
+                };
             }
 
             var classroom = await _context.Classes.FirstOrDefaultAsync(c => c.Id == id);
             if (classroom == null)
             {
-                return new JsonResult(new { success = false, message = "Không tìm thấy lớp học." }) { StatusCode = 404 };
+                return new JsonResult(new { success = false, message = "Không tìm thấy lớp học." })
+                {
+                    StatusCode = 404,
+                };
             }
 
             if (classroom.ManagerId != userId)
             {
-                return new JsonResult(new { success = false, message = "Bạn không có quyền thao tác lớp này." }) { StatusCode = 403 };
+                return new JsonResult(
+                    new { success = false, message = "Bạn không có quyền thao tác lớp này." }
+                )
+                {
+                    StatusCode = 403,
+                };
             }
 
             await _lessonService.ToggleNodeLockAsync(id, nodeId);
