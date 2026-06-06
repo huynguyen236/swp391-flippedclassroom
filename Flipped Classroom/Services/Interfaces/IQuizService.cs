@@ -16,13 +16,20 @@ namespace Flipped_Classroom.Services.Interfaces
 
         Task<CreateRandomQuizResult> CreateRandomQuizAsync(CreateRandomQuizRequest request);
 
-        Task<SubmitQuizResult> SubmitQuizAsync(int quizId, int studentId, Dictionary<int, int> selectedOptionIds);
+        Task<SubmitQuizResult> SubmitQuizAsync(
+            int quizId,
+            int studentId,
+            Dictionary<int, int> selectedOptionIds
+        );
 
         Task<List<StudentMistake>> GetDailyReviewMistakesAsync(int studentId, int questionCount);
 
         Task<bool> IsDailyReviewRequiredAsync(int studentId);
 
-        Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(int studentId, Dictionary<int, int> selectedOptionIds);
+        Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(
+            int studentId,
+            Dictionary<int, int> selectedOptionIds
+        );
 
         Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId);
 

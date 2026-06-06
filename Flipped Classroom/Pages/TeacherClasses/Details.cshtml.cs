@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Flipped_Classroom.Pages.TeacherClasses
 {
@@ -17,18 +20,41 @@ namespace Flipped_Classroom.Pages.TeacherClasses
     public class DetailsModel : PageModel
     {
         private readonly Flipped_Classroom.Data.Swp391NihongoContext _context;
+        private readonly IAssignmentService _assignmentService;
+        private readonly ISubmissionService _submissionService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public DetailsModel(Flipped_Classroom.Data.Swp391NihongoContext context)
+        public DetailsModel(
+            Flipped_Classroom.Data.Swp391NihongoContext context,
+            IAssignmentService assignmentService,
+            ISubmissionService submissionService,
+            IWebHostEnvironment webHostEnvironment
+        )
         {
             _context = context;
+            _assignmentService = assignmentService;
+            _submissionService = submissionService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        public Class Class { get; set; } = default!; 
+        public Class Class { get; set; } = default!;
 
         public List<User> AvailableUsers { get; set; } = default!;
 
         [BindProperty]
         public List<int> SelectedStudentIds { get; set; } = new List<int>();
+
+        [BindProperty]
+        public int NumberOfGroupsToCreate { get; set; }
+
+        public List<Assignment> Assignments { get; set; } = new();
+        public Dictionary<int, List<Submission>> AssignmentSubmissions { get; set; } = new();
+
+        [BindProperty]
+        public CreateAssignmentRequest NewAssignment { get; set; } = default!;
+
+        [BindProperty]
+        public GradeSubmissionRequest GradeRequest { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -43,56 +69,46 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 return RedirectToPage("/Authentication/Login");
             }
 
-            var classroom = await _context.Classes
-                .Include(c => c.Manager)
-                .Include(c => c.ClassMembers)
-                    .ThenInclude(cm => cm.User)
-                .Include(c => c.Groups)
-                    .ThenInclude(g => g.GroupMembers)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (classroom == null)
+            var success = await LoadTeacherClassroomDataAsync(id.Value, userId);
+            if (!success)
             {
+                var classroomExists = await _context.Classes.AnyAsync(c => c.Id == id);
+                if (classroomExists)
+                {
+                    return Forbid();
+                }
                 return NotFound();
             }
-
-            // Verify teacher is the manager
-            if (classroom.ManagerId != userId)
-            {
-                return Forbid();
-            }
-
-            Class = classroom;
-
-            // Get available users who are not currently in the classroom
-            var existingMemberIds = classroom.ClassMembers.Select(cm => cm.UserId).ToList();
-            var availableUsers = await _context.Users
-                .Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
-                .OrderBy(u => u.Username)
-                .ToListAsync();
-
-            AvailableUsers = availableUsers;
-            NumberOfGroupsToCreate = classroom.Groups?.Count ?? 0;
 
             return Page();
         }
 
         public async Task<IActionResult> OnPostAddStudentsAsync(int id)
         {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
             if (SelectedStudentIds == null || !SelectedStudentIds.Any())
             {
                 return RedirectToPage(new { id = id });
             }
 
-            var classExists = await _context.Classes.AnyAsync(c => c.Id == id);
-            if (!classExists) 
+            var classExists = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!classExists)
             {
                 return NotFound();
             }
 
             foreach (var studentId in SelectedStudentIds)
             {
-                var memberExists = await _context.ClassMembers.AnyAsync(cm => cm.ClassId == id && cm.UserId == studentId);
+                var memberExists = await _context.ClassMembers.AnyAsync(cm =>
+                    cm.ClassId == id && cm.UserId == studentId
+                );
                 if (!memberExists)
                 {
                     var newMember = new ClassMember
@@ -100,7 +116,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                         ClassId = id,
                         UserId = studentId,
                         JoinedAt = DateTime.Now,
-                        IsSupportTeam = false
+                        IsSupportTeam = false,
                     };
                     _context.ClassMembers.Add(newMember);
                 }
@@ -110,15 +126,22 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             return RedirectToPage(new { id = id });
         }
 
-        [BindProperty]
-        public int NumberOfGroupsToCreate { get; set; }
-
         public async Task<IActionResult> OnPostCreateGroupsAsync(int id)
         {
-            if (NumberOfGroupsToCreate <= 0) return RedirectToPage(new { id });
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
 
-            var classExists = await _context.Classes.Include(c => c.Groups).FirstOrDefaultAsync(c => c.Id == id);
-            if (classExists == null) return NotFound();
+            if (NumberOfGroupsToCreate <= 0)
+                return RedirectToPage(new { id });
+
+            var classExists = await _context
+                .Classes.Include(c => c.Groups)
+                .FirstOrDefaultAsync(c => c.Id == id && c.ManagerId == userId);
+            if (classExists == null)
+                return NotFound();
 
             int groupsToAdd = NumberOfGroupsToCreate - classExists.Groups.Count;
 
@@ -130,7 +153,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                     {
                         ClassId = id,
                         GroupName = "temp", // Name will be updated below
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.Now,
                     };
                     classExists.Groups.Add(newGroup);
                     _context.Groups.Add(newGroup);
@@ -138,8 +161,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
             else if (groupsToAdd < 0)
             {
-                var groupsToRemove = classExists.Groups
-                    .OrderByDescending(g => g.Id)
+                var groupsToRemove = classExists
+                    .Groups.OrderByDescending(g => g.Id)
                     .Take(Math.Abs(groupsToAdd))
                     .ToList();
 
@@ -150,11 +173,12 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 _context.Groups.RemoveRange(groupsToRemove);
             }
 
-            // Standardize all group names sequentially (Nh�m 1, Nh�m 2, ...)
-            var allGroups = classExists.Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id).ToList();
+            var allGroups = classExists
+                .Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id)
+                .ToList();
             for (int i = 0; i < allGroups.Count; i++)
             {
-                allGroups[i].GroupName = $"Nh�m {i + 1}";
+                allGroups[i].GroupName = $"Nhóm {i + 1}";
             }
 
             await _context.SaveChangesAsync();
@@ -163,10 +187,28 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
         public async Task<IActionResult> OnPostAssignGroupAsync(int id, int studentId, int? groupId)
         {
-            // Remove existing group assignment for this student in this class
-            var classGroupIds = await _context.Groups.Where(g => g.ClassId == id).Select(g => g.Id).ToListAsync();
-            var existingMemberships = await _context.GroupMembers
-                .Where(gm => classGroupIds.Contains(gm.GroupId) && gm.StudentId == studentId)
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!isManager)
+            {
+                return Forbid();
+            }
+
+            var classGroupIds = await _context
+                .Groups.Where(g => g.ClassId == id)
+                .Select(g => g.Id)
+                .ToListAsync();
+            var existingMemberships = await _context
+                .GroupMembers.Where(gm =>
+                    classGroupIds.Contains(gm.GroupId) && gm.StudentId == studentId
+                )
                 .ToListAsync();
 
             if (existingMemberships.Any())
@@ -179,7 +221,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 var newMembership = new GroupMember
                 {
                     GroupId = groupId.Value,
-                    StudentId = studentId
+                    StudentId = studentId,
                 };
                 _context.GroupMembers.Add(newMembership);
             }
@@ -190,8 +232,23 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
         public async Task<IActionResult> OnPostRemoveStudentAsync(int id, int memberUserId)
         {
-            var classMember = await _context.ClassMembers
-                .FirstOrDefaultAsync(cm => cm.ClassId == id && cm.UserId == memberUserId);
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!isManager)
+            {
+                return Forbid();
+            }
+
+            var classMember = await _context.ClassMembers.FirstOrDefaultAsync(cm =>
+                cm.ClassId == id && cm.UserId == memberUserId
+            );
 
             if (classMember != null)
             {
@@ -200,6 +257,184 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
 
             return RedirectToPage(new { id = id });
+        }
+
+        public async Task<IActionResult> OnPostCreateAssignmentAsync(int id)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!isManager)
+            {
+                return Forbid();
+            }
+
+            if (NewAssignment == null || string.IsNullOrWhiteSpace(NewAssignment.Title))
+            {
+                ModelState.AddModelError(string.Empty, "Tiêu đề bài tập không được để trống.");
+                await LoadTeacherClassroomDataAsync(id, userId);
+                return Page();
+            }
+
+            var assignment = new Assignment
+            {
+                ClassId = id,
+                NodeId = NewAssignment.NodeId,
+                Title = NewAssignment.Title,
+                RequirementText = NewAssignment.RequirementText,
+                Type = NewAssignment.Type ?? "File",
+                DueDate = NewAssignment.DueDate,
+                CreatedBy = userId,
+                CreatedAt = DateTime.Now,
+            };
+
+            await _assignmentService.CreateAssignmentAsync(assignment);
+            TempData["SuccessMessage"] = "Tạo bài tập thành công!";
+
+            return RedirectToPage(new { id = id });
+        }
+
+        public async Task<IActionResult> OnPostDeleteAssignmentAsync(int id, int assignmentId)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!isManager)
+            {
+                return Forbid();
+            }
+
+            // Xóa file nộp bài liên quan để tiết kiệm dung lượng
+            var submissions = await _submissionService.GetSubmissionsByAssignmentAsync(
+                assignmentId
+            );
+            foreach (var sub in submissions)
+            {
+                if (!string.IsNullOrEmpty(sub.MediaUrl))
+                {
+                    var filePath = Path.Combine(
+                        _webHostEnvironment.WebRootPath,
+                        sub.MediaUrl.TrimStart('/')
+                    );
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+            }
+
+            await _assignmentService.DeleteAssignmentAsync(assignmentId);
+            TempData["SuccessMessage"] = "Xóa bài tập thành công!";
+
+            return RedirectToPage(new { id = id });
+        }
+
+        public async Task<IActionResult> OnPostGradeSubmissionAsync(int id)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            if (!isManager)
+            {
+                return Forbid();
+            }
+
+            if (GradeRequest == null)
+            {
+                ModelState.AddModelError(string.Empty, "Yêu cầu chấm điểm không hợp lệ.");
+                await LoadTeacherClassroomDataAsync(id, userId);
+                return Page();
+            }
+
+            if (GradeRequest.Score < 0m || GradeRequest.Score > 10m)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Điểm số phải nằm trong khoảng từ 0.0 đến 10.0."
+                );
+                await LoadTeacherClassroomDataAsync(id, userId);
+                return Page();
+            }
+
+            var success = await _submissionService.GradeSubmissionAsync(
+                GradeRequest.SubmissionId,
+                GradeRequest.Score,
+                GradeRequest.Feedback
+            );
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Không tìm thấy bài nộp.");
+                await LoadTeacherClassroomDataAsync(id, userId);
+                return Page();
+            }
+
+            TempData["SuccessMessage"] = "Chấm điểm thành công!";
+            return RedirectToPage(new { id = id });
+        }
+
+        private async Task<bool> LoadTeacherClassroomDataAsync(int id, int userId)
+        {
+            var classroom = await _context
+                .Classes.Include(c => c.Manager)
+                .Include(c => c.ClassMembers)
+                    .ThenInclude(cm => cm.User)
+                .Include(c => c.Groups)
+                    .ThenInclude(g => g.GroupMembers)
+                .Include(c => c.Nodes)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (classroom == null)
+            {
+                return false;
+            }
+
+            if (classroom.ManagerId != userId)
+            {
+                return false;
+            }
+
+            Class = classroom;
+
+            var existingMemberIds = classroom.ClassMembers.Select(cm => cm.UserId).ToList();
+            var availableUsers = await _context
+                .Users.Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
+                .OrderBy(u => u.Username)
+                .ToListAsync();
+
+            AvailableUsers = availableUsers;
+            NumberOfGroupsToCreate = classroom.Groups?.Count ?? 0;
+
+            // Nạp danh sách bài tập và bài nộp
+            Assignments = await _assignmentService.GetAssignmentsByClassAsync(id);
+            AssignmentSubmissions = new Dictionary<int, List<Submission>>();
+
+            foreach (var assign in Assignments)
+            {
+                var submissions = await _submissionService.GetSubmissionsByAssignmentAsync(
+                    assign.Id
+                );
+                AssignmentSubmissions[assign.Id] = submissions;
+            }
+
+            return true;
         }
     }
 }
