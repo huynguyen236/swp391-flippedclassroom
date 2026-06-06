@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -21,6 +21,15 @@ namespace Flipped_Classroom.Migrations
                 nullable: false,
                 defaultValue: 0);
 
+            // Drop indices before altering columns
+            migrationBuilder.DropIndex(
+                name: "IX_Nodes_CurriculumId",
+                table: "Nodes");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Classes_CurriculumId",
+                table: "Classes");
+
             migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
                 table: "Nodes",
@@ -31,29 +40,31 @@ namespace Flipped_Classroom.Migrations
                 oldType: "int",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
                 table: "Classes",
                 type: "int",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0,
+                oldClrType: typeof(int),
+                oldType: "int",
+                oldNullable: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Quizzes_ClassId",
                 table: "Quizzes",
                 column: "ClassId");
 
+            // Recreate indices after altering columns
+            migrationBuilder.CreateIndex(
+                name: "IX_Nodes_CurriculumId",
+                table: "Nodes",
+                column: "CurriculumId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Classes_CurriculumId",
                 table: "Classes",
                 column: "CurriculumId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Class_Curriculum",
-                table: "Classes",
-                column: "CurriculumId",
-                principalTable: "Curriculums",
-                principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Nodes_Classes_ClassId",
@@ -74,10 +85,6 @@ namespace Flipped_Classroom.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Class_Curriculum",
-                table: "Classes");
-
-            migrationBuilder.DropForeignKey(
                 name: "FK_Nodes_Classes_ClassId",
                 table: "Nodes");
 
@@ -90,6 +97,10 @@ namespace Flipped_Classroom.Migrations
                 table: "Quizzes");
 
             migrationBuilder.DropIndex(
+                name: "IX_Nodes_CurriculumId",
+                table: "Nodes");
+
+            migrationBuilder.DropIndex(
                 name: "IX_Classes_CurriculumId",
                 table: "Classes");
 
@@ -97,9 +108,13 @@ namespace Flipped_Classroom.Migrations
                 name: "ClassId",
                 table: "Quizzes");
 
-            migrationBuilder.DropColumn(
+            migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
-                table: "Classes");
+                table: "Classes",
+                type: "int",
+                nullable: true,
+                oldClrType: typeof(int),
+                oldType: "int");
 
             migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
@@ -108,6 +123,11 @@ namespace Flipped_Classroom.Migrations
                 nullable: true,
                 oldClrType: typeof(int),
                 oldType: "int");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Nodes_CurriculumId",
+                table: "Nodes",
+                column: "CurriculumId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Node_Class",
