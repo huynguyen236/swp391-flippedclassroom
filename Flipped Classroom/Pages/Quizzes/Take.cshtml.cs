@@ -22,6 +22,9 @@ namespace Flipped_Classroom.Pages.Quizzes
         [BindProperty]
         public Dictionary<int, int> SelectedOptions { get; set; } = new();
 
+        [BindProperty]
+        public Dictionary<int, string> TextAnswers { get; set; } = new();
+
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var studentId = GetCurrentStudentId();
@@ -48,7 +51,7 @@ namespace Flipped_Classroom.Pages.Quizzes
                 return Forbid();
             }
 
-            var result = await _quizService.SubmitQuizAsync(id, studentId.Value, SelectedOptions);
+            var result = await _quizService.SubmitQuizAsync(id, studentId.Value, SelectedOptions, TextAnswers);
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;

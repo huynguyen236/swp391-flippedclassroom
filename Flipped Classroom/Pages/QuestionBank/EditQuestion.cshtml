@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Flipped_Classroom.Pages.QuestionBank.EditQuestionModel
 @{
     ViewData["Title"] = "Cập nhật câu hỏi";
@@ -42,6 +42,7 @@
                             <option value="Grammar">Ngữ pháp (Grammar)</option>
                             <option value="Kanji">Chữ Hán (Kanji)</option>
                             <option value="Keigo">Kính ngữ (Keigo)</option>
+                            <option value="Reading">Đọc hiểu (Reading)</option>
                         </select>
                     </div>
 
@@ -50,8 +51,6 @@
                         <select asp-for="EditQuestion.QuestionType" class="form-select" required id="questionType">
                             <option value="MCQ">Trắc nghiệm (MCQ)</option>
                             <option value="Writing">Viết (Writing)</option>
-                            <option value="Reading">Đọc (Reading)</option>
-                            <option value="Listening">Nghe (Listening)</option>
                         </select>
                     </div>
                 </div>
@@ -100,7 +99,7 @@
             <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Lưu ý khi sửa</h5>
             <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
                 <li class="mb-2"><strong>Trắc nghiệm (MCQ):</strong> Nhập đủ 4 đáp án A–D và chọn ít nhất một đáp án đúng.</li>
-                <li class="mb-2"><strong>Writing / Reading / Listening:</strong> Chỉ cần một đáp án tham khảo, lưu vào trường CorrectAnswer.</li>
+                <li class="mb-2"><strong>Viết (Writing):</strong> Chỉ cần một đáp án tham khảo, lưu vào trường CorrectAnswer.</li>
                 <li class="mb-2"><strong>Dữ liệu lịch sử:</strong> Nếu câu hỏi đã được học sinh làm, việc sửa đáp án có thể ảnh hưởng báo cáo điểm cũ.</li>
                 <li class="mb-2"><strong>Chủ đề:</strong> Thay đổi chủ đề sẽ di chuyển câu hỏi đến ngân hàng câu hỏi của chủ đề mới.</li>
             </ul>

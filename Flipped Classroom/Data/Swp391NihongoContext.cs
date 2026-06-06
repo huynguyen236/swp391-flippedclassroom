@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Flipped_Classroom.Models;
 using Microsoft.EntityFrameworkCore;
@@ -534,6 +534,7 @@ public partial class Swp391NihongoContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.ErrorCount).HasDefaultValue(1);
             entity.Property(e => e.MistakeType).HasMaxLength(50);
+            entity.Property(e => e.IsResolved).HasDefaultValue(false);
 
             entity.HasOne(d => d.Question).WithMany(p => p.StudentMistakes)
                 .HasForeignKey(d => d.QuestionId)

@@ -42,7 +42,7 @@ namespace Flipped_Classroom.Services.Implementation
         {
             return await _context.Quizzes
                 .Include(q => q.Node)
-                    .ThenInclude(n => n.Class)
+                .Include(q => q.Class)
                 .Include(q => q.QuizQuestions)
                 .OrderByDescending(q => q.CreatedAt)
                 .ThenByDescending(q => q.Id)
@@ -65,7 +65,6 @@ namespace Flipped_Classroom.Services.Implementation
             return await _context.Quizzes
                 .Include(q => q.Class)
                 .Include(q => q.Node)
-                    .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
                 .Where(q => q.Status == PublishedStatus 
                          && q.ClassId.HasValue 
@@ -90,7 +89,7 @@ namespace Flipped_Classroom.Services.Implementation
 
             return await _context.Quizzes
                 .Include(q => q.Node)
-                    .ThenInclude(n => n.Class)
+                .Include(q => q.Class)
                 .Include(q => q.QuizQuestions)
                     .ThenInclude(qq => qq.Question)
                         .ThenInclude(question => question.QuestionOptions)
@@ -275,7 +274,7 @@ namespace Flipped_Classroom.Services.Implementation
             }
         }
 
-        public async Task<SubmitQuizResult> SubmitQuizAsync(int quizId, int studentId, Dictionary<int, int> selectedOptionIds)
+        public async Task<SubmitQuizResult> SubmitQuizAsync(int quizId, int studentId, Dictionary<int, int> selectedOptionIds, Dictionary<int, string> textAnswers)
         {
             var existingResult = await _context.QuizResults
                 .FirstOrDefaultAsync(qr => qr.QuizId == quizId && qr.StudentId == studentId);
@@ -327,10 +326,26 @@ namespace Flipped_Classroom.Services.Implementation
                 foreach (var quizQuestion in quizQuestions)
                 {
                     var question = quizQuestion.Question;
-                    selectedOptionIds.TryGetValue(question.Id, out var selectedOptionId);
+                    bool isCorrect = false;
+                    int? selectedOptionId = null;
+                    string? answerText = null;
 
-                    var selectedOption = question.QuestionOptions.FirstOrDefault(o => o.Id == selectedOptionId);
-                    var isCorrect = selectedOption?.IsCorrect == true;
+                    if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        selectedOptionIds.TryGetValue(question.Id, out var optId);
+                        var selectedOption = question.QuestionOptions.FirstOrDefault(o => o.Id == optId);
+                        isCorrect = selectedOption?.IsCorrect == true;
+                        selectedOptionId = selectedOption?.Id;
+                        answerText = selectedOption?.OptionContent;
+                    }
+                    else
+                    {
+                        textAnswers.TryGetValue(question.Id, out var typedAnswer);
+                        answerText = typedAnswer?.Trim();
+                        var correctAnswer = question.CorrectAnswer?.Trim();
+                        isCorrect = string.Equals(answerText, correctAnswer, StringComparison.OrdinalIgnoreCase);
+                    }
+
                     var pointEarned = isCorrect ? quizQuestion.Point ?? 1m : 0m;
 
                     if (isCorrect)
@@ -347,8 +362,8 @@ namespace Flipped_Classroom.Services.Implementation
                     {
                         QuizResultId = quizResult.Id,
                         QuestionId = question.Id,
-                        SelectedOptionId = selectedOption?.Id,
-                        AnswerText = selectedOption?.OptionContent,
+                        SelectedOptionId = selectedOptionId,
+                        AnswerText = answerText,
                         IsCorrect = isCorrect,
                         PointEarned = pointEarned,
                         CreatedAt = DateTime.Now
@@ -389,7 +404,6 @@ namespace Flipped_Classroom.Services.Implementation
                     .ThenInclude(q => q.QuestionOptions)
                 .Include(sm => sm.Question)
                     .ThenInclude(q => q.Node)
-                        .ThenInclude(n => n.Class)
                 .Where(sm => sm.StudentId == studentId
                     && (sm.ErrorCount ?? 0) > 0
                     && (sm.NextReviewDate == null || sm.NextReviewDate <= today))
@@ -419,9 +433,9 @@ namespace Flipped_Classroom.Services.Implementation
                     && (sm.NextReviewDate == null || sm.NextReviewDate <= today));
         }
 
-        public async Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(int studentId, Dictionary<int, int> selectedOptionIds)
+        public async Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(int studentId, Dictionary<int, int> selectedOptionIds, Dictionary<int, string> textAnswers)
         {
-            if (selectedOptionIds.Count == 0)
+            if ((selectedOptionIds == null || selectedOptionIds.Count == 0) && (textAnswers == null || textAnswers.Count == 0))
             {
                 return new DailyReviewSubmitResult
                 {
@@ -430,7 +444,11 @@ namespace Flipped_Classroom.Services.Implementation
                 };
             }
 
-            var questionIds = selectedOptionIds.Keys.ToList();
+            var questionIds = new List<int>();
+            if (selectedOptionIds != null) questionIds.AddRange(selectedOptionIds.Keys);
+            if (textAnswers != null) questionIds.AddRange(textAnswers.Keys);
+            questionIds = questionIds.Distinct().ToList();
+
             var today = DateOnly.FromDateTime(DateTime.Today);
 
             if (await HasCompletedDailyReviewAsync(studentId, today))
@@ -479,14 +497,36 @@ namespace Flipped_Classroom.Services.Implementation
 
             foreach (var mistake in mistakes)
             {
-                if (!selectedOptionIds.TryGetValue(mistake.QuestionId, out var selectedOptionId))
+                var question = mistake.Question;
+                bool hasAnswer = false;
+                bool isCorrect = false;
+
+                if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (selectedOptionIds != null && selectedOptionIds.TryGetValue(mistake.QuestionId, out var selectedOptionId))
+                    {
+                        hasAnswer = true;
+                        var selectedOption = question.QuestionOptions.FirstOrDefault(o => o.Id == selectedOptionId);
+                        isCorrect = selectedOption?.IsCorrect == true;
+                    }
+                }
+                else
+                {
+                    if (textAnswers != null && textAnswers.TryGetValue(mistake.QuestionId, out var typedAnswer))
+                    {
+                        hasAnswer = true;
+                        var answerText = typedAnswer?.Trim();
+                        var correctAnswer = question.CorrectAnswer?.Trim();
+                        isCorrect = string.Equals(answerText, correctAnswer, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+
+                if (!hasAnswer)
                 {
                     continue;
                 }
 
                 reviewedCount++;
-                var selectedOption = mistake.Question.QuestionOptions.FirstOrDefault(o => o.Id == selectedOptionId);
-                var isCorrect = selectedOption?.IsCorrect == true;
 
                 if (isCorrect)
                 {
@@ -507,6 +547,7 @@ namespace Flipped_Classroom.Services.Implementation
                 {
                     mistake.ErrorCount = (mistake.ErrorCount ?? 0) + 1;
                     mistake.NextReviewDate = tomorrow;
+                    mistake.IsResolved = false;
                 }
             }
 
@@ -525,7 +566,7 @@ namespace Flipped_Classroom.Services.Implementation
             return new DailyReviewSubmitResult
             {
                 Success = true,
-                Message = "Đã chấm Daily Review và cập nhật lịch ôn tập.",
+                Message = "Đã hoàn thành ôn tập Daily Review.",
                 ReviewedCount = reviewedCount,
                 CorrectCount = correctCount,
                 MasteredCount = masteredCount
@@ -534,26 +575,35 @@ namespace Flipped_Classroom.Services.Implementation
 
         public async Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId)
         {
-            var query = _context.StudentMistakes
-                .Include(sm => sm.Question)
-                    .ThenInclude(q => q.Node)
-                        .ThenInclude(n => n.Class)
-                .AsQueryable();
+            var query = from sm in _context.StudentMistakes
+                        where sm.IsResolved != true
+                        join cm in _context.ClassMembers on sm.StudentId equals cm.UserId
+                        join c in _context.Classes on cm.ClassId equals c.Id
+                        join q in _context.Questions.Include(q => q.Node) on sm.QuestionId equals q.Id
+                        select new
+                        {
+                            sm.QuestionId,
+                            sm.StudentId,
+                            sm.ErrorCount,
+                            Question = q,
+                            ClassId = c.Id,
+                            ClassName = c.ClassName
+                        };
 
             if (classId.HasValue)
             {
-                query = query.Where(sm => sm.Question.Node.ClassId == classId.Value);
+                query = query.Where(x => x.ClassId == classId.Value);
             }
 
             var rows = await query
-                .GroupBy(sm => new
+                .GroupBy(x => new
                 {
-                    sm.QuestionId,
-                    sm.Question.Content,
-                    sm.Question.Category,
-                    NodeTitle = sm.Question.Node.Title,
-                    ClassName = sm.Question.Node.Class.ClassName,
-                    sm.Question.Node.ClassId
+                    x.QuestionId,
+                    x.Question.Content,
+                    x.Question.Category,
+                    NodeTitle = x.Question.Node.Title,
+                    x.ClassName,
+                    x.ClassId
                 })
                 .Select(g => new
                 {
@@ -563,8 +613,8 @@ namespace Flipped_Classroom.Services.Implementation
                     g.Key.NodeTitle,
                     g.Key.ClassName,
                     g.Key.ClassId,
-                    WrongStudentCount = g.Select(sm => sm.StudentId).Distinct().Count(),
-                    TotalMistakeCount = g.Sum(sm => sm.ErrorCount ?? 0)
+                    WrongStudentCount = g.Select(x => x.StudentId).Distinct().Count(),
+                    TotalMistakeCount = g.Sum(x => x.ErrorCount ?? 0)
                 })
                 .OrderByDescending(x => x.WrongStudentCount)
                 .ThenByDescending(x => x.TotalMistakeCount)
@@ -579,7 +629,7 @@ namespace Flipped_Classroom.Services.Implementation
 
             return rows.Select(row =>
             {
-                classStudentCounts.TryGetValue(row.ClassId ?? 0, out var classStudentCount);
+                classStudentCounts.TryGetValue(row.ClassId, out var classStudentCount);
                 var percent = classStudentCount == 0
                     ? 0
                     : Math.Round(row.WrongStudentCount * 100m / classStudentCount, 2);
@@ -599,12 +649,11 @@ namespace Flipped_Classroom.Services.Implementation
             }).ToList();
         }
 
-        public async Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId)
+        public async Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId, int? classId = null)
         {
             var question = await _context.Questions
                 .Include(q => q.QuestionOptions)
                 .Include(q => q.Node)
-                    .ThenInclude(n => n.Class)
                 .FirstOrDefaultAsync(q => q.Id == questionId);
 
             if (question == null)
@@ -612,19 +661,55 @@ namespace Flipped_Classroom.Services.Implementation
                 return null;
             }
 
-            var mistakes = await _context.StudentMistakes
+            var mistakesQuery = _context.StudentMistakes
                 .Include(sm => sm.Student)
-                .Where(sm => sm.QuestionId == questionId)
+                .Where(sm => sm.QuestionId == questionId && sm.IsResolved != true);
+
+            if (classId.HasValue)
+            {
+                mistakesQuery = mistakesQuery.Where(sm => _context.ClassMembers
+                    .Any(cm => cm.ClassId == classId.Value && cm.UserId == sm.StudentId));
+            }
+
+            var mistakes = await mistakesQuery
                 .OrderByDescending(sm => sm.ErrorCount)
                 .ThenBy(sm => sm.Student.LastName)
                 .ThenBy(sm => sm.Student.FirstName)
                 .ToListAsync();
 
-            var classStudentCount = await _context.ClassMembers
-                .Where(cm => cm.ClassId == question.Node.ClassId)
-                .Select(cm => cm.UserId)
-                .Distinct()
-                .CountAsync();
+            var targetClassId = classId ?? 0;
+            var targetClassName = "-";
+            var classStudentCount = 0;
+
+            if (classId.HasValue)
+            {
+                var cls = await _context.Classes.FindAsync(classId.Value);
+                if (cls != null)
+                {
+                    targetClassName = cls.ClassName;
+                }
+
+                classStudentCount = await _context.ClassMembers
+                    .Where(cm => cm.ClassId == classId.Value)
+                    .Select(cm => cm.UserId)
+                    .Distinct()
+                    .CountAsync();
+            }
+            else
+            {
+                var cls = await _context.Classes
+                    .FirstOrDefaultAsync(c => c.CurriculumId == question.Node.CurriculumId);
+                if (cls != null)
+                {
+                    targetClassId = cls.Id;
+                    targetClassName = cls.ClassName;
+                    classStudentCount = await _context.ClassMembers
+                        .Where(cm => cm.ClassId == cls.Id)
+                        .Select(cm => cm.UserId)
+                        .Distinct()
+                        .CountAsync();
+                }
+            }
 
             var wrongStudentCount = mistakes.Select(sm => sm.StudentId).Distinct().Count();
             var totalMistakeCount = mistakes.Sum(sm => sm.ErrorCount ?? 0);
@@ -641,8 +726,8 @@ namespace Flipped_Classroom.Services.Implementation
                 CorrectAnswer = question.CorrectAnswer,
                 Explanation = question.Explanation,
                 NodeTitle = question.Node.Title,
-                ClassName = question.Node.Class?.ClassName ?? "-",
-                ClassId = question.Node.ClassId ?? 0,
+                ClassName = targetClassName,
+                ClassId = targetClassId,
                 WrongStudentCount = wrongStudentCount,
                 TotalMistakeCount = totalMistakeCount,
                 ClassStudentCount = classStudentCount,
@@ -667,6 +752,25 @@ namespace Flipped_Classroom.Services.Implementation
             };
         }
 
+        public async Task ResolveQuestionMistakesForClassAsync(int questionId, int classId)
+        {
+            var studentIds = await _context.ClassMembers
+                .Where(cm => cm.ClassId == classId)
+                .Select(cm => cm.UserId)
+                .ToListAsync();
+
+            var mistakes = await _context.StudentMistakes
+                .Where(sm => sm.QuestionId == questionId && studentIds.Contains(sm.StudentId))
+                .ToListAsync();
+
+            foreach (var mistake in mistakes)
+            {
+                mistake.IsResolved = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         private async Task UpsertStudentMistakeAsync(int studentId, int questionId, string category)
         {
             var existingMistake = await _context.StudentMistakes
@@ -681,7 +785,8 @@ namespace Flipped_Classroom.Services.Implementation
                     ErrorCount = 1,
                     MistakeType = category,
                     NextReviewDate = DateOnly.FromDateTime(DateTime.Today),
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    IsResolved = false
                 });
                 return;
             }
@@ -689,6 +794,7 @@ namespace Flipped_Classroom.Services.Implementation
             existingMistake.ErrorCount = (existingMistake.ErrorCount ?? 0) + 1;
             existingMistake.MistakeType = category;
             existingMistake.NextReviewDate = DateOnly.FromDateTime(DateTime.Today);
+            existingMistake.IsResolved = false;
         }
 
         private async Task<bool> HasCompletedDailyReviewAsync(int studentId, DateOnly reviewDate)
@@ -697,6 +803,8 @@ namespace Flipped_Classroom.Services.Implementation
                 .AnyAsync(log => log.StudentId == studentId && log.ReviewDate == reviewDate);
         }
 
+
+        // Helper method to build the base query for eligible questions based on node and category
         private IQueryable<Question> BuildEligibleQuestionQuery(int nodeId, string category)
         {
             var normalizedCategory = category.Trim();
