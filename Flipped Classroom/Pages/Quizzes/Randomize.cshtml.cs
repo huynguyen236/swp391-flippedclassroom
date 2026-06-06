@@ -46,6 +46,11 @@ namespace Flipped_Classroom.Pages.Quizzes
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (User.IsInRole("Teacher") && !Input.ClassId.HasValue)
+            {
+                ModelState.AddModelError("Input.ClassId", "Giảng viên bắt buộc phải chọn lớp học.");
+            }
+
             await LoadPageDataAsync();
 
             if (!ModelState.IsValid)

@@ -43,7 +43,7 @@
                     <div class="d-flex justify-content-between gap-3 mb-3">
                         <div>
                             <h5 class="fw-bold text-dark mb-1">Câu @order</h5>
-                            <div class="text-muted small">@question.Node.Class.ClassName - @question.Node.Title</div>
+                            <div class="text-muted small">@(question.Node?.Class?.ClassName ?? "-") - @question.Node?.Title</div>
                         </div>
                         <div class="text-end">
                             <span class="badge bg-danger bg-opacity-10 text-danger d-block mb-1">Sai @item.ErrorCount lần</span>

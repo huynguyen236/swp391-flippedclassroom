@@ -45,6 +45,8 @@ namespace Flipped_Classroom.Services.Implementations
                     .Include(c => c.Manager)
                     .Include(c => c.Nodes.OrderBy(n => n.NodeOrder).ThenBy(n => n.Id))
                         .ThenInclude(n => n.Materials)
+                    .Include(c => c.Nodes.OrderBy(n => n.NodeOrder).ThenBy(n => n.Id))
+                        .ThenInclude(n => n.Quizzes)
                     .FirstOrDefaultAsync(c => c.Id == id);
             }
             catch (Exception ex)

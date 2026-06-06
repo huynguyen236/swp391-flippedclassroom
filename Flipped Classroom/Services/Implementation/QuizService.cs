@@ -63,6 +63,7 @@ namespace Flipped_Classroom.Services.Implementation
                 .ToList();
 
             return await _context.Quizzes
+                .Include(q => q.Class)
                 .Include(q => q.Node)
                     .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
@@ -214,6 +215,47 @@ namespace Flipped_Classroom.Services.Implementation
 
                 _context.QuizQuestions.AddRange(quizQuestions);
                 await _context.SaveChangesAsync();
+
+                if (!request.ClassId.HasValue)
+                {
+                    var node = await _context.Nodes.FindAsync(request.NodeId);
+                    if (node != null)
+                    {
+                        var classes = await _context.Classes
+                            .Where(c => c.CurriculumId == node.CurriculumId)
+                            .ToListAsync();
+
+                        foreach (var cls in classes)
+                        {
+                            var clonedQuiz = new Quiz
+                            {
+                                NodeId = quiz.NodeId,
+                                ClassId = cls.Id,
+                                Title = quiz.Title,
+                                DurationMinutes = quiz.DurationMinutes,
+                                Status = quiz.Status,
+                                PublishedAt = quiz.PublishedAt,
+                                IsAlwaysOpen = quiz.IsAlwaysOpen,
+                                CreatedAt = DateTime.Now
+                            };
+
+                            _context.Quizzes.Add(clonedQuiz);
+                            await _context.SaveChangesAsync();
+
+                            var clonedQuestions = quizQuestions.Select(qq => new QuizQuestion
+                            {
+                                QuizId = clonedQuiz.Id,
+                                QuestionId = qq.QuestionId,
+                                Point = qq.Point,
+                                DisplayOrder = qq.DisplayOrder
+                            }).ToList();
+
+                            _context.QuizQuestions.AddRange(clonedQuestions);
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 await transaction.CommitAsync();
 
                 return new CreateRandomQuizResult
@@ -548,7 +590,7 @@ namespace Flipped_Classroom.Services.Implementation
                     QuestionContent = row.Content,
                     Category = row.Category,
                     NodeTitle = row.NodeTitle,
-                    ClassName = row.ClassName,
+                    ClassName = row.ClassName ?? "-",
                     WrongStudentCount = row.WrongStudentCount,
                     TotalMistakeCount = row.TotalMistakeCount,
                     ClassStudentCount = classStudentCount,
@@ -599,8 +641,8 @@ namespace Flipped_Classroom.Services.Implementation
                 CorrectAnswer = question.CorrectAnswer,
                 Explanation = question.Explanation,
                 NodeTitle = question.Node.Title,
-                ClassName = question.Node.Class.ClassName,
-                ClassId = (int)question.Node.ClassId,
+                ClassName = question.Node.Class?.ClassName ?? "-",
+                ClassId = question.Node.ClassId ?? 0,
                 WrongStudentCount = wrongStudentCount,
                 TotalMistakeCount = totalMistakeCount,
                 ClassStudentCount = classStudentCount,

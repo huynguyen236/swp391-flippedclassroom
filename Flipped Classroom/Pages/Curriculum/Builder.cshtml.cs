@@ -15,11 +15,13 @@ namespace Flipped_Classroom.Pages.Curriculums
     {
         private readonly ICurriculumService _curriculumService;
         private readonly IFileStorageService _fileStorage;
+        private readonly Flipped_Classroom.Data.Swp391NihongoContext _db;
 
-        public BuilderModel(ICurriculumService curriculumService, IFileStorageService fileStorage)
+        public BuilderModel(ICurriculumService curriculumService, IFileStorageService fileStorage, Flipped_Classroom.Data.Swp391NihongoContext db)
         {
             _curriculumService = curriculumService;
             _fileStorage = fileStorage;
+            _db = db;
         }
 
         public Flipped_Classroom.Models.Curriculum Curriculum { get; set; } = null!;
@@ -155,6 +157,22 @@ namespace Flipped_Classroom.Pages.Curriculums
             else
             {
                 TempData["ErrorMessage"] = "Không thể xóa học liệu.";
+            }
+            return RedirectToPage(new { id });
+        }
+
+        public async Task<IActionResult> OnPostDeleteQuizAsync(int id, int quizId)
+        {
+            var quiz = await _db.Quizzes.FindAsync(quizId);
+            if (quiz != null)
+            {
+                _db.Quizzes.Remove(quiz);
+                await _db.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã xóa bài test thành công.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy bài test để xóa.";
             }
             return RedirectToPage(new { id });
         }

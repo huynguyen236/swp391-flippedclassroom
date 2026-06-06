@@ -151,6 +151,26 @@
                                         </h2>
                                         <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
                                             <div class="accordion-body p-0">
+                                                <!-- Chapter Quizzes -->
+                                                @if (chapter.Quizzes.Any(q => q.ClassId == Model.Class.Id))
+                                                {
+                                                    <div class="p-3 border-bottom bg-light bg-opacity-50">
+                                                        <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-2">Bài test chương của lớp:</span>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            @foreach (var quiz in chapter.Quizzes.Where(q => q.ClassId == Model.Class.Id))
+                                                            {
+                                                                <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                                                                    <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                    <span class="fw-medium fs-8 text-dark">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này khỏi lớp học?');">
+                                                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                    </form>
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+
                                                 @if (!lessons.Any())
                                                 {
                                                     <p class="text-muted text-center py-3 mb-0 small">Chương này chưa có bài học.</p>
@@ -164,14 +184,32 @@
                                                             var isUnlocked = chapterUnlocked;
                                                             var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var c) ? c : 0;
                                                             <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
-                                                                <div class="d-flex align-items-center gap-2">
-                                                                    <i class="bi bi-file-earmark-text text-primary"></i>
-                                                                    <span class="fw-medium">@lesson.Title</span>
-                                                                    @if (lesson.Materials.Any())
+                                                                <div>
+                                                                    <div class="d-flex align-items-center gap-2">
+                                                                        <i class="bi bi-file-earmark-text text-primary"></i>
+                                                                        <span class="fw-semibold text-dark">@lesson.Title</span>
+                                                                        @if (lesson.Materials.Any())
+                                                                        {
+                                                                            <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                        }
+                                                                        <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
+                                                                    </div>
+                                                                    <!-- Lesson Quizzes -->
+                                                                    @if (lesson.Quizzes.Any(q => q.ClassId == Model.Class.Id))
                                                                     {
-                                                                        <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                        <div class="mt-2 d-flex flex-wrap gap-1.5 align-items-center">
+                                                                            @foreach (var quiz in lesson.Quizzes.Where(q => q.ClassId == Model.Class.Id))
+                                                                            {
+                                                                                <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
+                                                                                    <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                                    <span class="fw-medium fs-8 text-dark text-truncate" style="max-width: 150px;">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này khỏi lớp học?');">
+                                                                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                                    </form>
+                                                                                </span>
+                                                                            }
+                                                                        </div>
                                                                     }
-                                                                    <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
                                                                 </div>
                                                                 <div class="d-flex align-items-center gap-2">
                                                                     <a asp-page="/StudentClasses/Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"

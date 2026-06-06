@@ -66,6 +66,9 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .Include(c => c.Curriculum)
                     .ThenInclude(cu => cu!.Nodes)
                         .ThenInclude(n => n.Materials)
+                .Include(c => c.Curriculum)
+                    .ThenInclude(cu => cu!.Nodes)
+                        .ThenInclude(n => n.Quizzes)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (classroom == null)
@@ -258,5 +261,20 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             return new JsonResult(new { success = true, isUnlocked });
         }
 
+        public async Task<IActionResult> OnPostDeleteQuizAsync(int id, int quizId)
+        {
+            var quiz = await _context.Quizzes.FindAsync(quizId);
+            if (quiz != null)
+            {
+                _context.Quizzes.Remove(quiz);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã xóa bài test thành công.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy bài test để xóa.";
+            }
+            return RedirectToPage(new { id });
+        }
     }
 }
