@@ -15,7 +15,6 @@ public partial class Material
 
     public string Url { get; set; } = null!;
 
-
     public int? Duration { get; set; }
 
     public virtual Node Node { get; set; } = null!;

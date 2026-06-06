@@ -17,6 +17,7 @@ builder.Services.AddDbContext<Swp391NihongoContext>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICurriculumService, CurriculumService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder
     .Services.AddAuthentication(options =>
     {

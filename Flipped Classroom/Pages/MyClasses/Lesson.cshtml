@@ -1,0 +1,215 @@
+@page "{classId:int}/{nodeId:int}"
+@model Flipped_Classroom.Pages.StudentClasses.LessonModel
+@{
+    ViewData["Title"] = Model.Lesson.Title;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="text-decoration-none">@Model.Class.ClassName</a>
+                    </li>
+                    @if (Model.Lesson.ParentNode != null)
+                    {
+                        <li class="breadcrumb-item text-muted">@Model.Lesson.ParentNode.Title</li>
+                    }
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Lesson.Title</li>
+                </ol>
+            </nav>
+
+            <!-- Lesson header -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
+                    <h2 class="fw-bold mb-1">@Model.Lesson.Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(Model.Lesson.Description))
+                    {
+                        <p class="mb-0 text-white-50">@Model.Lesson.Description</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Materials -->
+            @if (!Model.Lesson.Materials.Any())
+            {
+                <div class="card border-0 shadow-sm text-center py-5" style="border-radius: 15px;">
+                    <div class="card-body text-muted">
+                        <i class="bi bi-folder2-open display-4 d-block mb-2 opacity-50"></i>
+                        <h6>Bài học này chưa có tài liệu.</h6>
+                    </div>
+                </div>
+            }
+            else
+            {
+                foreach (var mat in Model.Lesson.Materials)
+                {
+                    var isYoutube = string.Equals(mat.MaterialType, "YouTube", System.StringComparison.OrdinalIgnoreCase);
+                    var isPdf = mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
+                    var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
+                    var isVideo = ext is ".mp4" or ".webm" or ".ogg";
+
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
+                            <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
+                            <span class="fw-semibold">@mat.Title</span>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (isYoutube)
+                            {
+                                var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="@embed" title="@mat.Title" frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen></iframe>
+                                </div>
+                            }
+                            else if (isVideo)
+                            {
+                                <div class="ratio ratio-16x9 bg-black">
+                                    <video controls preload="metadata" style="width:100%;height:100%;object-fit:contain;">
+                                        <source src="@mat.Url" type="video/@(ext.TrimStart('.'))" />
+                                        Trình duyệt của bạn không hỗ trợ phát video.
+                                    </video>
+                                </div>
+                            }
+                            else if (isPdf)
+                            {
+                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                    <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
+                                </div>
+                                <div class="p-3 border-top">
+                                    <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="bi bi-download me-1"></i> Tải xuống / Mở tab mới
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="p-4 text-center">
+                                    <p class="text-muted mb-3">Tài liệu đính kèm</p>
+                                    <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Mở tài liệu
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- Khu vực hỏi đáp — placeholder cho tính năng comment sắp tới -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; border: 1px dashed #d0d7de !important;">
+                <div class="card-body text-center text-muted py-4">
+                    <i class="bi bi-chat-dots fs-4 d-block mb-2 opacity-50"></i>
+                    <span class="fst-italic">Khu vực hỏi đáp với giáo viên sẽ được bổ sung tại đây.</span>
+                </div>
+            </div>
+
+            @if (Model.IsStudentView)
+            {
+                @Html.AntiForgeryToken()
+                <div id="lessonCompleteCard" class="card border-0 shadow-sm mb-4" style="border-radius: 15px;"
+                     data-toggle-url="@Url.Page("./Lesson", "ToggleComplete", new { classId = Model.Class.Id, nodeId = Model.Lesson.Id })">
+                    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-4">
+                        <div id="lessonCompleteStatus" class="d-flex align-items-center gap-2">
+                            @if (Model.IsCompleted)
+                            {
+                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                <span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-circle text-muted fs-4"></i>
+                                <span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>
+                            }
+                        </div>
+                        <button type="button" id="lessonCompleteBtn"
+                                class="btn rounded-pill px-4 @(Model.IsCompleted ? "btn-outline-secondary" : "btn-success")"
+                                data-completed="@(Model.IsCompleted ? "true" : "false")">
+                            @if (Model.IsCompleted)
+                            {
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <div class="text-center">
+                <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="btn btn-outline-secondary px-4 rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại lớp
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // === Học sinh tự tích / bỏ tích hoàn thành bằng AJAX (không reload trang) ===
+            const card = document.getElementById('lessonCompleteCard');
+            if (!card) return;
+
+            const btn = document.getElementById('lessonCompleteBtn');
+            const status = document.getElementById('lessonCompleteStatus');
+            const toggleUrl = card.dataset.toggleUrl;
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : '';
+
+            btn.addEventListener('click', async function () {
+                const current = btn.dataset.completed === 'true';
+                const next = !current; // trạng thái muốn đặt
+
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    const body = new URLSearchParams();
+                    body.append('isCompleted', next ? 'true' : 'false');
+                    body.append('__RequestVerificationToken', token);
+
+                    const res = await fetch(toggleUrl, {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token },
+                        body: body
+                    });
+
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message || 'Thao tác thất bại');
+
+                    const completed = data.isCompleted;
+
+                    // Cập nhật nút
+                    btn.dataset.completed = completed ? 'true' : 'false';
+                    btn.classList.toggle('btn-outline-secondary', completed);
+                    btn.classList.toggle('btn-success', !completed);
+                    btn.innerHTML = completed
+                        ? '<i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>'
+                        : '<i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>';
+
+                    // Cập nhật dòng trạng thái
+                    status.innerHTML = completed
+                        ? '<i class="bi bi-check-circle-fill text-success fs-4"></i><span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>'
+                        : '<i class="bi bi-circle text-muted fs-4"></i><span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>';
+                } catch (err) {
+                    btn.innerHTML = originalHtml;
+                    alert('Không thể cập nhật trạng thái: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
+}

@@ -23,23 +23,35 @@ namespace Flipped_Classroom.Pages.TeacherClasses
         private readonly IAssignmentService _assignmentService;
         private readonly ISubmissionService _submissionService;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILessonService _lessonService;
 
         public DetailsModel(
             Flipped_Classroom.Data.Swp391NihongoContext context,
             IAssignmentService assignmentService,
             ISubmissionService submissionService,
-            IWebHostEnvironment webHostEnvironment
+            IWebHostEnvironment webHostEnvironment,
+            ILessonService lessonService
         )
         {
             _context = context;
             _assignmentService = assignmentService;
             _submissionService = submissionService;
             _webHostEnvironment = webHostEnvironment;
+            _lessonService = lessonService;
         }
 
         public Class Class { get; set; } = default!;
 
         public List<User> AvailableUsers { get; set; } = default!;
+
+        // Trạng thái mở/khóa từng node trong lớp (nodeId -> đã mở chưa). Không có khóa = chưa mở.
+        public Dictionary<int, bool> NodeUnlockStatus { get; set; } = new();
+
+        // Số học sinh đã hoàn thành mỗi node (nodeId -> số HS hoàn thành)
+        public Dictionary<int, int> NodeCompletionCounts { get; set; } = new();
+
+        // Tổng số học sinh trong lớp (mẫu số "x/y HS hoàn thành")
+        public int TotalStudents { get; set; }
 
         [BindProperty]
         public List<int> SelectedStudentIds { get; set; } = new List<int>();
@@ -79,6 +91,18 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 }
                 return NotFound();
             }
+
+            // Trạng thái mở/khóa node của lớp này
+            NodeUnlockStatus = await _lessonService.GetNodeUnlockStatusAsync(Class.Id);
+
+            // Tổng số học sinh và số HS hoàn thành mỗi node
+            TotalStudents = Class.ClassMembers?.Count ?? 0;
+            NodeCompletionCounts = await _context.StudentProgresses
+                .AsNoTracking()
+                .Where(p => p.ClassId == Class.Id && p.IsCompleted == true)
+                .GroupBy(p => p.NodeId)
+                .Select(g => new { NodeId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.NodeId, x => x.Count);
 
             return Page();
         }
@@ -185,7 +209,11 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             return RedirectToPage(new { id });
         }
 
-        public async Task<IActionResult> OnPostAssignGroupAsync(int id, int studentId, int? groupId)
+        public async Task<IActionResult> OnPostAssignGroupAsync(
+            int id,
+            int studentId,
+            int? groupId
+        )
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdStr, out int userId))
@@ -399,6 +427,9 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .Include(c => c.Groups)
                     .ThenInclude(g => g.GroupMembers)
                 .Include(c => c.Nodes)
+                .Include(c => c.Curriculum)
+                    .ThenInclude(cu => cu!.Nodes)
+                        .ThenInclude(n => n.Materials)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (classroom == null)
@@ -435,6 +466,33 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
 
             return true;
+        }
+
+        // Mở / khóa một node cho lớp này. Chỉ giáo viên quản lý lớp mới được thao tác.
+        // Trả về JSON để JS cập nhật giao diện mà không reload trang.
+        public async Task<IActionResult> OnPostToggleNodeLockAsync(int id, int nodeId)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(new { success = false, message = "Phiên đăng nhập đã hết hạn." }) { StatusCode = 401 };
+            }
+
+            var classroom = await _context.Classes.FirstOrDefaultAsync(c => c.Id == id);
+            if (classroom == null)
+            {
+                return new JsonResult(new { success = false, message = "Không tìm thấy lớp học." }) { StatusCode = 404 };
+            }
+
+            if (classroom.ManagerId != userId)
+            {
+                return new JsonResult(new { success = false, message = "Bạn không có quyền thao tác lớp này." }) { StatusCode = 403 };
+            }
+
+            await _lessonService.ToggleNodeLockAsync(id, nodeId);
+            var isUnlocked = await _lessonService.IsNodeUnlockedAsync(id, nodeId);
+
+            return new JsonResult(new { success = true, isUnlocked });
         }
     }
 }

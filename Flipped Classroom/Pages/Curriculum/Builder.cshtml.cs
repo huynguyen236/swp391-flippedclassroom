@@ -1,16 +1,12 @@
-using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
 using Curriculum = Flipped_Classroom.Models.Curriculum;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace Flipped_Classroom.Pages.Curriculums
 {
@@ -18,14 +14,12 @@ namespace Flipped_Classroom.Pages.Curriculums
     public class BuilderModel : PageModel
     {
         private readonly ICurriculumService _curriculumService;
-        private readonly IWebHostEnvironment _environment;
-        private readonly ILogger<BuilderModel> _logger;
+        private readonly IFileStorageService _fileStorage;
 
-        public BuilderModel(ICurriculumService curriculumService, IWebHostEnvironment environment, ILogger<BuilderModel> logger)
+        public BuilderModel(ICurriculumService curriculumService, IFileStorageService fileStorage)
         {
             _curriculumService = curriculumService;
-            _environment = environment;
-            _logger = logger;
+            _fileStorage = fileStorage;
         }
 
         public Flipped_Classroom.Models.Curriculum Curriculum { get; set; } = null!;
@@ -114,31 +108,14 @@ namespace Flipped_Classroom.Pages.Curriculums
                     return RedirectToPage(new { id });
                 }
 
-                try
+                var savedUrl = await _fileStorage.SaveUploadAsync(UploadedFile, "materials");
+                if (savedUrl == null)
                 {
-                    var uploadDir = Path.Combine(_environment.WebRootPath, "uploads", "materials");
-                    if (!Directory.Exists(uploadDir))
-                    {
-                        Directory.CreateDirectory(uploadDir);
-                    }
-
-                    var extension = Path.GetExtension(UploadedFile.FileName);
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    var filePath = Path.Combine(uploadDir, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await UploadedFile.CopyToAsync(fileStream);
-                    }
-
-                    url = $"/uploads/materials/{uniqueFileName}";
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Lỗi khi lưu tệp tin học liệu cho node: {NodeId}", NodeId);
                     TempData["ErrorMessage"] = "Lỗi trong quá trình lưu tệp tin lên máy chủ.";
                     return RedirectToPage(new { id });
                 }
+
+                url = savedUrl;
             }
 
             var material = new Material

@@ -18,4 +18,6 @@ public partial class Curriculum
     public virtual User Manager { get; set; } = null!;
 
     public virtual ICollection<Node> Nodes { get; set; } = new List<Node>();
+
+    public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
 }

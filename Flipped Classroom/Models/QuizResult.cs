@@ -11,9 +11,13 @@ public partial class QuizResult
 
     public int QuizId { get; set; }
 
+    public int? ClassId { get; set; }
+
     public decimal Score { get; set; }
 
     public DateTime? CompletedAt { get; set; }
+
+    public virtual Class? Class { get; set; }
 
     public virtual Quiz Quiz { get; set; } = null!;
 
