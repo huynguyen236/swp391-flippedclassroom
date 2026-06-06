@@ -40,12 +40,15 @@ namespace Flipped_Classroom.Migrations
                 oldType: "int",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
                 table: "Classes",
                 type: "int",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0,
+                oldClrType: typeof(int),
+                oldType: "int",
+                oldNullable: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Quizzes_ClassId",
@@ -95,9 +98,13 @@ namespace Flipped_Classroom.Migrations
                 name: "ClassId",
                 table: "Quizzes");
 
-            migrationBuilder.DropColumn(
+            migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
-                table: "Classes");
+                table: "Classes",
+                type: "int",
+                nullable: true,
+                oldClrType: typeof(int),
+                oldType: "int");
 
             migrationBuilder.AlterColumn<int>(
                 name: "CurriculumId",
