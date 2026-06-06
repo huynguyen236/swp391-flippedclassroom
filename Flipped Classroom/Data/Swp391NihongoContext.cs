@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Flipped_Classroom.Models;
 using Microsoft.EntityFrameworkCore;
@@ -127,8 +127,7 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.HasOne(d => d.Curriculum).WithMany(p => p.Classes)
                 .HasForeignKey(d => d.CurriculumId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull)
+                .OnDelete(DeleteBehavior.ClientSetNull) // Dùng ClientSetNull để tránh lỗi Cascade loop
                 .HasConstraintName("FK_Class_Curriculum");
         });
 
@@ -202,22 +201,6 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.StudentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DailyReviewLog_Student");
-        });
-
-        modelBuilder.Entity<Curriculum>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_Curriculums");
-
-            entity.Property(e => e.CurriculumName).HasMaxLength(200);
-            entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-
-            entity.HasOne(d => d.Manager).WithMany(p => p.Curriculums)
-                .HasForeignKey(d => d.ManagerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Curriculum_Manager");
         });
 
         modelBuilder.Entity<FeedbackComment>(entity =>
@@ -346,16 +329,9 @@ public partial class Swp391NihongoContext : DbContext
                 .HasDefaultValue("Draft");
             entity.Property(e => e.Title).HasMaxLength(200);
 
-            entity.HasOne(d => d.Class).WithMany(p => p.Nodes)
-                .HasForeignKey(d => d.ClassId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_Node_Class");
-
             entity.HasOne(d => d.Curriculum).WithMany(p => p.Nodes)
                 .HasForeignKey(d => d.CurriculumId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.Cascade) // Nếu xóa Curriculum thì xóa hết Node bên trong
                 .HasConstraintName("FK_Node_Curriculum");
 
             entity.HasOne(d => d.ParentNode).WithMany(p => p.InverseParentNode)
@@ -496,6 +472,11 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.NodeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Quiz_Node");
+
+            entity.HasOne(d => d.Class).WithMany(p => p.Quizzes)
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Quiz_Class");
         });
 
         modelBuilder.Entity<QuizQuestion>(entity =>

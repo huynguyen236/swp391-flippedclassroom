@@ -9,7 +9,7 @@ public partial class Node
 
     public int? ClassId { get; set; }
 
-    public int? CurriculumId { get; set; }
+    public int CurriculumId { get; set; }
 
     public int? ParentNodeId { get; set; }
 
@@ -31,7 +31,7 @@ public partial class Node
 
     public virtual Class? Class { get; set; }
 
-    public virtual Curriculum? Curriculum { get; set; }
+    public virtual Curriculum Curriculum { get; set; } = null!;
 
     public virtual ICollection<Node> InverseParentNode { get; set; } = new List<Node>();
 
