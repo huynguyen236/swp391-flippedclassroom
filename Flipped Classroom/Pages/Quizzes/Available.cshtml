@@ -30,7 +30,7 @@
                     <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                         <div>
                             <h5 class="fw-bold text-dark mb-1">@quiz.Title</h5>
-                            <div class="text-muted small">@quiz.Node.Class.ClassName - @quiz.Node.Title</div>
+                            <div class="text-muted small">@(quiz.Class?.ClassName ?? quiz.Node?.Class?.ClassName) - @quiz.Node?.Title</div>
                         </div>
                         <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1">Published</span>
                     </div>

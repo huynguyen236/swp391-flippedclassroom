@@ -29,21 +29,27 @@ namespace Flipped_Classroom.Services.Interfaces
         Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId);
 
         Task<List<Class>> GetClassesAsync();
+
+        Task CloneCurriculumQuizzesToClassAsync(int curriculumId, int classId);
     }
 
     public class CreateRandomQuizRequest
     {
         public int NodeId { get; set; }
 
+        public int? ClassId { get; set; }
+
         public string Category { get; set; } = string.Empty;
 
         public string Title { get; set; } = string.Empty;
 
         public int QuestionCount { get; set; }
-
+                
         public int DurationMinutes { get; set; }
 
         public bool PublishNow { get; set; }
+
+        public bool IsAlwaysOpen { get; set; }
     }
 
     public class CreateRandomQuizResult
@@ -161,3 +167,4 @@ namespace Flipped_Classroom.Services.Interfaces
         public int MasteredCount { get; set; }
     }
 }
+

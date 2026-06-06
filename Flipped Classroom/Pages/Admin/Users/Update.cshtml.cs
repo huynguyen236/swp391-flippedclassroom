@@ -1,5 +1,6 @@
 ﻿using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -13,10 +14,12 @@ namespace Flipped_Classroom.Pages.Admin.Users
     public class EditModel : PageModel
     {
         private readonly Swp391NihongoContext _context;
+        private readonly IAuthService _authService;
 
-        public EditModel(Swp391NihongoContext context)
+        public EditModel(Swp391NihongoContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         [BindProperty]
@@ -107,7 +110,7 @@ namespace Flipped_Classroom.Pages.Admin.Users
             // Update password if a new one is typed
             if (!string.IsNullOrWhiteSpace(Input.Password))
             {
-                user.PasswordHash = Input.Password; // Plain text dynamic matching your rule
+                user.PasswordHash = _authService.HashPassword(Input.Password);
             }
 
             _context.Users.Update(user);
@@ -117,5 +120,6 @@ namespace Flipped_Classroom.Pages.Admin.Users
 
             return RedirectToPage("/Admin/Users/Index");
         }
+
     }
 }

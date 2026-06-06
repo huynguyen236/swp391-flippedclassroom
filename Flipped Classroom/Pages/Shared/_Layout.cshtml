@@ -118,9 +118,9 @@
                 {
                     <div class="sidebar-section-title">Quản lý đào tạo</div>
 
-                    <a href="/QuestionBank/QuestionList" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/QuestionBank/QuestionList") ? "active" : "")">
-                        <i class="bi bi-book-fill"></i>
-                        <span>Ngân hàng câu hỏi</span>
+                    <a href="/TeacherClasses" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/TeacherClasses") ? "active" : "")">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>Lớp học của tôi</span>
                     </a>
                     <a href="/Quizzes/Randomize" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/Randomize") ? "active" : "")">
                         <i class="bi bi-shuffle"></i>
@@ -136,7 +136,7 @@
                 {
                     <div class="sidebar-section-title">Học tập</div>
                     
-                    <a href="/MyClasses" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/MyClasses") ? "active" : "")">
+                    <a href="/StudentClasses/Index" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/StudentClasses/Index") ? "active" : "")">
                         <i class="bi bi-mortarboard-fill"></i>
                         <span>Lớp học của tôi</span>
                     </a>

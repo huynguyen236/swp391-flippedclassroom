@@ -45,6 +45,8 @@ namespace Flipped_Classroom.Services.Implementations
                     .Include(c => c.Manager)
                     .Include(c => c.Nodes.OrderBy(n => n.NodeOrder).ThenBy(n => n.Id))
                         .ThenInclude(n => n.Materials)
+                    .Include(c => c.Nodes.OrderBy(n => n.NodeOrder).ThenBy(n => n.Id))
+                        .ThenInclude(n => n.Quizzes)
                     .FirstOrDefaultAsync(c => c.Id == id);
             }
             catch (Exception ex)
@@ -79,14 +81,12 @@ namespace Flipped_Classroom.Services.Implementations
                 if (!node.NodeOrder.HasValue || node.NodeOrder == 0)
                 {
                     int maxOrder = 0;
-                    if (node.CurriculumId.HasValue)
-                    {
                         var orders = await _db.Nodes
                             .Where(n => n.CurriculumId == node.CurriculumId && n.ParentNodeId == node.ParentNodeId)
                             .Select(n => n.NodeOrder)
                             .ToListAsync();
                         maxOrder = orders.Any() ? orders.Max() ?? 0 : 0;
-                    }
+                    
                     node.NodeOrder = maxOrder + 1;
                 }
 

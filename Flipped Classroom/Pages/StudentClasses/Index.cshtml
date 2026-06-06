@@ -1,0 +1,64 @@
+﻿@page
+@model Flipped_Classroom.Pages.MyClasses.IndexModel
+@{
+    ViewData["Title"] = "My Classes";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="fw-bold" style="color: #1a73e8;">Lớp học của tôi</h2>
+    </div>
+
+    <div class="row g-4">
+        @if (Model.Class != null && Model.Class.Any())
+        {
+            @foreach (var item in Model.Class) {
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden; transition: 0.3s;">
+                        <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%); border-bottom: none;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h4 class="mb-0 text-truncate" title="@item.ClassName">@item.ClassName</h4>
+                                <span class="badge bg-light text-primary rounded-pill px-3">@item.Status</span>
+                            </div>
+                            <p class="mb-0 text-white-50 small">Code: <strong>@item.InviteCode</strong></p>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <p class="card-text text-muted mb-4" style="min-height: 48px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @(string.IsNullOrEmpty(item.Description) ? "Chưa có mô tả..." : item.Description)
+                            </p>
+
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-2" style="width: 32px; height: 32px; font-size: 14px; background-color: #5f6368;">
+                                    @(item.Manager?.Username?.FirstOrDefault() ?? '?')
+                                </div>
+                                <span class="text-muted small"><strong>@item.Manager?.Username</strong></span>
+                            </div>
+
+                            <div class="d-flex text-muted small mt-2 justify-content-between">
+                                <span><i class="bi bi-calendar3"></i> @item.StartDate?.ToString("dd/MM/yyyy")</span>
+                                <span><i class="bi bi-calendar-check"></i> @item.EndDate?.ToString("dd/MM/yyyy")</span>
+                            </div>  
+                        </div>
+
+                        <div class="card-footer bg-white border-0 px-4 pb-4 pt-0 d-flex gap-2">
+                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-primary w-100 rounded-pill shadow-sm" style="background-color: #1a73e8; border: none;">Vào lớp</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <div class="mb-3 text-muted">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                </div>
+                <h5 class="text-muted">Bạn chưa tham gia lớp học nào</h5>
+            </div>
+        }
+    </div>
+</div>

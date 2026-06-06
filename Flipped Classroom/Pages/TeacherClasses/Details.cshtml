@@ -1,0 +1,533 @@
+@page
+@model Flipped_Classroom.Pages.TeacherClasses.DetailsModel
+
+@{
+    ViewData["Title"] = "Classroom Details";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header text-white p-5 text-center" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
+                    <h2 class="fw-bold mb-2">@Html.DisplayFor(model => model.Class.ClassName)</h2>
+                    <span class="badge bg-light text-primary rounded-pill px-4 py-2 fs-6 mb-3">@Html.DisplayFor(model => model.Class.Status)</span>
+                    <p class="mb-0 text-white-50">Mã Tham Gia (Invite Code): <strong class="text-white fs-5">@Html.DisplayFor(model => model.Class.InviteCode)</strong></p>
+                </div>
+
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-muted mb-3">Mô tả Lớp Học</h5>
+                        <p class="text-secondary" style="line-height: 1.6;">
+                            @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
+                        </p>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
+                                <div class="me-3 text-primary">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Ngày Bắt Đầu</div>
+                                    <div class="fw-medium">@Html.DisplayFor(model => model.Class.StartDate)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
+                                <div class="me-3 text-primary">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Ngày Kết Thúc</div>
+                                    <div class="fw-medium">@Html.DisplayFor(model => model.Class.EndDate)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 45px; height: 45px; font-size: 18px; background-color: #5f6368;">
+                                @(Model.Class.Manager?.Username?.FirstOrDefault() ?? '?')
+                            </div>
+                            <div>
+                                <div class="text-muted small">Người Quản Lý</div>
+                                <div class="fw-bold">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
+                            </div>
+                        </div>
+                        <div class="text-end text-muted small">
+                            Tạo ngày: @Html.DisplayFor(model => model.Class.CreatedAt)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-4 text-center border-0 d-flex justify-content-center gap-3">
+                    <a asp-page="./Index" class="btn btn-outline-secondary px-4 rounded-pill">Trở lại Danh sách</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lộ trình học -->
+        <div class="col-lg-8 mt-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lộ Trình Học</h4>
+                    @if (Model.Class.Curriculum != null)
+                    {
+                        <span class="badge bg-light text-primary rounded-pill px-3 py-2">@Model.Class.Curriculum.CurriculumName</span>
+                    }
+                </div>
+                <div class="card-body p-4">
+                    @if (Model.Class.Curriculum == null)
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
+                            <h6 class="text-muted">Lớp này chưa có khung chương trình.</h6>
+                        </div>
+                    }
+                    else
+                    {
+                        var allNodes = Model.Class.Curriculum.Nodes;
+                        var chapters = allNodes.Where(n => n.ParentNodeId == null).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+
+                        if (!chapters.Any())
+                        {
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-journal display-6 d-block mb-2 opacity-50"></i>
+                                <h6 class="text-muted">Khung chương trình chưa có bài học nào.</h6>
+                            </div>
+                        }
+                        else
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="accordion" id="teacherLearningPathAccordion"
+                                 data-toggle-url="@Url.Page("./Details", "ToggleNodeLock", new { id = Model.Class.Id })">
+                                @for (int i = 0; i < chapters.Count; i++)
+                                {
+                                    var chapter = chapters[i];
+                                    var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+                                    var collapseId = $"tc-collapse-{chapter.Id}";
+                                    var headingId = $"tc-heading-{chapter.Id}";
+
+                                    var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
+                                    <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                        <h2 class="accordion-header d-flex align-items-center" id="@headingId">
+                                            <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
+                                                <i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title
+                                                <span class="badge bg-light text-muted rounded-pill ms-2 small">@lessons.Count bài</span>
+                                                <span class="node-lock-badge badge rounded-pill ms-2 @(chapterUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")" data-node-id="@chapter.Id">
+                                                    @if (chapterUnlocked)
+                                                    {
+                                                        <i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>
+                                                    }
+                                                </span>
+                                            </button>
+                                            <div class="d-flex align-items-center z-3">
+                                                <a href="/Quizzes/Randomize?IsStrictMode=true&Input.NodeId=@chapter.Id&Input.ClassId=@Model.Class.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3 me-2 flex-shrink-0" title="Tạo Bài Test (Strict Mode) cho lớp">
+                                                    <i class="bi bi-file-earmark-check"></i> <span class="label">Tạo Test</span>
+                                                </a>
+                                                <button type="button"
+                                                        class="node-lock-toggle btn btn-sm rounded-pill px-3 me-3 flex-shrink-0 @(chapterUnlocked ? "btn-outline-warning" : "btn-outline-success")"
+                                                        data-node-id="@chapter.Id"
+                                                        data-unlocked="@(chapterUnlocked ? "true" : "false")"
+                                                    title="@(chapterUnlocked ? "Khóa chương này (khóa toàn bộ bài học bên trong)" : "Mở chương này cho học sinh (mở toàn bộ bài học bên trong)")">
+                                                @if (chapterUnlocked)
+                                                {
+                                                    <i class="bi bi-lock"></i> <span class="label">Khóa</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-unlock"></i> <span class="label">Mở</span>
+                                                }
+                                                </button>
+                                            </div>
+                                        </h2>
+                                        <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
+                                            <div class="accordion-body p-0">
+                                                <!-- Chapter Quizzes -->
+                                                @if (chapter.Quizzes.Any(q => q.ClassId == Model.Class.Id))
+                                                {
+                                                    <div class="p-3 border-bottom bg-light bg-opacity-50">
+                                                        <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-2">Bài test chương của lớp:</span>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            @foreach (var quiz in chapter.Quizzes.Where(q => q.ClassId == Model.Class.Id))
+                                                            {
+                                                                <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                                                                    <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                    <span class="fw-medium fs-8 text-dark">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này khỏi lớp học?');">
+                                                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                    </form>
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                @if (!lessons.Any())
+                                                {
+                                                    <p class="text-muted text-center py-3 mb-0 small">Chương này chưa có bài học.</p>
+                                                }
+                                                else
+                                                {
+                                                    <ul class="list-group list-group-flush">
+                                                        @foreach (var lesson in lessons)
+                                                        {
+                                                            // Bài học (node con) kế thừa trạng thái mở/khóa từ chương (node cha).
+                                                            var isUnlocked = chapterUnlocked;
+                                                            var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var c) ? c : 0;
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
+                                                                <div>
+                                                                    <div class="d-flex align-items-center gap-2">
+                                                                        <i class="bi bi-file-earmark-text text-primary"></i>
+                                                                        <span class="fw-semibold text-dark">@lesson.Title</span>
+                                                                        @if (lesson.Materials.Any())
+                                                                        {
+                                                                            <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                        }
+                                                                        <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
+                                                                    </div>
+                                                                    <!-- Lesson Quizzes -->
+                                                                    @if (lesson.Quizzes.Any(q => q.ClassId == Model.Class.Id))
+                                                                    {
+                                                                        <div class="mt-2 d-flex flex-wrap gap-1.5 align-items-center">
+                                                                            @foreach (var quiz in lesson.Quizzes.Where(q => q.ClassId == Model.Class.Id))
+                                                                            {
+                                                                                <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
+                                                                                    <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                                    <span class="fw-medium fs-8 text-dark text-truncate" style="max-width: 150px;">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                                    <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này khỏi lớp học?');">
+                                                                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                                    </form>
+                                                                                </span>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <a asp-page="/StudentClasses/Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
+                                                                       class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                                        Xem bài <i class="bi bi-eye ms-1"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 mt-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))</h4>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary px-4 shadow-sm text-nowrap" style="border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                            <i class="bi bi-people-fill"></i> Chia Nhóm (@(Model.Class.Groups?.Count ?? 0))
+                        </button>
+                        <button type="button" class="btn btn-primary px-4 shadow-sm text-nowrap" style="background-color: #1a73e8; border: none; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                            + Thêm Học Viên
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-light text-muted">
+                                <tr>
+                                    <th class="px-4 py-3 border-0 fw-semibold">Học Viên</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold">Email</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold">Nhóm</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold text-center">Support Team</th>
+                                    <th class="px-4 py-3 border-0 fw-semibold text-end">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
+                                {
+                                    foreach (var member in Model.Class.ClassMembers)
+                                    {
+                                        <tr class="align-middle">
+                                            <td class="px-4 py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 35px; height: 35px; font-size: 14px; background-color: #4285f4;">
+                                                        @(member.User?.Username?.FirstOrDefault() ?? '?')
+                                                    </div>
+                                                    <div class="fw-medium text-dark">@(member.User?.Username ?? "Unknown")</div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-secondary">@(member.User?.Email ?? "-")</td>
+                                            <td class="px-4 py-3">
+                                                @{
+                                                    var assignedGroup = Model.Class.Groups?.FirstOrDefault(g => g.GroupMembers.Any(gm => gm.StudentId == member.UserId));
+                                                }
+                                                <form method="post" asp-page-handler="AssignGroup" asp-route-id="@Model.Class.Id">
+                                                    <input type="hidden" name="studentId" value="@member.UserId" />
+                                                    <select name="groupId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px;" onchange="this.form.submit()">
+                                                        <option value="">Chưa có nhóm</option>
+                                                        @if (Model.Class.Groups != null)
+                                                        {
+                                                            foreach (var group in Model.Class.Groups)
+                                                            {
+                                                                if (assignedGroup?.Id == group.Id)
+                                                                {
+                                                                    <option value="@group.Id" selected>@group.GroupName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@group.Id">@group.GroupName</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+                                                </form>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                @if (member.IsSupportTeam == true)
+                                                {
+                                                    <span class="badge bg-success rounded-pill px-3">Có</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary rounded-pill px-3">Không</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-3 text-end">
+                                                <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
+                                                    <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">Xóa</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                            <h6 class="text-muted">Chưa có học viên nào trong lớp</h6>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <form method="post" asp-page-handler="AddStudents" asp-route-id="@Model.Class.Id">
+                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-primary" id="addStudentModalLabel">Thêm Học Viên Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Chọn các học viên bạn muốn thêm vào lớp học này:</p>
+                    @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
+                    {
+                        <div class="mb-3 position-relative">
+                            <input type="text" class="form-control" id="studentSearchInput" placeholder="Tìm kiếm học viên..." autocomplete="off" style="border-radius: 8px; border-color: #ced4da; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22none%22 stroke=%22%23343a40%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222%22 d=%22M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z%22/></svg>'); background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 16px; padding-right: 2.5rem;" />
+                        </div>
+                        <div class="list-group list-group-flush border rounded" id="studentListGroup" style="max-height: 350px; overflow-y: auto;">
+                            @foreach (var user in Model.AvailableUsers)
+                            {
+                                <label class="list-group-item d-flex gap-3 align-items-center p-3 list-group-item-action student-option" style="cursor: pointer;">
+                                    <input class="form-check-input flex-shrink-0" type="checkbox" name="SelectedStudentIds" value="@user.Id" style="font-size: 1.2em;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 32px; height: 32px; font-size: 14px; background-color: #5f6368;">
+                                            @(user.Username?.FirstOrDefault() ?? '?')
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-medium">@user.Username</h6>
+                                            @if (!string.IsNullOrEmpty(user.Email))
+                                            {
+                                                <small class="text-muted">@user.Email</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </label>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 bg-light rounded">
+                            <p class="text-muted mb-0">Không có học viên nào khả dụng ?? thêm.</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Thêm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id">
+                <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-primary" id="createGroupModalLabel">Tạo Nhóm Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Danh Sách Học Viên Hiện Tại (@(Model.Class.ClassMembers?.Count ?? 0))</label>
+                        <div class="list-group list-group-flush border rounded" style="max-height: 200px; overflow-y: auto;">
+                            @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
+                            {
+                                foreach (var member in Model.Class.ClassMembers)
+                                {
+                                    <div class="list-group-item d-flex align-items-center gap-3 px-3 py-2 bg-light">
+                                        <div class="rounded-circle d-flex justify-content-center align-items-center text-white" style="width: 30px; height: 30px; font-size: 13px; background-color: #4285f4;">
+                                            @(member.User?.Username?.FirstOrDefault() ?? '?')
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-medium small text-dark mb-0" style="line-height:1.2;">@member.User?.Username</span>
+                                            @if (!string.IsNullOrEmpty(member.User?.Email))
+                                            {
+                                                <span class="text-muted" style="font-size: 0.75rem; line-height:1.2;">@member.User.Email</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="p-3 text-center text-muted small">Chưa có học viên nào đã chia nhóm.</div>
+                            }
+                        </div>
+                    </div>
+
+                    <p class="text-muted small mb-3">Nhập số lượng nhóm bạn muốn tạo cho lớp học này:</p>
+                    <div class="mb-3">
+                        <label for="NumberOfGroupsToCreate" class="form-label fw-medium">Số lượng nhóm</label>
+                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="6" required style="border-radius: 8px; border-color: #ced4da;" />
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Tạo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const studentSearchInput = document.getElementById('studentSearchInput');
+            if (studentSearchInput) {
+                studentSearchInput.addEventListener('keyup', function() {
+                    const filter = this.value.toLowerCase();
+                    const options = document.querySelectorAll('.student-option');
+
+                    options.forEach(function(item) {
+                        const text = item.textContent.toLowerCase();
+                        if (text.includes(filter)) {
+                            item.classList.remove('d-none');
+                            item.classList.add('d-flex');
+                        } else {
+                            item.classList.remove('d-flex');
+                            item.classList.add('d-none');
+                        }
+                    });
+                });
+            }
+
+            // === Mở / khóa node bằng AJAX (không reload trang) ===
+            const accordion = document.getElementById('teacherLearningPathAccordion');
+            if (accordion) {
+                const toggleUrl = accordion.dataset.toggleUrl;
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                accordion.addEventListener('click', async function (e) {
+                    const btn = e.target.closest('.node-lock-toggle');
+                    if (!btn) return;
+
+                    // Ngăn click nút khóa/mở vô tình mở/đóng accordion của chương.
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const nodeId = btn.dataset.nodeId;
+                    const originalHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const body = new URLSearchParams();
+                        body.append('nodeId', nodeId);
+                        body.append('__RequestVerificationToken', token);
+
+                        const res = await fetch(toggleUrl, {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            body: body
+                        });
+
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Thao tác thất bại');
+
+                        const unlocked = data.isUnlocked;
+
+                        // Cập nhật nút
+                        btn.dataset.unlocked = unlocked ? 'true' : 'false';
+                        btn.classList.toggle('btn-outline-warning', unlocked);
+                        btn.classList.toggle('btn-outline-success', !unlocked);
+                        btn.title = unlocked ? 'Khóa bài học này' : 'Mở bài học này cho học sinh';
+                        btn.innerHTML = unlocked
+                            ? '<i class="bi bi-lock"></i> <span class="label">Khóa</span>'
+                            : '<i class="bi bi-unlock"></i> <span class="label">Mở</span>';
+
+                        // Cập nhật badge tương ứng
+                        const badge = accordion.querySelector('.node-lock-badge[data-node-id="' + nodeId + '"]');
+                        if (badge) {
+                            badge.classList.toggle('bg-success-subtle', unlocked);
+                            badge.classList.toggle('text-success', unlocked);
+                            badge.classList.toggle('bg-secondary-subtle', !unlocked);
+                            badge.classList.toggle('text-secondary', !unlocked);
+                            badge.innerHTML = unlocked
+                                ? '<i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>'
+                                : '<i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>';
+                        }
+                    } catch (err) {
+                        btn.innerHTML = originalHtml;
+                        alert('Không thể đổi trạng thái bài học: ' + err.message);
+                    } finally {
+                        btn.disabled = false;
+                    }
+                });
+            }
+        });
+
+    </script>
+}

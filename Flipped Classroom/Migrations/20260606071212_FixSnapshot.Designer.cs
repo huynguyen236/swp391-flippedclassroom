@@ -4,6 +4,7 @@ using Flipped_Classroom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    partial class Swp391NihongoContextModelSnapshot : ModelSnapshot
+    [Migration("20260606071212_FixSnapshot")]
+    partial class FixSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,8 +206,7 @@ namespace Flipped_Classroom.Migrations
                         .HasColumnType("time");
 
                     b.Property<string>("Room")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
@@ -212,12 +214,11 @@ namespace Flipped_Classroom.Migrations
                     b.Property<DateOnly>("StudyDate")
                         .HasColumnType("date");
 
-                    b.HasKey("Id")
-                        .HasName("PK_ClassSchedules");
+                    b.HasKey("Id");
 
                     b.HasIndex("ClassId");
 
-                    b.ToTable("ClassSchedules");
+                    b.ToTable("ClassSchedule");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.Curriculum", b =>
@@ -776,7 +777,7 @@ namespace Flipped_Classroom.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClassId")
+                    b.Property<int>("ClassId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -786,9 +787,6 @@ namespace Flipped_Classroom.Migrations
 
                     b.Property<int?>("DurationMinutes")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsAlwaysOpen")
-                        .HasColumnType("bit");
 
                     b.Property<int>("NodeId")
                         .HasColumnType("int");
@@ -1251,8 +1249,7 @@ namespace Flipped_Classroom.Migrations
                         .WithMany("ClassSchedules")
                         .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_ClassSchedule_Class");
+                        .IsRequired();
 
                     b.Navigation("Class");
                 });
@@ -1486,6 +1483,7 @@ namespace Flipped_Classroom.Migrations
                     b.HasOne("Flipped_Classroom.Models.Class", "Class")
                         .WithMany("Quizzes")
                         .HasForeignKey("ClassId")
+                        .IsRequired()
                         .HasConstraintName("FK_Quiz_Class");
 
                     b.HasOne("Flipped_Classroom.Models.Node", "Node")

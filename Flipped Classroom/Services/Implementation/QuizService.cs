@@ -54,13 +54,23 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var classIds = _context.ClassMembers
                 .Where(cm => cm.UserId == studentId)
-                .Select(cm => cm.ClassId);
+                .Select(cm => cm.ClassId)
+                .ToList();
+
+            var unlockedNodeIds = _context.ClassNodeStatuses
+                .Where(cns => classIds.Contains(cns.ClassId) && cns.IsUnlocked)
+                .Select(cns => cns.NodeId)
+                .ToList();
 
             return await _context.Quizzes
+                .Include(q => q.Class)
                 .Include(q => q.Node)
                     .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
-                .Where(q => q.Status == PublishedStatus && classIds.Contains(q.Node.ClassId ?? 0))
+                .Where(q => q.Status == PublishedStatus 
+                         && q.ClassId.HasValue 
+                         && classIds.Contains(q.ClassId.Value)
+                         && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)))
                 .OrderByDescending(q => q.PublishedAt)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
@@ -70,7 +80,13 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var classIds = _context.ClassMembers
                 .Where(cm => cm.UserId == studentId)
-                .Select(cm => cm.ClassId);
+                .Select(cm => cm.ClassId)
+                .ToList();
+
+            var unlockedNodeIds = _context.ClassNodeStatuses
+                .Where(cns => classIds.Contains(cns.ClassId) && cns.IsUnlocked)
+                .Select(cns => cns.NodeId)
+                .ToList();
 
             return await _context.Quizzes
                 .Include(q => q.Node)
@@ -80,7 +96,9 @@ namespace Flipped_Classroom.Services.Implementation
                         .ThenInclude(question => question.QuestionOptions)
                 .FirstOrDefaultAsync(q => q.Id == quizId
                     && q.Status == PublishedStatus
-                    && classIds.Contains(q.Node.ClassId ?? 0));
+                    && q.ClassId.HasValue 
+                    && classIds.Contains(q.ClassId.Value)
+                    && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)));
         }
 
         public async Task<int> CountAvailableQuestionsAsync(int nodeId, string category)
@@ -96,6 +114,11 @@ namespace Flipped_Classroom.Services.Implementation
             if (request.NodeId <= 0)
             {
                 return FailCreate("Vui lòng chọn bài học hợp lệ.");
+            }
+
+            if (request.ClassId.HasValue && request.ClassId.Value <= 0)
+            {
+                return FailCreate("Vui lòng chọn lớp học hợp lệ.");
             }
 
             if (string.IsNullOrWhiteSpace(normalizedTitle))
@@ -122,6 +145,15 @@ namespace Flipped_Classroom.Services.Implementation
             if (!nodeExists)
             {
                 return FailCreate("Không tìm thấy bài học được chọn.");
+            }
+
+            if (request.ClassId.HasValue)
+            {
+                var classExists = await _context.Classes.AnyAsync(c => c.Id == request.ClassId.Value);
+                if (!classExists)
+                {
+                    return FailCreate("Không tìm thấy lớp học được chọn.");
+                }
             }
 
             var availableQuestionCount = await CountAvailableQuestionsAsync(request.NodeId, normalizedCategory);
@@ -159,10 +191,12 @@ namespace Flipped_Classroom.Services.Implementation
                 var quiz = new Quiz
                 {
                     NodeId = request.NodeId,
+                    ClassId = request.ClassId,
                     Title = normalizedTitle,
                     DurationMinutes = request.DurationMinutes,
                     Status = request.PublishNow ? PublishedStatus : DraftStatus,
                     PublishedAt = request.PublishNow ? DateTime.Now : null,
+                    IsAlwaysOpen = request.IsAlwaysOpen,
                     CreatedAt = DateTime.Now
                 };
 
@@ -181,6 +215,47 @@ namespace Flipped_Classroom.Services.Implementation
 
                 _context.QuizQuestions.AddRange(quizQuestions);
                 await _context.SaveChangesAsync();
+
+                if (!request.ClassId.HasValue)
+                {
+                    var node = await _context.Nodes.FindAsync(request.NodeId);
+                    if (node != null)
+                    {
+                        var classes = await _context.Classes
+                            .Where(c => c.CurriculumId == node.CurriculumId)
+                            .ToListAsync();
+
+                        foreach (var cls in classes)
+                        {
+                            var clonedQuiz = new Quiz
+                            {
+                                NodeId = quiz.NodeId,
+                                ClassId = cls.Id,
+                                Title = quiz.Title,
+                                DurationMinutes = quiz.DurationMinutes,
+                                Status = quiz.Status,
+                                PublishedAt = quiz.PublishedAt,
+                                IsAlwaysOpen = quiz.IsAlwaysOpen,
+                                CreatedAt = DateTime.Now
+                            };
+
+                            _context.Quizzes.Add(clonedQuiz);
+                            await _context.SaveChangesAsync();
+
+                            var clonedQuestions = quizQuestions.Select(qq => new QuizQuestion
+                            {
+                                QuizId = clonedQuiz.Id,
+                                QuestionId = qq.QuestionId,
+                                Point = qq.Point,
+                                DisplayOrder = qq.DisplayOrder
+                            }).ToList();
+
+                            _context.QuizQuestions.AddRange(clonedQuestions);
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 await transaction.CommitAsync();
 
                 return new CreateRandomQuizResult
@@ -515,7 +590,7 @@ namespace Flipped_Classroom.Services.Implementation
                     QuestionContent = row.Content,
                     Category = row.Category,
                     NodeTitle = row.NodeTitle,
-                    ClassName = row.ClassName,
+                    ClassName = row.ClassName ?? "-",
                     WrongStudentCount = row.WrongStudentCount,
                     TotalMistakeCount = row.TotalMistakeCount,
                     ClassStudentCount = classStudentCount,
@@ -566,8 +641,8 @@ namespace Flipped_Classroom.Services.Implementation
                 CorrectAnswer = question.CorrectAnswer,
                 Explanation = question.Explanation,
                 NodeTitle = question.Node.Title,
-                ClassName = question.Node.Class.ClassName,
-                ClassId = (int)question.Node.ClassId,
+                ClassName = question.Node.Class?.ClassName ?? "-",
+                ClassId = question.Node.ClassId ?? 0,
                 WrongStudentCount = wrongStudentCount,
                 TotalMistakeCount = totalMistakeCount,
                 ClassStudentCount = classStudentCount,
@@ -661,5 +736,52 @@ namespace Flipped_Classroom.Services.Implementation
                 Message = message
             };
         }
+        public async Task CloneCurriculumQuizzesToClassAsync(int curriculumId, int classId)
+        {
+            var templateQuizzes = await _context.Quizzes
+                .Include(q => q.QuizQuestions)
+                .Include(q => q.Node)
+                .Where(q => q.ClassId == null && q.Node.CurriculumId == curriculumId)
+                .ToListAsync();
+
+            if (!templateQuizzes.Any())
+            {
+                return;
+            }
+
+            foreach (var template in templateQuizzes)
+            {
+                var newQuiz = new Quiz
+                {
+                    NodeId = template.NodeId,
+                    ClassId = classId,
+                    Title = template.Title,
+                    DurationMinutes = template.DurationMinutes,
+                    Status = template.Status,
+                    PublishedAt = template.PublishedAt,
+                    IsAlwaysOpen = template.IsAlwaysOpen,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Quizzes.Add(newQuiz);
+                await _context.SaveChangesAsync(); // Save to get the new Quiz ID
+
+                if (template.QuizQuestions.Any())
+                {
+                    var newQuestions = template.QuizQuestions.Select(tq => new QuizQuestion
+                    {
+                        QuizId = newQuiz.Id,
+                        QuestionId = tq.QuestionId,
+                        Point = tq.Point,
+                        DisplayOrder = tq.DisplayOrder
+                    }).ToList();
+
+                    _context.QuizQuestions.AddRange(newQuestions);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
+

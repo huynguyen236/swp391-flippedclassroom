@@ -15,6 +15,7 @@ builder.Services.AddDbContext<Swp391NihongoContext>(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICurriculumService, CurriculumService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddAuthentication(options =>
 {
     // Cookie là scheme chính — mọi request authenticated đều dùng cookie
@@ -54,6 +55,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 
+builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 
