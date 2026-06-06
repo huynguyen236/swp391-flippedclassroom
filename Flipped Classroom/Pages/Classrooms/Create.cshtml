@@ -40,6 +40,14 @@
                         </div>
 
                         <div class="mb-3">
+                            <label asp-for="Class.CurriculumId" class="form-label text-muted fw-bold">Khung Chương Trình</label>
+                            <select asp-for="Class.CurriculumId" asp-items="@(ViewData["CurriculumId"] as SelectList)" class="form-select" required>
+                                <option value="">-- Chọn khung chương trình --</option>
+                            </select>
+                            <span asp-validation-for="Class.CurriculumId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="Class.Description" class="form-label text-muted fw-bold">Mô tả</label>
                             <textarea asp-for="Class.Description" class="form-control" rows="4" placeholder="Nhập mô tả lớp học..."></textarea>
                             <span asp-validation-for="Class.Description" class="text-danger"></span>

@@ -47,5 +47,10 @@ namespace Flipped_Classroom.Services.Interfaces
         /// Xác thực đăng nhập
         /// </summary>
         Task<(User? User, string? ErrorMessage)> AuthenticateAsync(string username, string password);
+
+        /// <summary>
+        /// Hash mật khẩu bằng SHA256
+        /// </summary>
+        string HashPassword(string password);
     }
 }

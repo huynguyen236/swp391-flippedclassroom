@@ -70,6 +70,123 @@
             </div>
         </div>
 
+        <!-- Lộ trình học -->
+        <div class="col-lg-8 mt-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lộ Trình Học</h4>
+                    @if (Model.Class.Curriculum != null)
+                    {
+                        <span class="badge bg-light text-primary rounded-pill px-3 py-2">@Model.Class.Curriculum.CurriculumName</span>
+                    }
+                </div>
+                <div class="card-body p-4">
+                    @if (Model.Class.Curriculum == null)
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
+                            <h6 class="text-muted">Lớp này chưa có khung chương trình.</h6>
+                        </div>
+                    }
+                    else
+                    {
+                        var allNodes = Model.Class.Curriculum.Nodes;
+                        var chapters = allNodes.Where(n => n.ParentNodeId == null).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+
+                        if (!chapters.Any())
+                        {
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-journal display-6 d-block mb-2 opacity-50"></i>
+                                <h6 class="text-muted">Khung chương trình chưa có bài học nào.</h6>
+                            </div>
+                        }
+                        else
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="accordion" id="teacherLearningPathAccordion"
+                                 data-toggle-url="@Url.Page("./Details", "ToggleNodeLock", new { id = Model.Class.Id })">
+                                @for (int i = 0; i < chapters.Count; i++)
+                                {
+                                    var chapter = chapters[i];
+                                    var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+                                    var collapseId = $"tc-collapse-{chapter.Id}";
+                                    var headingId = $"tc-heading-{chapter.Id}";
+
+                                    <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                        <h2 class="accordion-header" id="@headingId">
+                                            <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
+                                                <i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title
+                                                <span class="badge bg-light text-muted rounded-pill ms-2 small">@lessons.Count bài</span>
+                                            </button>
+                                        </h2>
+                                        <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
+                                            <div class="accordion-body p-0">
+                                                @if (!lessons.Any())
+                                                {
+                                                    <p class="text-muted text-center py-3 mb-0 small">Chương này chưa có bài học.</p>
+                                                }
+                                                else
+                                                {
+                                                    <ul class="list-group list-group-flush">
+                                                        @foreach (var lesson in lessons)
+                                                        {
+                                                            var isUnlocked = Model.NodeUnlockStatus.TryGetValue(lesson.Id, out var u) && u;
+                                                            var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var c) ? c : 0;
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <i class="bi bi-file-earmark-text text-primary"></i>
+                                                                    <span class="fw-medium">@lesson.Title</span>
+                                                                    <span class="node-lock-badge badge rounded-pill @(isUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")" data-node-id="@lesson.Id">
+                                                                        @if (isUnlocked)
+                                                                        {
+                                                                            <i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>
+                                                                        }
+                                                                    </span>
+                                                                    @if (lesson.Materials.Any())
+                                                                    {
+                                                                        <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                    }
+                                                                    <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
+                                                                </div>
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <button type="button"
+                                                                            class="node-lock-toggle btn btn-sm rounded-pill px-3 @(isUnlocked ? "btn-outline-warning" : "btn-outline-success")"
+                                                                            data-node-id="@lesson.Id"
+                                                                            data-unlocked="@(isUnlocked ? "true" : "false")"
+                                                                            title="@(isUnlocked ? "Khóa bài học này" : "Mở bài học này cho học sinh")">
+                                                                        @if (isUnlocked)
+                                                                        {
+                                                                            <i class="bi bi-lock"></i> <span class="label">Khóa</span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <i class="bi bi-unlock"></i> <span class="label">Mở</span>
+                                                                        }
+                                                                    </button>
+                                                                    <a asp-page="/StudentClasses/Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
+                                                                       class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                                        Xem bài <i class="bi bi-eye ms-1"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
         <div class="col-lg-8 mt-4">
             <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
                 <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -297,6 +414,68 @@
                             item.classList.add('d-none');
                         }
                     });
+                });
+            }
+
+            // === Mở / khóa node bằng AJAX (không reload trang) ===
+            const accordion = document.getElementById('teacherLearningPathAccordion');
+            if (accordion) {
+                const toggleUrl = accordion.dataset.toggleUrl;
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                accordion.addEventListener('click', async function (e) {
+                    const btn = e.target.closest('.node-lock-toggle');
+                    if (!btn) return;
+
+                    const nodeId = btn.dataset.nodeId;
+                    const originalHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const body = new URLSearchParams();
+                        body.append('nodeId', nodeId);
+                        body.append('__RequestVerificationToken', token);
+
+                        const res = await fetch(toggleUrl, {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            body: body
+                        });
+
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Thao tác thất bại');
+
+                        const unlocked = data.isUnlocked;
+
+                        // Cập nhật nút
+                        btn.dataset.unlocked = unlocked ? 'true' : 'false';
+                        btn.classList.toggle('btn-outline-warning', unlocked);
+                        btn.classList.toggle('btn-outline-success', !unlocked);
+                        btn.title = unlocked ? 'Khóa bài học này' : 'Mở bài học này cho học sinh';
+                        btn.innerHTML = unlocked
+                            ? '<i class="bi bi-lock"></i> <span class="label">Khóa</span>'
+                            : '<i class="bi bi-unlock"></i> <span class="label">Mở</span>';
+
+                        // Cập nhật badge tương ứng
+                        const badge = accordion.querySelector('.node-lock-badge[data-node-id="' + nodeId + '"]');
+                        if (badge) {
+                            badge.classList.toggle('bg-success-subtle', unlocked);
+                            badge.classList.toggle('text-success', unlocked);
+                            badge.classList.toggle('bg-secondary-subtle', !unlocked);
+                            badge.classList.toggle('text-secondary', !unlocked);
+                            badge.innerHTML = unlocked
+                                ? '<i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>'
+                                : '<i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>';
+                        }
+                    } catch (err) {
+                        btn.innerHTML = originalHtml;
+                        alert('Không thể đổi trạng thái bài học: ' + err.message);
+                    } finally {
+                        btn.disabled = false;
+                    }
                 });
             }
         });
