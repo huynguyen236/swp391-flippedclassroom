@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flipped_Classroom.Services.Implementation
 {
@@ -21,8 +21,8 @@ namespace Flipped_Classroom.Services.Implementation
         public async Task<List<Assignment>> GetAssignmentsByClassAsync(int classId)
         {
             // Lấy danh sách bài tập của lớp học kèm theo thông tin Node chương trình (nếu có)
-            return await _context.Assignments
-                .Include(a => a.Node)
+            return await _context
+                .Assignments.Include(a => a.Node)
                 .Where(a => a.ClassId == classId)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
@@ -31,8 +31,8 @@ namespace Flipped_Classroom.Services.Implementation
         public async Task<Assignment?> GetAssignmentByIdAsync(int assignmentId)
         {
             // Lấy thông tin bài tập theo ID
-            return await _context.Assignments
-                .Include(a => a.Node)
+            return await _context
+                .Assignments.Include(a => a.Node)
                 .Include(a => a.Class)
                 .FirstOrDefaultAsync(a => a.Id == assignmentId);
         }
@@ -53,11 +53,30 @@ namespace Flipped_Classroom.Services.Implementation
 
         public async Task<bool> DeleteAssignmentAsync(int assignmentId)
         {
-            // Tìm bài tập cần xóa
-            var assignment = await _context.Assignments.FindAsync(assignmentId);
+            // Tìm bài tập cần xóa cùng các bài nộp và phản hồi liên quan
+            var assignment = await _context
+                .Assignments.Include(a => a.Submissions)
+                    .ThenInclude(s => s.FeedbackComments)
+                .FirstOrDefaultAsync(a => a.Id == assignmentId);
+
             if (assignment == null)
             {
                 return false;
+            }
+
+            // Xóa phản hồi (feedback comments) của các bài nộp trước
+            var feedbackComments = assignment
+                .Submissions.SelectMany(s => s.FeedbackComments)
+                .ToList();
+            if (feedbackComments.Any())
+            {
+                _context.FeedbackComments.RemoveRange(feedbackComments);
+            }
+
+            // Xóa các bài nộp trước để tránh lỗi ràng buộc khóa ngoại (foreign key constraint)
+            if (assignment.Submissions.Any())
+            {
+                _context.Submissions.RemoveRange(assignment.Submissions);
             }
 
             // Xóa bài tập và lưu thay đổi
