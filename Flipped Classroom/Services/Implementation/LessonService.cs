@@ -56,9 +56,20 @@ namespace Flipped_Classroom.Services.Implementation
         {
             try
             {
+                // Khóa/mở chỉ quản lý ở node cha (chapter). Node con kế thừa trạng thái của cha.
+                // Nếu node này có cha thì xét trạng thái của cha; nếu là cha thì xét chính nó.
+                var node = await _db.Nodes
+                    .AsNoTracking()
+                    .Select(n => new { n.Id, n.ParentNodeId })
+                    .FirstOrDefaultAsync(n => n.Id == nodeId);
+
+                if (node == null) return false;
+
+                var effectiveNodeId = node.ParentNodeId ?? node.Id;
+
                 var status = await _db.ClassNodeStatuses
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(s => s.ClassId == classId && s.NodeId == nodeId);
+                    .FirstOrDefaultAsync(s => s.ClassId == classId && s.NodeId == effectiveNodeId);
 
                 // Không có bản ghi = khóa
                 return status?.IsUnlocked ?? false;
@@ -74,6 +85,8 @@ namespace Flipped_Classroom.Services.Implementation
         {
             try
             {
+                // Trạng thái thực tế chỉ lưu ở node cha. Trả về map nodeId(cha) -> đã mở chưa.
+                // Phía UI sẽ tra cứu trạng thái con qua cha của nó.
                 return await _db.ClassNodeStatuses
                     .AsNoTracking()
                     .Where(s => s.ClassId == classId)
