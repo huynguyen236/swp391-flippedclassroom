@@ -68,6 +68,8 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<ClassSchedule> ClassSchedules { get; set; }
+
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
@@ -615,6 +617,18 @@ public partial class Swp391NihongoContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Role).HasMaxLength(20);
             entity.Property(e => e.Username).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<ClassSchedule>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_ClassSchedules");
+
+            entity.Property(e => e.Room).HasMaxLength(50);
+
+            entity.HasOne(d => d.Class).WithMany(p => p.ClassSchedules)
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ClassSchedule_Class");
         });
 
         OnModelCreatingPartial(modelBuilder);
