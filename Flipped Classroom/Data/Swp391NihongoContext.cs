@@ -24,6 +24,8 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<ClassMember> ClassMembers { get; set; }
 
+    public virtual DbSet<ClassNodeStatus> ClassNodeStatuses { get; set; }
+
     public virtual DbSet<DailyReviewLog> DailyReviewLogs { get; set; }
 
     public virtual DbSet<FeedbackComment> FeedbackComments { get; set; }
@@ -150,6 +152,24 @@ public partial class Swp391NihongoContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Member_User");
         });
+        modelBuilder.Entity<ClassNodeStatus>(entity =>
+        {
+            entity.HasKey(e => new { e.ClassId, e.NodeId }).HasName("PK_ClassNodeStatus");
+
+            entity.Property(e => e.IsUnlocked).HasDefaultValue(false);
+            entity.Property(e => e.UnlockedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Class).WithMany()
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ClassNodeStatus_Class");
+
+            entity.HasOne(d => d.Node).WithMany()
+                .HasForeignKey(d => d.NodeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ClassNodeStatus_Node");
+        });
+
         modelBuilder.Entity<Curriculum>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_Curriculums");
@@ -488,6 +508,12 @@ public partial class Swp391NihongoContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
 
+            entity.HasOne(d => d.Class).WithMany()
+                .HasForeignKey(d => d.ClassId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Result_Class");
+
             entity.HasOne(d => d.Quiz).WithMany(p => p.QuizResults)
                 .HasForeignKey(d => d.QuizId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -526,10 +552,15 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.ToTable("StudentProgress");
 
-            entity.HasIndex(e => new { e.StudentId, e.NodeId }, "UQ_Student_Node").IsUnique();
+            entity.HasIndex(e => new { e.StudentId, e.NodeId, e.ClassId }, "UQ_Student_Node_Class").IsUnique();
 
             entity.Property(e => e.CompletedAt).HasColumnType("datetime");
             entity.Property(e => e.IsCompleted).HasDefaultValue(false);
+
+            entity.HasOne(d => d.Class).WithMany()
+                .HasForeignKey(d => d.ClassId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Progress_Class");
 
             entity.HasOne(d => d.Node).WithMany(p => p.StudentProgresses)
                 .HasForeignKey(d => d.NodeId)

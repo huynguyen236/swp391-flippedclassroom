@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Flipped_Classroom.Pages.MyClasses
@@ -16,13 +17,21 @@ namespace Flipped_Classroom.Pages.MyClasses
     public class DetailsModel : PageModel
     {
         private readonly Swp391NihongoContext _context;
+        private readonly ILessonService _lessonService;
 
-        public DetailsModel(Swp391NihongoContext context)
+        public DetailsModel(Swp391NihongoContext context, ILessonService lessonService)
         {
             _context = context;
+            _lessonService = lessonService;
         }
 
-        public Class Class { get; set; } = default!; 
+        public Class Class { get; set; } = default!;
+
+        // Trạng thái mở/khóa từng node trong lớp (nodeId -> đã mở chưa). Không có khóa = chưa mở.
+        public Dictionary<int, bool> NodeUnlockStatus { get; set; } = new();
+
+        // Tiến độ học của chính học sinh này (nodeId -> đã hoàn thành chưa)
+        public Dictionary<int, bool> NodeCompletionStatus { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -43,6 +52,9 @@ namespace Flipped_Classroom.Pages.MyClasses
                     .ThenInclude(cm => cm.User)
                 .Include(c => c.Groups)
                     .ThenInclude(g => g.GroupMembers)
+                .Include(c => c.Curriculum)
+                    .ThenInclude(cu => cu!.Nodes)
+                        .ThenInclude(n => n.Materials)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (classroom == null)
@@ -57,6 +69,10 @@ namespace Flipped_Classroom.Pages.MyClasses
             }
 
             Class = classroom;
+
+            // Trạng thái mở/khóa node của lớp + tiến độ của chính học sinh
+            NodeUnlockStatus = await _lessonService.GetNodeUnlockStatusAsync(classroom.Id);
+            NodeCompletionStatus = await _lessonService.GetNodeCompletionAsync(classroom.Id, userId);
 
             return Page();
         }

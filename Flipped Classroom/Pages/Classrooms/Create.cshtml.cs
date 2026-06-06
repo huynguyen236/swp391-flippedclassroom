@@ -23,12 +23,7 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public IActionResult OnGet()
         {
-            var managers = _context.Users
-                           .Where(u => u.Role == "Teacher")
-                           .ToList();
-
-            // 2. Nạp danh sách đã lọc vào ViewData dưới dạng SelectList
-            ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
+            LoadSelectLists();
             return Page();
         }
 
@@ -39,11 +34,17 @@ namespace Flipped_Classroom.Pages.Classrooms
         {
             // Remove navigation properties from validation
             ModelState.Remove("Class.Manager");
+            ModelState.Remove("Class.Curriculum");
+
+            // Bắt buộc chọn khung chương trình khi tạo lớp
+            if (Class == null || Class.CurriculumId == null)
+            {
+                ModelState.AddModelError("Class.CurriculumId", "Vui lòng chọn khung chương trình cho lớp.");
+            }
 
             if (!ModelState.IsValid || _context.Classes == null || Class == null)
             {
-                var managers = _context.Users.Where(u => u.Role == "Teacher").ToList();
-                ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
+                LoadSelectLists();
                 return Page();
             }
 
@@ -56,6 +57,19 @@ namespace Flipped_Classroom.Pages.Classrooms
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
+        }
+
+        private void LoadSelectLists()
+        {
+            var managers = _context.Users
+                .Where(u => u.Role == "Teacher")
+                .ToList();
+            ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
+
+            var curriculums = _context.Curriculums
+                .OrderBy(c => c.CurriculumName)
+                .ToList();
+            ViewData["CurriculumId"] = new SelectList(curriculums, "Id", "CurriculumName");
         }
     }
 }

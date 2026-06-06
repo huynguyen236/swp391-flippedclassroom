@@ -11,9 +11,13 @@ public partial class StudentProgress
 
     public int NodeId { get; set; }
 
+    public int ClassId { get; set; }
+
     public bool? IsCompleted { get; set; }
 
     public DateTime? CompletedAt { get; set; }
+
+    public virtual Class Class { get; set; } = null!;
 
     public virtual Node Node { get; set; } = null!;
 

@@ -1,5 +1,6 @@
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,10 +15,12 @@ namespace Flipped_Classroom.Pages.Admin.Users
     public class CreateModel : PageModel
     {
         private readonly Swp391NihongoContext _context;
+        private readonly IAuthService _authService;
 
-        public CreateModel(Swp391NihongoContext context)
+        public CreateModel(Swp391NihongoContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         [BindProperty]
@@ -99,7 +102,7 @@ namespace Flipped_Classroom.Pages.Admin.Users
                 Email = Input.Email.Trim(),
                 FirstName = Input.FirstName.Trim(),
                 LastName = Input.LastName.Trim(),
-                PasswordHash = Input.Password, // Stored as plain text per user instruction
+                PasswordHash = _authService.HashPassword(Input.Password),
                 Role = Input.Role,
                 IsActive = Input.IsActive,
                 CreatedAt = DateTime.Now
@@ -112,5 +115,6 @@ namespace Flipped_Classroom.Pages.Admin.Users
 
             return RedirectToPage("/Admin/Users/Index");
         }
+
     }
 }
