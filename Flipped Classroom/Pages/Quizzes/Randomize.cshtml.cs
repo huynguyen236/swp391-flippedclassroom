@@ -17,7 +17,7 @@ namespace Flipped_Classroom.Pages.Quizzes
             _quizService = quizService;
         }
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public CreateRandomQuizRequest Input { get; set; } = new()
         {
             QuestionCount = 20,
@@ -25,14 +25,22 @@ namespace Flipped_Classroom.Pages.Quizzes
             PublishNow = true
         };
 
+        [BindProperty(SupportsGet = true)]
+        public bool IsStrictMode { get; set; }
+
         public List<SelectListItem> NodeOptions { get; set; } = new();
+        public List<SelectListItem> ClassOptions { get; set; } = new();
 
         public List<Quiz> RecentQuizzes { get; set; } = new();
 
         public int? AvailableQuestionCount { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(int? nodeId, int? classId, bool isStrictMode = false)
         {
+            if (nodeId.HasValue) Input.NodeId = nodeId.Value;
+            if (classId.HasValue) Input.ClassId = classId.Value;
+            IsStrictMode = isStrictMode;
+
             await LoadPageDataAsync();
         }
 
@@ -44,6 +52,8 @@ namespace Flipped_Classroom.Pages.Quizzes
             {
                 return Page();
             }
+
+            Input.IsAlwaysOpen = !IsStrictMode; // Strict mode = false, Free mode = true
 
             var result = await _quizService.CreateRandomQuizAsync(Input);
             AvailableQuestionCount = result.AvailableQuestionCount;
@@ -77,6 +87,15 @@ namespace Flipped_Classroom.Pages.Quizzes
                 {
                     Value = n.Id.ToString(),
                     Text = $"{n.Title}"
+                })
+                .ToList();
+
+            var classes = await _quizService.GetClassesAsync();
+            ClassOptions = classes
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.ClassName
                 })
                 .ToList();
 

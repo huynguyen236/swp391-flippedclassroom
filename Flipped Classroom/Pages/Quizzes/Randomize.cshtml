@@ -41,6 +41,14 @@
                 </div>
 
                 <div class="mb-3">
+                    <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học (để trống nếu tạo Template)</label>
+                    <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light">
+                        <option value="">Chọn lớp học</option>
+                    </select>
+                    <span asp-validation-for="Input.ClassId" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
                     <label asp-for="Input.NodeId" class="form-label fw-semibold">Bài học</label>
                     <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select bg-light" id="nodeSelect" required>
                         <option value="">Chọn bài học</option>
@@ -84,6 +92,11 @@
                     <label asp-for="Input.PublishNow" class="form-check-label fw-semibold">Phát hành ngay cho học viên trong lớp</label>
                 </div>
 
+                <div class="form-check form-switch mb-4">
+                    <input asp-for="IsStrictMode" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsStrictMode" class="form-check-label fw-semibold text-warning">Strict Mode (Khóa bài test theo bài học, chỉ mở khi học viên hoàn thành tiến độ)</label>
+                </div>
+
                 <button type="submit" class="btn btn-custom-primary w-100 d-flex align-items-center justify-content-center gap-2">
                     <i class="bi bi-shuffle"></i>
                     Tạo bài test
@@ -118,8 +131,8 @@
                                         <div class="text-muted small">@quiz.DurationMinutes phút</div>
                                     </td>
                                     <td>
-                                        <div class="text-dark">@quiz.Node.Title</div>
-                                        <div class="text-muted small">@quiz.Node.Class.ClassName</div>
+                                        <div class="text-dark">@quiz.Node?.Title</div>
+                                        <div class="text-muted small">@quiz.Node?.Class?.ClassName</div>
                                     </td>
                                     <td class="text-center fw-semibold">@quiz.QuizQuestions.Count</td>
                                     <td>
@@ -177,3 +190,4 @@
         updateAvailability();
     </script>
 }
+

@@ -19,11 +19,13 @@ namespace Flipped_Classroom.Pages.TeacherClasses
     {
         private readonly Flipped_Classroom.Data.Swp391NihongoContext _context;
         private readonly ILessonService _lessonService;
+        private readonly IQuizService _quizService;
 
-        public DetailsModel(Flipped_Classroom.Data.Swp391NihongoContext context, ILessonService lessonService)
+        public DetailsModel(Flipped_Classroom.Data.Swp391NihongoContext context, ILessonService lessonService, IQuizService quizService)
         {
             _context = context;
             _lessonService = lessonService;
+            _quizService = quizService;
         }
 
         public Class Class { get; set; } = default!;
@@ -255,5 +257,6 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             return new JsonResult(new { success = true, isUnlocked });
         }
+
     }
 }

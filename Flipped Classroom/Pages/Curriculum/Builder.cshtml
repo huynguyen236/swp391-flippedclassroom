@@ -95,6 +95,9 @@
                                         <span>@rootNode.Title</span>
                                     </button>
                                     <div class="d-flex align-items-center gap-1 z-3">
+                                        <a href="/Quizzes/Randomize?IsStrictMode=true&Input.NodeId=@rootNode.Id" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" title="Tạo Test (Strict Mode)">
+                                            <i class="bi bi-file-earmark-check text-warning"></i> <span class="d-none d-sm-inline text-warning" style="font-size: 0.8rem;">Tạo Test</span>
+                                        </a>
                                         <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" onclick="openAddNodeModal(@rootNode.Id)" title="Thêm bài học con">
                                             <i class="bi bi-plus-circle text-primary"></i> <span class="d-none d-sm-inline text-primary" style="font-size: 0.8rem;">Bài học con</span>
                                         </button>

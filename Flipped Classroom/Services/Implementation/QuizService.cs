@@ -54,13 +54,22 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var classIds = _context.ClassMembers
                 .Where(cm => cm.UserId == studentId)
-                .Select(cm => cm.ClassId);
+                .Select(cm => cm.ClassId)
+                .ToList();
+
+            var unlockedNodeIds = _context.ClassNodeStatuses
+                .Where(cns => classIds.Contains(cns.ClassId) && cns.IsUnlocked)
+                .Select(cns => cns.NodeId)
+                .ToList();
 
             return await _context.Quizzes
                 .Include(q => q.Node)
                     .ThenInclude(n => n.Class)
                 .Include(q => q.QuizQuestions)
-                .Where(q => q.Status == PublishedStatus && classIds.Contains(q.Node.ClassId ?? 0))
+                .Where(q => q.Status == PublishedStatus 
+                         && q.ClassId.HasValue 
+                         && classIds.Contains(q.ClassId.Value)
+                         && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)))
                 .OrderByDescending(q => q.PublishedAt)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
@@ -70,7 +79,13 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var classIds = _context.ClassMembers
                 .Where(cm => cm.UserId == studentId)
-                .Select(cm => cm.ClassId);
+                .Select(cm => cm.ClassId)
+                .ToList();
+
+            var unlockedNodeIds = _context.ClassNodeStatuses
+                .Where(cns => classIds.Contains(cns.ClassId) && cns.IsUnlocked)
+                .Select(cns => cns.NodeId)
+                .ToList();
 
             return await _context.Quizzes
                 .Include(q => q.Node)
@@ -80,7 +95,9 @@ namespace Flipped_Classroom.Services.Implementation
                         .ThenInclude(question => question.QuestionOptions)
                 .FirstOrDefaultAsync(q => q.Id == quizId
                     && q.Status == PublishedStatus
-                    && classIds.Contains(q.Node.ClassId ?? 0));
+                    && q.ClassId.HasValue 
+                    && classIds.Contains(q.ClassId.Value)
+                    && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)));
         }
 
         public async Task<int> CountAvailableQuestionsAsync(int nodeId, string category)
@@ -98,7 +115,7 @@ namespace Flipped_Classroom.Services.Implementation
                 return FailCreate("Vui lòng chọn bài học hợp lệ.");
             }
 
-            if (request.ClassId <= 0)
+            if (request.ClassId.HasValue && request.ClassId.Value <= 0)
             {
                 return FailCreate("Vui lòng chọn lớp học hợp lệ.");
             }
@@ -129,10 +146,13 @@ namespace Flipped_Classroom.Services.Implementation
                 return FailCreate("Không tìm thấy bài học được chọn.");
             }
 
-            var classExists = await _context.Classes.AnyAsync(c => c.Id == request.ClassId);
-            if (!classExists)
+            if (request.ClassId.HasValue)
             {
-                return FailCreate("Không tìm thấy lớp học được chọn.");
+                var classExists = await _context.Classes.AnyAsync(c => c.Id == request.ClassId.Value);
+                if (!classExists)
+                {
+                    return FailCreate("Không tìm thấy lớp học được chọn.");
+                }
             }
 
             var availableQuestionCount = await CountAvailableQuestionsAsync(request.NodeId, normalizedCategory);
@@ -175,6 +195,7 @@ namespace Flipped_Classroom.Services.Implementation
                     DurationMinutes = request.DurationMinutes,
                     Status = request.PublishNow ? PublishedStatus : DraftStatus,
                     PublishedAt = request.PublishNow ? DateTime.Now : null,
+                    IsAlwaysOpen = request.IsAlwaysOpen,
                     CreatedAt = DateTime.Now
                 };
 
@@ -673,5 +694,52 @@ namespace Flipped_Classroom.Services.Implementation
                 Message = message
             };
         }
+        public async Task CloneCurriculumQuizzesToClassAsync(int curriculumId, int classId)
+        {
+            var templateQuizzes = await _context.Quizzes
+                .Include(q => q.QuizQuestions)
+                .Include(q => q.Node)
+                .Where(q => q.ClassId == null && q.Node.CurriculumId == curriculumId)
+                .ToListAsync();
+
+            if (!templateQuizzes.Any())
+            {
+                return;
+            }
+
+            foreach (var template in templateQuizzes)
+            {
+                var newQuiz = new Quiz
+                {
+                    NodeId = template.NodeId,
+                    ClassId = classId,
+                    Title = template.Title,
+                    DurationMinutes = template.DurationMinutes,
+                    Status = template.Status,
+                    PublishedAt = template.PublishedAt,
+                    IsAlwaysOpen = template.IsAlwaysOpen,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Quizzes.Add(newQuiz);
+                await _context.SaveChangesAsync(); // Save to get the new Quiz ID
+
+                if (template.QuizQuestions.Any())
+                {
+                    var newQuestions = template.QuizQuestions.Select(tq => new QuizQuestion
+                    {
+                        QuizId = newQuiz.Id,
+                        QuestionId = tq.QuestionId,
+                        Point = tq.Point,
+                        DisplayOrder = tq.DisplayOrder
+                    }).ToList();
+
+                    _context.QuizQuestions.AddRange(newQuestions);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
+
