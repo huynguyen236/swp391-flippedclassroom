@@ -68,6 +68,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
         [BindProperty]
         public GradeSubmissionRequest GradeRequest { get; set; } = default!;
 
+        public List<QaThread> QaThreads { get; set; } = new();
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null || _context.Classes == null)
@@ -461,6 +463,15 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 AssignmentSubmissions[assign.Id] = submissions;
             }
 
+            // Nạp danh sách Hỏi & Đáp (Q&A Threads)
+            QaThreads = await _context
+                .QaThreads.Include(t => t.Student)
+                .Include(t => t.QaReplies)
+                    .ThenInclude(r => r.User)
+                .Where(t => t.ClassId == id)
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
             return true;
         }
 
@@ -502,6 +513,159 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             var isUnlocked = await _lessonService.IsNodeUnlockedAsync(id, nodeId);
 
             return new JsonResult(new { success = true, isUnlocked });
+        }
+
+        public async Task<IActionResult> OnPostCreateThreadAsync(int id, string questionText)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Phiên đăng nhập đã hết hạn." }
+                )
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            var isMember =
+                isManager
+                || await _context.ClassMembers.AnyAsync(cm =>
+                    cm.ClassId == id && cm.UserId == userId
+                );
+            if (!isMember)
+            {
+                return new JsonResult(
+                    new { success = false, message = "Bạn không có quyền trong lớp học này." }
+                )
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(questionText))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Nội dung câu hỏi không được để trống." }
+                );
+            }
+
+            var thread = new QaThread
+            {
+                ClassId = id,
+                StudentId = userId,
+                QuestionText = questionText.Trim(),
+                CreatedAt = DateTime.Now,
+                UpvoteCount = 0,
+            };
+
+            _context.QaThreads.Add(thread);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+
+            return new JsonResult(
+                new
+                {
+                    success = true,
+                    thread = new
+                    {
+                        id = thread.Id,
+                        studentName = user?.Username ?? "Unknown",
+                        questionText = thread.QuestionText,
+                        createdAtFormatted = thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                            ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"),
+                    },
+                }
+            );
+        }
+
+        public async Task<IActionResult> OnPostCreateReplyAsync(
+            int id,
+            int threadId,
+            string replyText
+        )
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Phiên đăng nhập đã hết hạn." }
+                )
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var isManager = await _context.Classes.AnyAsync(c =>
+                c.Id == id && c.ManagerId == userId
+            );
+            var isMember =
+                isManager
+                || await _context.ClassMembers.AnyAsync(cm =>
+                    cm.ClassId == id && cm.UserId == userId
+                );
+            if (!isMember)
+            {
+                return new JsonResult(
+                    new { success = false, message = "Bạn không có quyền trong lớp học này." }
+                )
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            var thread = await _context.QaThreads.FirstOrDefaultAsync(t =>
+                t.Id == threadId && t.ClassId == id
+            );
+            if (thread == null)
+            {
+                return new JsonResult(
+                    new { success = false, message = "Không tìm thấy chủ đề thảo luận." }
+                )
+                {
+                    StatusCode = 404,
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(replyText))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Nội dung phản hồi không được để trống." }
+                );
+            }
+
+            var reply = new QaReply
+            {
+                QaThreadId = threadId,
+                UserId = userId,
+                ReplyText = replyText.Trim(),
+                CreatedAt = DateTime.Now,
+            };
+
+            _context.QaReplies.Add(reply);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+
+            return new JsonResult(
+                new
+                {
+                    success = true,
+                    reply = new
+                    {
+                        id = reply.Id,
+                        userName = user?.Username ?? "Unknown",
+                        userRole = user?.Role ?? "Teacher",
+                        replyText = reply.ReplyText,
+                        createdAtFormatted = reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                            ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"),
+                    },
+                }
+            );
         }
     }
 }

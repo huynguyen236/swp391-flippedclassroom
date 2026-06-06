@@ -3,13 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Flipped_Classroom.Pages.Classrooms
 {
@@ -23,7 +23,7 @@ namespace Flipped_Classroom.Pages.Classrooms
             _context = context;
         }
 
-        public Class Class { get; set; } = default!; 
+        public Class Class { get; set; } = default!;
 
         public List<User> AvailableUsers { get; set; } = default!;
 
@@ -37,8 +37,8 @@ namespace Flipped_Classroom.Pages.Classrooms
                 return NotFound();
             }
 
-            var classroom = await _context.Classes
-                .Include(c => c.Manager)
+            var classroom = await _context
+                .Classes.Include(c => c.Manager)
                 .Include(c => c.ClassMembers)
                     .ThenInclude(cm => cm.User)
                 .Include(c => c.Groups)
@@ -54,8 +54,8 @@ namespace Flipped_Classroom.Pages.Classrooms
 
             // Get available users who are not currently in the classroom
             var existingMemberIds = classroom.ClassMembers.Select(cm => cm.UserId).ToList();
-            var availableUsers = await _context.Users
-                .Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
+            var availableUsers = await _context
+                .Users.Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
                 .OrderBy(u => u.Username)
                 .ToListAsync();
 
@@ -73,14 +73,16 @@ namespace Flipped_Classroom.Pages.Classrooms
             }
 
             var classExists = await _context.Classes.AnyAsync(c => c.Id == id);
-            if (!classExists) 
+            if (!classExists)
             {
                 return NotFound();
             }
 
             foreach (var studentId in SelectedStudentIds)
             {
-                var memberExists = await _context.ClassMembers.AnyAsync(cm => cm.ClassId == id && cm.UserId == studentId);
+                var memberExists = await _context.ClassMembers.AnyAsync(cm =>
+                    cm.ClassId == id && cm.UserId == studentId
+                );
                 if (!memberExists)
                 {
                     var newMember = new ClassMember
@@ -88,7 +90,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                         ClassId = id,
                         UserId = studentId,
                         JoinedAt = DateTime.Now,
-                        IsSupportTeam = false
+                        IsSupportTeam = false,
                     };
                     _context.ClassMembers.Add(newMember);
                 }
@@ -103,10 +105,14 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public async Task<IActionResult> OnPostCreateGroupsAsync(int id)
         {
-            if (NumberOfGroupsToCreate <= 0) return RedirectToPage(new { id });
+            if (NumberOfGroupsToCreate <= 0)
+                return RedirectToPage(new { id });
 
-            var classExists = await _context.Classes.Include(c => c.Groups).FirstOrDefaultAsync(c => c.Id == id);
-            if (classExists == null) return NotFound();
+            var classExists = await _context
+                .Classes.Include(c => c.Groups)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (classExists == null)
+                return NotFound();
 
             int groupsToAdd = NumberOfGroupsToCreate - classExists.Groups.Count;
 
@@ -118,7 +124,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                     {
                         ClassId = id,
                         GroupName = "temp", // Name will be updated below
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.Now,
                     };
                     classExists.Groups.Add(newGroup);
                     _context.Groups.Add(newGroup);
@@ -126,8 +132,8 @@ namespace Flipped_Classroom.Pages.Classrooms
             }
             else if (groupsToAdd < 0)
             {
-                var groupsToRemove = classExists.Groups
-                    .OrderByDescending(g => g.Id)
+                var groupsToRemove = classExists
+                    .Groups.OrderByDescending(g => g.Id)
                     .Take(Math.Abs(groupsToAdd))
                     .ToList();
 
@@ -138,11 +144,13 @@ namespace Flipped_Classroom.Pages.Classrooms
                 _context.Groups.RemoveRange(groupsToRemove);
             }
 
-            // Standardize all group names sequentially (Nhóm 1, Nhóm 2, ...)
-            var allGroups = classExists.Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id).ToList();
+            // Standardize all group names sequentially (Nhï¿½m 1, Nhï¿½m 2, ...)
+            var allGroups = classExists
+                .Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id)
+                .ToList();
             for (int i = 0; i < allGroups.Count; i++)
             {
-                allGroups[i].GroupName = $"Nhóm {i + 1}";
+                allGroups[i].GroupName = $"Nhï¿½m {i + 1}";
             }
 
             await _context.SaveChangesAsync();
@@ -152,9 +160,14 @@ namespace Flipped_Classroom.Pages.Classrooms
         public async Task<IActionResult> OnPostAssignGroupAsync(int id, int studentId, int? groupId)
         {
             // Remove existing group assignment for this student in this class
-            var classGroupIds = await _context.Groups.Where(g => g.ClassId == id).Select(g => g.Id).ToListAsync();
-            var existingMemberships = await _context.GroupMembers
-                .Where(gm => classGroupIds.Contains(gm.GroupId) && gm.StudentId == studentId)
+            var classGroupIds = await _context
+                .Groups.Where(g => g.ClassId == id)
+                .Select(g => g.Id)
+                .ToListAsync();
+            var existingMemberships = await _context
+                .GroupMembers.Where(gm =>
+                    classGroupIds.Contains(gm.GroupId) && gm.StudentId == studentId
+                )
                 .ToListAsync();
 
             if (existingMemberships.Any())
@@ -167,7 +180,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                 var newMembership = new GroupMember
                 {
                     GroupId = groupId.Value,
-                    StudentId = studentId
+                    StudentId = studentId,
                 };
                 _context.GroupMembers.Add(newMembership);
             }
@@ -178,8 +191,9 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public async Task<IActionResult> OnPostRemoveStudentAsync(int id, int memberUserId)
         {
-            var classMember = await _context.ClassMembers
-                .FirstOrDefaultAsync(cm => cm.ClassId == id && cm.UserId == memberUserId);
+            var classMember = await _context.ClassMembers.FirstOrDefaultAsync(cm =>
+                cm.ClassId == id && cm.UserId == memberUserId
+            );
 
             if (classMember != null)
             {
