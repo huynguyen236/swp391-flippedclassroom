@@ -117,7 +117,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
 
             var classExists = await _context.Classes.AnyAsync(c => c.Id == id);
-            if (!classExists) 
+            if (!classExists)
             {
                 return NotFound();
             }

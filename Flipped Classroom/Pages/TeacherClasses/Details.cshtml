@@ -137,15 +137,15 @@
                                                         class="node-lock-toggle btn btn-sm rounded-pill px-3 me-3 flex-shrink-0 @(chapterUnlocked ? "btn-outline-warning" : "btn-outline-success")"
                                                         data-node-id="@chapter.Id"
                                                         data-unlocked="@(chapterUnlocked ? "true" : "false")"
-                                                    title="@(chapterUnlocked ? "Khóa chương này (khóa toàn bộ bài học bên trong)" : "Mở chương này cho học sinh (mở toàn bộ bài học bên trong)")">
-                                                @if (chapterUnlocked)
-                                                {
-                                                    <i class="bi bi-lock"></i> <span class="label">Khóa</span>
-                                                }
-                                                else
-                                                {
-                                                    <i class="bi bi-unlock"></i> <span class="label">Mở</span>
-                                                }
+                                                        title="@(chapterUnlocked ? "Khóa chương này (khóa toàn bộ bài học bên trong)" : "Mở chương này cho học sinh (mở toàn bộ bài học bên trong)")">
+                                                    @if (chapterUnlocked)
+                                                    {
+                                                        <i class="bi bi-lock"></i> <span class="label">Khóa</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-unlock"></i> <span class="label">Mở</span>
+                                                    }
                                                 </button>
                                             </div>
                                         </h2>
@@ -442,14 +442,14 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const studentSearchInput = document.getElementById('studentSearchInput');
             if (studentSearchInput) {
-                studentSearchInput.addEventListener('keyup', function() {
+                studentSearchInput.addEventListener('keyup', function () {
                     const filter = this.value.toLowerCase();
                     const options = document.querySelectorAll('.student-option');
 
-                    options.forEach(function(item) {
+                    options.forEach(function (item) {
                         const text = item.textContent.toLowerCase();
                         if (text.includes(filter)) {
                             item.classList.remove('d-none');

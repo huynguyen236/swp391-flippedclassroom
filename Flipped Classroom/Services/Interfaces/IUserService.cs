@@ -1,5 +1,5 @@
-using Flipped_Classroom.Models;
 using System.Threading.Tasks;
+using Flipped_Classroom.Models;
 
 namespace Flipped_Classroom.Services.Interfaces
 {
@@ -17,18 +17,20 @@ namespace Flipped_Classroom.Services.Interfaces
         /// Cập nhật thông tin cá nhân (Họ tên, số điện thoại, ảnh đại diện).
         /// </summary>
         Task<(bool Success, string? ErrorMessage)> UpdateProfileAsync(
-            int userId, 
-            string firstName, 
-            string lastName, 
-            string? phoneNumber, 
-            string? avatarUrl);
+            int userId,
+            string firstName,
+            string lastName,
+            string? phoneNumber,
+            string? avatarUrl
+        );
 
         /// <summary>
         /// Thay đổi mật khẩu người dùng.
         /// </summary>
         Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(
-            int userId, 
-            string currentPassword, 
-            string newPassword);
+            int userId,
+            string currentPassword,
+            string newPassword
+        );
     }
 }

@@ -46,7 +46,7 @@ namespace Flipped_Classroom.Services.Interfaces
         public string Title { get; set; } = string.Empty;
 
         public int QuestionCount { get; set; }
-                
+
         public int DurationMinutes { get; set; }
 
         public bool PublishNow { get; set; }
@@ -169,4 +169,3 @@ namespace Flipped_Classroom.Services.Interfaces
         public int MasteredCount { get; set; }
     }
 }
-
