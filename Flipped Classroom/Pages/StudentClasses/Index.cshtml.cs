@@ -1,15 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
-using System.Security.Claims;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Flipped_Classroom.Pages.MyClasses
+namespace Flipped_Classroom.Pages.StudentClasses
 {
     [Authorize(Roles = "Student")]
     public class IndexModel : PageModel
@@ -30,8 +30,8 @@ namespace Flipped_Classroom.Pages.MyClasses
             {
                 if (_context.Classes != null)
                 {
-                    Class = await _context.Classes
-                        .Include(c => c.Manager)
+                    Class = await _context
+                        .Classes.Include(c => c.Manager)
                         .Where(c => c.ClassMembers.Any(cm => cm.UserId == userId))
                         .ToListAsync();
                 }

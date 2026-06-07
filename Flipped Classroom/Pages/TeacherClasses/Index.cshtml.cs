@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
-using System.Security.Claims;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Flipped_Classroom.Pages.TeacherClasses
 {
@@ -30,8 +30,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             {
                 if (_context.Classes != null)
                 {
-                    Class = await _context.Classes
-                        .Include(c => c.Manager)
+                    Class = await _context
+                        .Classes.Include(c => c.Manager)
                         .Where(c => c.ManagerId == userId)
                         .ToListAsync();
                 }
