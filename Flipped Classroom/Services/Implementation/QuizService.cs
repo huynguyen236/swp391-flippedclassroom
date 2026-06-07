@@ -66,8 +66,8 @@ namespace Flipped_Classroom.Services.Implementation
                 .Include(q => q.Class)
                 .Include(q => q.Node)
                 .Include(q => q.QuizQuestions)
-                .Where(q => q.Status == PublishedStatus 
-                         && q.ClassId.HasValue 
+                .Where(q => q.Status == PublishedStatus
+                         && q.ClassId.HasValue
                          && classIds.Contains(q.ClassId.Value)
                          && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)))
                 .OrderByDescending(q => q.PublishedAt)
@@ -95,7 +95,7 @@ namespace Flipped_Classroom.Services.Implementation
                         .ThenInclude(question => question.QuestionOptions)
                 .FirstOrDefaultAsync(q => q.Id == quizId
                     && q.Status == PublishedStatus
-                    && q.ClassId.HasValue 
+                    && q.ClassId.HasValue
                     && classIds.Contains(q.ClassId.Value)
                     && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)));
         }
@@ -892,4 +892,3 @@ namespace Flipped_Classroom.Services.Implementation
         }
     }
 }
-

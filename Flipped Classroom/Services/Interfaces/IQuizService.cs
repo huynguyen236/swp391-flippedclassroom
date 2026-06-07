@@ -16,20 +16,13 @@ namespace Flipped_Classroom.Services.Interfaces
 
         Task<CreateRandomQuizResult> CreateRandomQuizAsync(CreateRandomQuizRequest request);
 
-        Task<SubmitQuizResult> SubmitQuizAsync(
-            int quizId,
-            int studentId,
-            Dictionary<int, int> selectedOptionIds
-        );
+        Task<SubmitQuizResult> SubmitQuizAsync(int quizId, int studentId, Dictionary<int, int> selectedOptionIds, Dictionary<int, string> textAnswers);
 
         Task<List<StudentMistake>> GetDailyReviewMistakesAsync(int studentId, int questionCount);
 
         Task<bool> IsDailyReviewRequiredAsync(int studentId);
 
-        Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(
-            int studentId,
-            Dictionary<int, int> selectedOptionIds
-        );
+        Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(int studentId, Dictionary<int, int> selectedOptionIds, Dictionary<int, string> textAnswers);
 
         Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId);
 
@@ -53,7 +46,7 @@ namespace Flipped_Classroom.Services.Interfaces
         public string Title { get; set; } = string.Empty;
 
         public int QuestionCount { get; set; }
-                
+
         public int DurationMinutes { get; set; }
 
         public bool PublishNow { get; set; }
@@ -176,4 +169,3 @@ namespace Flipped_Classroom.Services.Interfaces
         public int MasteredCount { get; set; }
     }
 }
-
