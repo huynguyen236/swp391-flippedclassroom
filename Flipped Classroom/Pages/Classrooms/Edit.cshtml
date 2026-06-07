@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Flipped_Classroom.Pages.Classrooms.EditModel
 
 @{
@@ -19,6 +19,7 @@
                         <input type="hidden" asp-for="Class.Id" />
                         <input type="hidden" asp-for="Class.InviteCode" />
                         <input type="hidden" asp-for="Class.CreatedAt" />
+                        <input type="hidden" asp-for="Class.CurriculumId" />
 
                         <div class="mb-3">
                             <label asp-for="Class.ClassName" class="form-label text-muted fw-bold">Tên Lớp Học</label>

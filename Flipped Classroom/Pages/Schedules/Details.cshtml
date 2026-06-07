@@ -1,0 +1,262 @@
+@page
+@model Flipped_Classroom.Pages.Schedules.DetailsModel
+@using Flipped_Classroom.Services
+@{
+    ViewData["Title"] = $"Lịch học — {Model.TargetClass.ClassName}";
+
+    // Calendar calculations
+    var firstDayOfMonth = new DateOnly(Model.DisplayYear, Model.DisplayMonth, 1);
+    var daysInMonth = DateTime.DaysInMonth(Model.DisplayYear, Model.DisplayMonth);
+    var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek; // 0 = Sunday
+    // Shift so Monday = 0
+    var startOffset = (startDayOfWeek == 0) ? 6 : startDayOfWeek - 1;
+
+    var prevMonth = firstDayOfMonth.AddMonths(-1);
+    var nextMonth = firstDayOfMonth.AddMonths(1);
+
+    var monthNames = new[] { "", "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12" };
+
+    var slotBadgeStyle = Model.DetectedSlot switch
+    {
+        "N5" => "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;",
+        "N4" => "background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;",
+        "N3" => "background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;",
+        "N2" => "background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;",
+        "N1" => "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;",
+        _ => "background: #6c757d; color: white;"
+    };
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Schedules" class="text-decoration-none text-primary">Quản lý Lịch học</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.TargetClass.ClassName</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #1a73e8;">
+                <i class="bi bi-calendar2-week-fill me-2"></i>@Model.TargetClass.ClassName
+            </h2>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                @if (Model.DetectedSlot != null)
+                {
+                    <span class="badge px-3 py-2 fw-normal" style="border-radius: 8px; @slotBadgeStyle">
+                        Slot @Model.DetectedSlot
+                    </span>
+                }
+                <span class="text-muted small">
+                    <i class="bi bi-collection me-1"></i>Tổng: <strong>@Model.Schedules.Count</strong> buổi
+                </span>
+                @if (Model.TargetClass.StartDate.HasValue && Model.TargetClass.EndDate.HasValue)
+                {
+                    <span class="text-muted small">
+                        <i class="bi bi-calendar-range me-1"></i>
+                        @Model.TargetClass.StartDate.Value.ToString("dd/MM/yyyy") — @Model.TargetClass.EndDate.Value.ToString("dd/MM/yyyy")
+                    </span>
+                }
+            </div>
+        </div>
+        <a asp-page="./Index" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Calendar View -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <!-- Month Navigation -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a asp-page="./Details" asp-route-classId="@Model.TargetClass.Id"
+                           asp-route-month="@prevMonth.Month" asp-route-year="@prevMonth.Year"
+                           class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                           style="width: 36px; height: 36px;">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <h5 class="fw-bold mb-0" style="color: #1a73e8;">
+                            @monthNames[Model.DisplayMonth] @Model.DisplayYear
+                        </h5>
+                        <a asp-page="./Details" asp-route-classId="@Model.TargetClass.Id"
+                           asp-route-month="@nextMonth.Month" asp-route-year="@nextMonth.Year"
+                           class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                           style="width: 36px; height: 36px;">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="calendar-grid">
+                        <div class="calendar-header">
+                            <div class="cal-cell text-muted fw-semibold">T2</div>
+                            <div class="cal-cell text-muted fw-semibold">T3</div>
+                            <div class="cal-cell text-muted fw-semibold">T4</div>
+                            <div class="cal-cell text-muted fw-semibold">T5</div>
+                            <div class="cal-cell text-muted fw-semibold">T6</div>
+                            <div class="cal-cell text-muted fw-semibold">T7</div>
+                            <div class="cal-cell text-muted fw-semibold" style="color: #dc3545 !important;">CN</div>
+                        </div>
+                        <div class="calendar-body">
+                            @for (int i = 0; i < startOffset; i++)
+                            {
+                                <div class="cal-cell cal-empty"></div>
+                            }
+                            @for (int day = 1; day <= daysInMonth; day++)
+                            {
+                                var currentDate = new DateOnly(Model.DisplayYear, Model.DisplayMonth, day);
+                                var isScheduleDay = Model.ScheduleDates.Contains(currentDate);
+                                var isToday = currentDate == DateOnly.FromDateTime(DateTime.Now);
+                                var cellClass = "cal-cell cal-day";
+                                if (isScheduleDay) cellClass += " cal-active";
+                                if (isToday) cellClass += " cal-today";
+
+                                <div class="@cellClass" title="@(isScheduleDay ? ScheduleSlotHelper.GetVietnameseDayName(currentDate.DayOfWeek) : "")">
+                                    <span>@day</span>
+                                    @if (isScheduleDay)
+                                    {
+                                        <div class="cal-dot"></div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="d-flex gap-4 mt-3 justify-content-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #4285f4);"></div>
+                            <small class="text-muted">Ngày có lịch</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff6b6b;"></div>
+                            <small class="text-muted">Hôm nay</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule List -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                    <h6 class="fw-bold text-muted mb-0">
+                        <i class="bi bi-list-ul me-1"></i> Danh sách buổi học — @monthNames[Model.DisplayMonth]
+                    </h6>
+                </div>
+                <div class="card-body px-4 pb-4" style="max-height: 500px; overflow-y: auto;">
+                    @{
+                        var monthSchedules = Model.Schedules
+                            .Where(s => s.StudyDate.Month == Model.DisplayMonth && s.StudyDate.Year == Model.DisplayYear)
+                            .ToList();
+                    }
+                    @if (!monthSchedules.Any())
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0">Không có buổi học trong tháng này.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        var sessionIndex = 0;
+                        @foreach (var schedule in monthSchedules)
+                        {
+                            sessionIndex++;
+                            var dayName = ScheduleSlotHelper.GetVietnameseDayName(schedule.StudyDate.DayOfWeek);
+                            var isPast = schedule.StudyDate < DateOnly.FromDateTime(DateTime.Now);
+                            <div class="schedule-item d-flex align-items-center gap-3 p-3 mb-2 rounded-3 @(isPast ? "opacity-50" : "")"
+                                 style="background: #f8f9fa; transition: all 0.2s;">
+                                <div class="text-center" style="min-width: 48px;">
+                                    <div class="fw-bold" style="font-size: 1.25rem; color: #1a73e8; line-height: 1;">
+                                        @schedule.StudyDate.Day
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.7rem;">@dayName</small>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold small">
+                                        @schedule.StudyDate.ToString("dd/MM/yyyy")
+                                    </div>
+                                    <small class="text-primary">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
+                                    </small>
+                                </div>
+                                @if (isPast)
+                                {
+                                    <span class="badge bg-secondary rounded-pill small">Đã qua</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success rounded-pill small">Sắp tới</span>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .calendar-grid {
+            width: 100%;
+        }
+        .calendar-header, .calendar-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-header {
+            margin-bottom: 8px;
+        }
+        .cal-cell {
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            position: relative;
+        }
+        .cal-day {
+            cursor: default;
+            transition: all 0.2s;
+            color: #495057;
+        }
+        .cal-day:hover {
+            background-color: #f0f4ff;
+        }
+        .cal-empty {
+            visibility: hidden;
+        }
+        .cal-active {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%) !important;
+            color: white !important;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+        .cal-today {
+            border: 2px solid #ff6b6b;
+        }
+        .cal-active.cal-today {
+            border: 2px solid #ffdd59;
+        }
+        .cal-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: white;
+            margin: 2px auto 0;
+        }
+        .schedule-item:hover {
+            background: #e8f0fe !important;
+            transform: translateX(4px);
+        }
+    </style>
+}

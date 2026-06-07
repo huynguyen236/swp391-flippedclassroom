@@ -45,6 +45,7 @@ namespace Flipped_Classroom.Pages.Classrooms
         public async Task<IActionResult> OnPostAsync()
         {
             ModelState.Remove("Class.Manager");
+            ModelState.Remove("Class.Curriculum");
 
             if (!ModelState.IsValid)
             {
@@ -57,6 +58,7 @@ namespace Flipped_Classroom.Pages.Classrooms
 
             _context.Entry(Class).Property(x => x.CreatedAt).IsModified = false;
             _context.Entry(Class).Property(x => x.InviteCode).IsModified = false;
+            _context.Entry(Class).Property(x => x.CurriculumId).IsModified = false;
 
             try
             {

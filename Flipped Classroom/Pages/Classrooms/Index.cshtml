@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Flipped_Classroom.Pages.Classrooms.IndexModel
 @{
     ViewData["Title"] = "Classrooms";
@@ -52,6 +52,9 @@
 
                     <div class="card-footer bg-white border-0 px-4 pb-4 pt-0 d-flex gap-2">
                         <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1">Chi tiết</a>
+                        <a href="/Schedules/Details?classId=@item.Id" class="btn btn-outline-info btn-sm rounded-pill">
+                            <i class="bi bi-calendar-week"></i> Lịch học
+                        </a>
                         <a asp-page="./Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm rounded-pill">Sửa</a>
                         <a asp-page="./Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm rounded-pill">Xóa</a>
                     </div>
