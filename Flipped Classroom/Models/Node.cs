@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Flipped_Classroom.Models;
@@ -7,7 +7,9 @@ public partial class Node
 {
     public int Id { get; set; }
 
-    public int ClassId { get; set; }
+    public int? ClassId { get; set; }
+
+    public int CurriculumId { get; set; }
 
     public int? ParentNodeId { get; set; }
 
@@ -27,7 +29,9 @@ public partial class Node
 
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
-    public virtual Class Class { get; set; } = null!;
+    public virtual Class? Class { get; set; }
+
+    public virtual Curriculum Curriculum { get; set; } = null!;
 
     public virtual ICollection<Node> InverseParentNode { get; set; } = new List<Node>();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Flipped_Classroom.Models;
@@ -45,6 +45,8 @@ public partial class User
 
     public virtual ICollection<ClassMember> ClassMembers { get; set; } = new List<ClassMember>();
 
+    public virtual ICollection<DailyReviewLog> DailyReviewLogs { get; set; } = new List<DailyReviewLog>();
+
     public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
 
     public virtual ICollection<FeedbackComment> FeedbackComments { get; set; } = new List<FeedbackComment>();
@@ -64,4 +66,6 @@ public partial class User
     public virtual ICollection<StudentProgress> StudentProgresses { get; set; } = new List<StudentProgress>();
 
     public virtual ICollection<Submission> Submissions { get; set; } = new List<Submission>();
+
+    public virtual ICollection<Curriculum> Curriculums { get; set; } = new List<Curriculum>();
 }

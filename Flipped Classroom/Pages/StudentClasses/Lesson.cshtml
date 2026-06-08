@@ -1,0 +1,553 @@
+@page "{classId:int}/{nodeId:int}"
+@model Flipped_Classroom.Pages.StudentClasses.LessonModel
+@{
+    ViewData["Title"] = Model.Lesson.Title;
+    var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    int.TryParse(currentUserIdStr, out int currentUserId);
+    var isTeacher = User.IsInRole("Teacher") || Model.Class.ManagerId == currentUserId;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="text-decoration-none">@Model.Class.ClassName</a>
+                    </li>
+                    @if (Model.Lesson.ParentNode != null)
+                    {
+                        <li class="breadcrumb-item text-muted">@Model.Lesson.ParentNode.Title</li>
+                    }
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Lesson.Title</li>
+                </ol>
+            </nav>
+
+            <!-- Lesson header -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
+                    <h2 class="fw-bold mb-1">@Model.Lesson.Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(Model.Lesson.Description))
+                    {
+                        <p class="mb-0 text-white-50">@Model.Lesson.Description</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Materials -->
+            @if (!Model.Lesson.Materials.Any())
+            {
+                <div class="card border-0 shadow-sm text-center py-5" style="border-radius: 15px;">
+                    <div class="card-body text-muted">
+                        <i class="bi bi-folder2-open display-4 d-block mb-2 opacity-50"></i>
+                        <h6>Bài học này chưa có tài liệu.</h6>
+                    </div>
+                </div>
+            }
+            else
+            {
+                foreach (var mat in Model.Lesson.Materials)
+                {
+                    var isYoutube = string.Equals(mat.MaterialType, "YouTube", System.StringComparison.OrdinalIgnoreCase);
+                    var isPdf = mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
+                    var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
+                    var isVideo = ext is ".mp4" or ".webm" or ".ogg";
+
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
+                            <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
+                            <span class="fw-semibold">@mat.Title</span>
+                        </div>
+                        <div class="card-body p-0">
+                            @if (isYoutube)
+                            {
+                                var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="@embed" title="@mat.Title" frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen></iframe>
+                                </div>
+                            }
+                            else if (isVideo)
+                            {
+                                <div class="ratio ratio-16x9 bg-black">
+                                    <video controls preload="metadata" style="width:100%;height:100%;object-fit:contain;">
+                                        <source src="@mat.Url" type="video/@(ext.TrimStart('.'))" />
+                                        Trình duyệt của bạn không hỗ trợ phát video.
+                                    </video>
+                                </div>
+                            }
+                            else if (isPdf)
+                            {
+                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                    <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
+                                </div>
+                                <div class="p-3 border-top">
+                                    <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="bi bi-download me-1"></i> Tải xuống / Mở tab mới
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="p-4 text-center">
+                                    <p class="text-muted mb-3">Tài liệu đính kèm</p>
+                                    <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Mở tài liệu
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- Section Hỏi & Đáp (Lesson Comments) -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-white p-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-chat-dots me-2"></i> Hỏi đáp & Thảo luận
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Form đặt câu hỏi/bình luận mới -->
+                    <form id="createCommentForm" class="mb-4">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <textarea id="commentTextInput" class="form-control" rows="3" 
+                                      placeholder="Đặt câu hỏi hoặc viết bình luận về bài học này..." 
+                                      required style="border-radius: 10px; resize: none;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4" style="background-color: #1a73e8; border: none;">
+                            Đăng bình luận
+                        </button>
+                    </form>
+
+                    <!-- Danh sách bình luận -->
+                    <div id="commentsContainer" class="d-flex flex-column gap-4">
+                        @if (Model.QaThreads != null && Model.QaThreads.Any())
+                        {
+                            foreach (var thread in Model.QaThreads)
+                            {
+                                var canDeleteThread = thread.StudentId == currentUserId || isTeacher;
+                                var threadUserRole = thread.Student?.Role ?? "Student";
+                                var isThreadTeacher = threadUserRole == "Teacher" || threadUserRole == "Manager" || threadUserRole == "Admin";
+
+                                <div class="comment-card border-bottom pb-3" data-comment-id="@thread.Id">
+                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
+                                                 style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
+                                                @(thread.Student?.Username?.FirstOrDefault() ?? '?')
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark">@thread.Student?.Username</strong>
+                                                @if (isThreadTeacher)
+                                                {
+                                                    <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>
+                                                }
+                                                <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                            </div>
+                                        </div>
+                                        @if (canDeleteThread)
+                                        {
+                                            <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="@thread.Id" title="Xóa bình luận">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                    <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">@thread.QuestionText</p>
+                                    
+                                    <!-- Phản hồi (Replies) -->
+                                    <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
+                                        <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="@thread.Id">
+                                            @foreach (var reply in thread.QaReplies.OrderBy(r => r.CreatedAt))
+                                            {
+                                                var canDeleteReply = reply.UserId == currentUserId || isTeacher;
+                                                var replyUserRole = reply.User?.Role ?? "Student";
+                                                var isReplyTeacher = replyUserRole == "Teacher" || replyUserRole == "Manager" || replyUserRole == "Admin";
+
+                                                <div class="reply-item py-1 border-bottom-0" data-reply-id="@reply.Id">
+                                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                                        <div class="d-flex align-items-center">
+                                                            <strong class="@(isReplyTeacher ? "text-primary" : "text-dark") small">
+                                                                @reply.User?.Username
+                                                            </strong>
+                                                            @if (isReplyTeacher)
+                                                            {
+                                                                <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem;">Giáo viên</span>
+                                                            }
+                                                            <span class="text-muted small ms-2" style="font-size: 0.75rem;">@reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                        </div>
+                                                        @if (canDeleteReply)
+                                                        {
+                                                            <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="@reply.Id" style="font-size: 0.8rem;" title="Xóa phản hồi">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                    <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">@reply.ReplyText</p>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- Form phản hồi -->
+                                        <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="@thread.Id">
+                                            <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
+                                            <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
+                                                    style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
+                                                <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div id="noCommentsMessage" class="text-center py-4 text-muted">
+                                <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
+                                <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.IsStudentView)
+            {
+                @Html.AntiForgeryToken()
+                <div id="lessonCompleteCard" class="card border-0 shadow-sm mb-4" style="border-radius: 15px;"
+                     data-toggle-url="@Url.Page("./Lesson", "ToggleComplete", new { classId = Model.Class.Id, nodeId = Model.Lesson.Id })">
+                    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-4">
+                        <div id="lessonCompleteStatus" class="d-flex align-items-center gap-2">
+                            @if (Model.IsCompleted)
+                            {
+                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                <span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-circle text-muted fs-4"></i>
+                                <span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>
+                            }
+                        </div>
+                        <button type="button" id="lessonCompleteBtn"
+                                class="btn rounded-pill px-4 @(Model.IsCompleted ? "btn-outline-secondary" : "btn-success")"
+                                data-completed="@(Model.IsCompleted ? "true" : "false")">
+                            @if (Model.IsCompleted)
+                            {
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <div class="text-center">
+                <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="btn btn-outline-secondary px-4 rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại lớp
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // === Học sinh tự tích / bỏ tích hoàn thành bằng AJAX (không reload trang) ===
+            const card = document.getElementById('lessonCompleteCard');
+            if (card) {
+                const btn = document.getElementById('lessonCompleteBtn');
+                const status = document.getElementById('lessonCompleteStatus');
+                const toggleUrl = card.dataset.toggleUrl;
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                btn.addEventListener('click', async function () {
+                    const current = btn.dataset.completed === 'true';
+                    const next = !current; // trạng thái muốn đặt
+
+                    const originalHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const body = new URLSearchParams();
+                        body.append('isCompleted', next ? 'true' : 'false');
+                        body.append('__RequestVerificationToken', token);
+
+                        const res = await fetch(toggleUrl, {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            body: body
+                        });
+
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Thao tác thất bại');
+
+                        const completed = data.isCompleted;
+
+                        // Cập nhật nút
+                        btn.dataset.completed = completed ? 'true' : 'false';
+                        btn.classList.toggle('btn-outline-secondary', completed);
+                        btn.classList.toggle('btn-success', !completed);
+                        btn.innerHTML = completed
+                            ? '<i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>'
+                            : '<i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>';
+
+                        // Cập nhật dòng trạng thái
+                        status.innerHTML = completed
+                            ? '<i class="bi bi-check-circle-fill text-success fs-4"></i><span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>'
+                            : '<i class="bi bi-circle text-muted fs-4"></i><span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>';
+                    } catch (err) {
+                        btn.innerHTML = originalHtml;
+                        console.error('Không thể cập nhật trạng thái:', err);
+                    } finally {
+                        btn.disabled = false;
+                    }
+                });
+            }
+
+            // === AJAX Q&A Lesson Comments Logic ===
+            const createCommentForm = document.getElementById('createCommentForm');
+            if (createCommentForm) {
+                createCommentForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const textarea = document.getElementById('commentTextInput');
+                    const text = textarea.value.trim();
+                    if (!text) return;
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new URLSearchParams();
+                    formData.append('questionText', text);
+                    formData.append('__RequestVerificationToken', token);
+
+                    try {
+                        const response = await fetch('?handler=CreateComment&classId=@Model.Class.Id&nodeId=@Model.Lesson.Id', {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            textarea.value = '';
+                            
+                            const container = document.getElementById('commentsContainer');
+                            const noCommentsMsg = document.getElementById('noCommentsMessage');
+                            if (noCommentsMsg) {
+                                noCommentsMsg.remove();
+                            }
+
+                            const isCommentTeacher = result.comment.userRole === 'Teacher' || result.comment.userRole === 'Manager' || result.comment.userRole === 'Admin';
+                            const commentHtml = `
+                                <div class="comment-card border-bottom pb-3" data-comment-id="${result.comment.id}">
+                                    <div class="d-flex align-items-start justify-content-between mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
+                                                 style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
+                                                ${result.comment.studentName.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark">${result.comment.studentName}</strong>
+                                                ${isCommentTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>' : ''}
+                                                <span class="text-muted small ms-2">${result.comment.createdAtFormatted}</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="${result.comment.id}" title="Xóa bình luận">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">${result.comment.questionText}</p>
+                                    
+                                    <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
+                                        <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="${result.comment.id}">
+                                        </div>
+
+                                        <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="${result.comment.id}">
+                                            <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
+                                            <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
+                                                    style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
+                                                <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            `;
+                            container.insertAdjacentHTML('afterbegin', commentHtml);
+                            
+                            const newCommentCard = container.querySelector(`.comment-card[data-comment-id="${result.comment.id}"]`);
+                            const newForm = newCommentCard.querySelector('.create-reply-form');
+                            const newDeleteBtn = newCommentCard.querySelector('.delete-comment-btn');
+                            
+                            bindReplyFormHandler(newForm);
+                            bindDeleteCommentBtn(newDeleteBtn);
+                        } else {
+                            console.error(result.message || 'Lỗi khi tạo bình luận.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            // AJAX Q&A Reply Creation
+            function bindReplyFormHandler(form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const threadId = this.dataset.commentId;
+                    const input = this.querySelector('.reply-input');
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new URLSearchParams();
+                    formData.append('threadId', threadId);
+                    formData.append('replyText', text);
+                    formData.append('__RequestVerificationToken', token);
+
+                    try {
+                        const response = await fetch('?handler=CreateReply&classId=@Model.Class.Id', {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            },
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            input.value = '';
+                            
+                            const repliesList = document.querySelector(`.replies-list[data-comment-id="${threadId}"]`);
+                            if (repliesList) {
+                                const isTeacher = result.reply.userRole === 'Teacher' || result.reply.userRole === 'Manager' || result.reply.userRole === 'Admin';
+                                const replyHtml = `
+                                    <div class="reply-item py-1 border-bottom-0" data-reply-id="${result.reply.id}">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <div class="d-flex align-items-center">
+                                                <strong class="${isTeacher ? 'text-primary' : 'text-dark'} small">
+                                                    ${result.reply.userName}
+                                                </strong>
+                                                ${isTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem;">Giáo viên</span>' : ''}
+                                                <span class="text-muted small ms-2" style="font-size: 0.75rem;">${result.reply.createdAtFormatted}</span>
+                                            </div>
+                                            <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="${result.reply.id}" style="font-size: 0.8rem;" title="Xóa phản hồi">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
+                                    </div>
+                                `;
+                                repliesList.insertAdjacentHTML('beforeend', replyHtml);
+                                
+                                const newDeleteBtn = repliesList.querySelector(`.delete-reply-btn[data-reply-id="${result.reply.id}"]`);
+                                if (newDeleteBtn) {
+                                    bindDeleteReplyBtn(newDeleteBtn);
+                                }
+                            }
+                        } else {
+                            console.error(result.message || 'Lỗi khi tạo phản hồi.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            function bindDeleteCommentBtn(btn) {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Bạn có chắc chắn muốn xóa bình luận này cùng toàn bộ các câu trả lời liên quan?')) return;
+                    const commentId = this.dataset.commentId;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const body = new URLSearchParams();
+                    body.append('threadId', commentId);
+                    body.append('__RequestVerificationToken', token);
+
+                    try {
+                        const response = await fetch('?handler=DeleteComment&classId=@Model.Class.Id', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            body: body
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            const card = document.querySelector(`.comment-card[data-comment-id="${commentId}"]`);
+                            if (card) {
+                                card.remove();
+                                checkEmptyComments();
+                            }
+                        } else {
+                            console.error(result.message || 'Lỗi khi xóa bình luận.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            function bindDeleteReplyBtn(btn) {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Bạn có chắc chắn muốn xóa phản hồi này?')) return;
+                    const replyId = this.dataset.replyId;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const body = new URLSearchParams();
+                    body.append('replyId', replyId);
+                    body.append('__RequestVerificationToken', token);
+
+                    try {
+                        const response = await fetch('?handler=DeleteReply&classId=@Model.Class.Id', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': token },
+                            body: body
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            const replyItem = document.querySelector(`.reply-item[data-reply-id="${replyId}"]`);
+                            if (replyItem) {
+                                replyItem.remove();
+                            }
+                        } else {
+                            console.error(result.message || 'Lỗi khi xóa phản hồi.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            function checkEmptyComments() {
+                const container = document.getElementById('commentsContainer');
+                if (container && container.querySelectorAll('.comment-card').length === 0) {
+                    container.innerHTML = `
+                        <div id="noCommentsMessage" class="text-center py-4 text-muted">
+                            <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
+                            <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Khởi tạo các sự kiện cho các bình luận có sẵn
+            document.querySelectorAll('.delete-comment-btn').forEach(btn => bindDeleteCommentBtn(btn));
+            document.querySelectorAll('.delete-reply-btn').forEach(btn => bindDeleteReplyBtn(btn));
+            document.querySelectorAll('.create-reply-form').forEach(form => bindReplyFormHandler(form));
+        });
+    </script>
+}

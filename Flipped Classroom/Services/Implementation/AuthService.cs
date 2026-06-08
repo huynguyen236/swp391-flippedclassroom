@@ -130,7 +130,7 @@ namespace Flipped_Classroom.Services.Implementations
         /// <summary>
         /// Hash mật khẩu bằng SHA256
         /// </summary>
-        private static string HashPassword(string password)
+        public string HashPassword(string password)
         {
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
@@ -193,6 +193,10 @@ namespace Flipped_Classroom.Services.Implementations
             if (HashPassword(password) != user.PasswordHash)
             {
                 return (null, "Wrong Username or Password.");
+            }
+            if (user.IsActive == false)
+            {
+                return (null, "Your account has been deactivated. Please contact the administrator.");
             }
 
             // Kiểm tra tài khoản có bị vô hiệu hóa không

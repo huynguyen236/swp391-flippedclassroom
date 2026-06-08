@@ -1,0 +1,64 @@
+@page "{id:int}"
+@model Flipped_Classroom.Pages.Quizzes.TakeModel
+@{
+    ViewData["Title"] = "Làm bài test";
+    var orderedQuestions = Model.Quiz.QuizQuestions.OrderBy(q => q.DisplayOrder).ToList();
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-0 text-dark">@Model.Quiz.Title</h2>
+        <p class="text-muted mb-0">@(Model.Quiz.Class?.ClassName ?? "-") - @Model.Quiz.Node.Title</p>
+    </div>
+    <div class="d-flex gap-2 text-muted">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">@orderedQuestions.Count câu</span>
+        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">@Model.Quiz.DurationMinutes phút</span>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+        <div>@TempData["ErrorMessage"]</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<form method="post">
+    <div class="d-flex flex-column gap-3">
+        @foreach (var quizQuestion in orderedQuestions)
+        {
+            var question = quizQuestion.Question;
+            <div class="card-custom p-4">
+                <div class="d-flex justify-content-between gap-3 mb-3">
+                    <h5 class="fw-bold text-dark mb-0">Câu @quizQuestion.DisplayOrder</h5>
+                    <span class="badge bg-info bg-opacity-10 text-info">@question.Category</span>
+                </div>
+                <p class="fw-semibold mb-3">@question.Content</p>
+
+                @if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
+                {
+                    @foreach (var option in question.QuestionOptions.OrderBy(o => o.Id))
+                    {
+                        <label class="d-flex align-items-start gap-2 border rounded-3 p-3 mb-2 bg-light" style="cursor: pointer;">
+                            <input class="form-check-input mt-1" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required />
+                            <span>@option.OptionContent</span>
+                        </label>
+                    }
+                }
+                else
+                {
+                    <input type="text" name="TextAnswers[@question.Id]" class="form-control" placeholder="Nhập câu trả lời của bạn..." required />
+                }
+            </div>
+        }
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-page="/Quizzes/Available" class="btn btn-outline-secondary px-4">Hủy</a>
+        <button type="submit" class="btn btn-custom-primary px-4">
+            <i class="bi bi-check2-circle me-1"></i> Nộp bài
+        </button>
+    </div>
+</form>

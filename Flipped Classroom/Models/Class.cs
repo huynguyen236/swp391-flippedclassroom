@@ -11,6 +11,8 @@ public partial class Class
 
     public int ManagerId { get; set; }
 
+    public int CurriculumId { get; set; }
+
     public string? InviteCode { get; set; }
 
     public string? Description { get; set; }
@@ -33,7 +35,11 @@ public partial class Class
 
     public virtual User Manager { get; set; } = null!;
 
+    public virtual Curriculum Curriculum { get; set; } = null!;
+
     public virtual ICollection<Node> Nodes { get; set; } = new List<Node>();
+
+    public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
 
     public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
 

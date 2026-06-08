@@ -12,7 +12,7 @@ namespace Flipped_Classroom.Services.Interfaces
             string category,
             int pageIndex,
             int pageSize
-            );
+        );
 
         Task<bool> DeleteQuestionAsync(int questionId);
 

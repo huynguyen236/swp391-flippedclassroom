@@ -7,9 +7,24 @@ namespace Flipped_Classroom.Pages
     {
         public IActionResult OnGet()
         {
-            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+            if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToPage("/Admin/Dashboard");
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToPage("/Admin/Dashboard");
+                }
+                if (User.IsInRole("Manager"))
+                {
+                    return RedirectToPage("/Classrooms/Index");
+                }
+                if (User.IsInRole("Teacher"))
+                {
+                    return RedirectToPage("/TeacherClasses/Index");
+                }
+                if (User.IsInRole("Student"))
+                {
+                    return RedirectToPage("/StudentClasses/Index");
+                }
             }
             return Page();
         }

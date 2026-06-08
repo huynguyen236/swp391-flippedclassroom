@@ -11,11 +11,17 @@ public partial class QuizResult
 
     public int QuizId { get; set; }
 
+    public int? ClassId { get; set; }
+
     public decimal Score { get; set; }
 
     public DateTime? CompletedAt { get; set; }
 
+    public virtual Class? Class { get; set; }
+
     public virtual Quiz Quiz { get; set; } = null!;
+
+    public virtual ICollection<QuizAnswer> QuizAnswers { get; set; } = new List<QuizAnswer>();
 
     public virtual User Student { get; set; } = null!;
 }

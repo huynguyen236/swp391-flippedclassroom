@@ -1,0 +1,515 @@
+@page "{id:int}"
+@model Flipped_Classroom.Pages.Curriculums.BuilderModel
+@{
+    ViewData["Title"] = "Trình xây dựng lộ trình";
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Breadcrumb & Back button -->
+    <div class="mb-3">
+        <a asp-page="./Index" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1">
+            <i class="bi bi-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <!-- Header Page -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-gradient-header text-white overflow-hidden position-relative">
+        <div class="card-body p-4 position-relative z-1">
+            <span class="badge bg-white text-primary mb-2 px-3 py-1.5 rounded-pill fw-semibold fs-8 uppercase">LMS Builder</span>
+            <h1 class="h2 mb-1 fw-bold">@Model.Curriculum.CurriculumName</h1>
+            <p class="mb-0 text-white-50 max-width-600">
+                @(string.IsNullOrWhiteSpace(Model.Curriculum.Description) ? "Trình thiết kế và xây dựng lộ trình học tập, chương trình học và tài liệu giảng dạy." : Model.Curriculum.Description)
+            </p>
+        </div>
+        <div class="header-decoration"></div>
+    </div>
+
+    <!-- Status Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+            <div>
+                @TempData["SuccessMessage"]
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <div>
+                @TempData["ErrorMessage"]
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Builder Section -->
+    <div class="row">
+        <!-- Main Curriculum Tree -->
+        <div class="col-lg-9 col-md-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold text-dark mb-0">Cấu trúc khung chương trình</h4>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-1.5" onclick="openAddNodeModal(null)">
+                    <i class="bi bi-plus-lg"></i> Thêm Chương Mới
+                </button>
+            </div>
+
+            @{
+                var rootNodes = Model.Curriculum.Nodes.Where(n => n.ParentNodeId == null).ToList();
+            }
+
+            @if (!rootNodes.Any())
+            {
+                <div class="card border-0 shadow-sm rounded-4 py-5 text-center bg-white">
+                    <div class="card-body">
+                        <div class="text-muted mb-3">
+                            <i class="bi bi-list-nested display-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Khung chương trình trống</h5>
+                        <p class="text-muted max-width-400 mx-auto mb-4">Bạn chưa tạo chương hay bài học nào cho khung chương trình này. Bắt đầu ngay bằng cách thêm chương học đầu tiên.</p>
+                        <button type="button" class="btn btn-primary rounded-pill px-4" onclick="openAddNodeModal(null)">
+                            Thêm Chương Mới
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="accordion accordion-custom" id="curriculumAccordion">
+                    @for (int i = 0; i < rootNodes.Count; i++)
+                    {
+                        var rootNode = rootNodes[i];
+                        var childNodes = Model.Curriculum.Nodes.Where(n => n.ParentNodeId == rootNode.Id).ToList();
+                        var accordionId = $"collapse-{rootNode.Id}";
+                        var headingId = $"heading-{rootNode.Id}";
+
+                        <div class="accordion-item mb-3 border-0 shadow-sm rounded-4 overflow-hidden bg-light-item">
+                            <h2 class="accordion-header" id="@headingId">
+                                <div class="accordion-button-wrapper d-flex align-items-center justify-content-between pe-3 bg-white border-bottom">
+                                    <button class="accordion-button collapsed border-0 py-3 fw-bold text-dark flex-grow-1 bg-transparent shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#@accordionId" aria-expanded="false" aria-controls="@accordionId">
+                                        <i class="bi bi-folder-fill text-warning me-2 fs-5"></i>
+                                        <span>@rootNode.Title</span>
+                                    </button>
+                                    <div class="d-flex align-items-center gap-1 z-3">
+                                        <a href="/Quizzes/Randomize?IsStrictMode=true&Input.NodeId=@rootNode.Id" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" title="Tạo Test (Strict Mode)">
+                                            <i class="bi bi-file-earmark-check text-warning"></i> <span class="d-none d-sm-inline text-warning" style="font-size: 0.8rem;">Tạo Test</span>
+                                        </a>
+                                        <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" onclick="openAddNodeModal(@rootNode.Id)" title="Thêm bài học con">
+                                            <i class="bi bi-plus-circle text-primary"></i> <span class="d-none d-sm-inline text-primary" style="font-size: 0.8rem;">Bài học con</span>
+                                        </button>
+                                        <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" onclick="openAddMaterialModal(@rootNode.Id, '@rootNode.Title')" title="Thêm học liệu">
+                                            <i class="bi bi-file-earmark-plus text-success"></i> <span class="d-none d-sm-inline text-success" style="font-size: 0.8rem;">Học liệu</span>
+                                        </button>
+                                        <form method="post" asp-page-handler="DeleteNode" asp-route-nodeId="@rootNode.Id" class="d-inline ms-1" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chương này cùng toàn bộ các bài học bên trong?');">
+                                            <button type="submit" class="btn btn-link btn-sm text-danger text-decoration-none p-1">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </h2>
+                            <div id="@accordionId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#curriculumAccordion">
+                                <div class="accordion-body p-3 bg-white">
+                                    <!-- Description of root node -->
+                                    @if (!string.IsNullOrWhiteSpace(rootNode.Description))
+                                    {
+                                        <div class="p-2 mb-3 bg-light rounded text-muted fs-8 border-start border-primary border-3">
+                                            @rootNode.Description
+                                        </div>
+                                    }
+
+                                    <!-- Root Node Materials -->
+                                    @if (rootNode.Materials.Any())
+                                    {
+                                        <div class="mb-3">
+                                            <span class="fs-8 fw-semibold text-muted d-block mb-1">Tài liệu chương:</span>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach (var mat in rootNode.Materials)
+                                                {
+                                                    var isYoutube = string.Equals(mat.MaterialType, "YouTube", StringComparison.OrdinalIgnoreCase);
+                                                    <span class="badge @(isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") border rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1.5">
+                                                        <i class="bi @(isYoutube ? "bi-youtube" : "bi-file-earmark-pdf")"></i>
+                                                        <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fw-medium fs-8 text-truncate" style="max-width: 150px;">@mat.Title</a>
+                                                        <form method="post" asp-page-handler="DeleteMaterial" asp-route-materialId="@mat.Id" class="d-inline" onsubmit="return confirm('Xóa học liệu này?');">
+                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                        </form>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Root Node Quizzes -->
+                                    @if (rootNode.Quizzes.Any(q => q.ClassId == null))
+                                    {
+                                        <div class="mb-3">
+                                            <span class="fs-8 fw-semibold text-muted d-block mb-1">Bài test chương (Strict Mode):</span>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach (var quiz in rootNode.Quizzes.Where(q => q.ClassId == null))
+                                                {
+                                                    <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                                                        <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                        <span class="fw-medium fs-8 text-dark">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
+                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                        </form>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Child Lessons -->
+                                    @if (!childNodes.Any())
+                                    {
+                                        <div class="text-center py-4 bg-light rounded-3">
+                                            <p class="text-muted mb-0 fs-8">Chưa có bài học con nào. Nhấp vào nút "Bài học con" ở trên để thêm.</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <ul class="list-group list-group-flush">
+                                            @foreach (var child in childNodes)
+                                            {
+                                                <li class="list-group-item border-0 py-3 px-2 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center border-bottom-light gap-2">
+                                                    <div>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <i class="bi bi-file-earmark-text text-primary"></i>
+                                                            <span class="fw-semibold text-dark fs-7">@child.Title</span>
+                                                        </div>
+                                                        @if (!string.IsNullOrWhiteSpace(child.Description))
+                                                        {
+                                                            <small class="text-muted d-block ps-4 mt-0.5">@child.Description</small>
+                                                        }
+                                                        <!-- Materials -->
+                                                        <div class="ps-4 mt-2 d-flex flex-wrap gap-1.5 align-items-center">
+                                                            @foreach (var mat in child.Materials)
+                                                            {
+                                                                var isYoutube = string.Equals(mat.MaterialType, "YouTube", StringComparison.OrdinalIgnoreCase);
+                                                                <span class="badge @(isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") border rounded-pill d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                                                                    <i class="bi @(isYoutube ? "bi-youtube" : "bi-file-earmark-pdf")"></i>
+                                                                    <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fs-8 text-truncate" style="max-width: 120px;">@mat.Title</a>
+                                                                    <form method="post" asp-page-handler="DeleteMaterial" asp-route-materialId="@mat.Id" class="d-inline" onsubmit="return confirm('Xóa học liệu này?');">
+                                                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                    </form>
+                                                                </span>
+                                                            }
+                                                        </div>
+
+                                                        <!-- Quizzes -->
+                                                        @if (child.Quizzes.Any(q => q.ClassId == null))
+                                                        {
+                                                            <div class="ps-4 mt-1 d-flex flex-wrap gap-1.5 align-items-center">
+                                                                @foreach (var quiz in child.Quizzes.Where(q => q.ClassId == null))
+                                                                {
+                                                                    <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
+                                                                        <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                        <span class="fw-medium fs-8 text-dark text-truncate" style="max-width: 150px;">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
+                                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                        </form>
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 self-align-end ms-auto ms-sm-0">
+                                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1 fs-8 d-flex align-items-center gap-1 shadow-sm" onclick="openAddMaterialModal(@child.Id, '@child.Title')">
+                                                            <i class="bi bi-plus-lg"></i> Học liệu
+                                                        </button>
+                                                        <form method="post" asp-page-handler="DeleteNode" asp-route-nodeId="@child.Id" class="d-inline" onsubmit="return confirm('Xóa bài học này?');">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
+                                                                <i class="bi bi-trash fs-8"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Curriculum details sidebar -->
+        <div class="col-lg-3 col-md-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i>Thông tin chung</h5>
+                <hr class="my-2 text-muted-light">
+                <div class="mb-3">
+                    <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-1">Tổng quan chương học</span>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-dark fw-medium">Số lượng chương (chủ đề lớn):</span>
+                        <span class="badge bg-primary rounded-pill">@rootNodes.Count</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-1">Tổng quan bài học</span>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-dark fw-medium">Số bài học con:</span>
+                        <span class="badge bg-secondary rounded-pill">@Model.Curriculum.Nodes.Count(n => n.ParentNodeId != null)</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-1">Người quản lý</span>
+                    <p class="text-dark mb-0 fw-semibold">
+                        <i class="bi bi-person-fill text-muted me-1"></i>
+                        @(Model.Curriculum.Manager?.FirstName + " " + Model.Curriculum.Manager?.LastName)
+                    </p>
+                </div>
+                <div class="mb-0">
+                    <span class="fs-8 fw-semibold text-muted text-uppercase d-block mb-1">Ngày khởi tạo</span>
+                    <p class="text-dark mb-0 fs-7">
+                        <i class="bi bi-clock-fill text-muted me-1"></i>
+                        @Model.Curriculum.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Node (Chương/Bài học) -->
+<div class="modal fade" id="addNodeModal" tabindex="-1" aria-labelledby="addNodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="addNodeModalLabel">Thêm Chương/Bài Học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="CreateNode">
+                <div class="modal-body py-4">
+                    <input type="hidden" asp-for="ParentNodeId" id="modalParentNodeId" />
+                    <div class="mb-3">
+                        <label for="NodeTitle" class="form-label fw-semibold text-muted fs-7">Tiêu đề <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="NodeTitle" class="form-control rounded-3 py-2.5" placeholder="Nhập tiêu đề..." required />
+                    </div>
+                    <div class="mb-0">
+                        <label for="NodeDescription" class="form-label fw-semibold text-muted fs-7">Mô tả ngắn</label>
+                        <textarea asp-for="NodeDescription" class="form-control rounded-3 py-2.5" rows="3" placeholder="Nhập mô tả..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-end gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm Material (Học liệu) -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="addMaterialModalLabel">Thêm Học Liệu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="AddMaterial" enctype="multipart/form-data">
+                <div class="modal-body py-4">
+                    <input type="hidden" asp-for="NodeId" id="modalNodeId" />
+                    
+                    <div class="mb-3 p-2 bg-light rounded fs-8 text-muted">
+                        Đang thêm học liệu cho: <strong class="text-dark" id="modalNodeTitleDisplay"></strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="MaterialTitle" class="form-label fw-semibold text-muted fs-7">Tên học liệu <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="MaterialTitle" class="form-control rounded-3 py-2.5" placeholder="Nhập tên học liệu..." required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="MaterialType" class="form-label fw-semibold text-muted fs-7">Loại học liệu <span class="text-danger">*</span></label>
+                        <select asp-for="MaterialType" class="form-select rounded-3 py-2.5" id="materialTypeSelect" required>
+                            <option value="YouTube">Video YouTube</option>
+                            <option value="LocalFile">File tài liệu (PDF, Word, Powerpoint, Video...)</option>
+                        </select>
+                    </div>
+
+                    <!-- YouTube URL Input -->
+                    <div class="mb-0 animate-fade-in-down" id="youtubeInputGroup">
+                        <label for="ExternalUrl" class="form-label fw-semibold text-muted fs-7">Đường dẫn YouTube <span class="text-danger">*</span></label>
+                        <input type="url" asp-for="ExternalUrl" class="form-control rounded-3 py-2.5" placeholder="Dán link YouTube (e.g. https://youtube.com/watch?v=...)" />
+                    </div>
+
+                    <!-- Local File Input -->
+                    <div class="mb-0 animate-fade-in-down d-none" id="fileInputGroup">
+                        <label for="UploadedFile" class="form-label fw-semibold text-muted fs-7">Tải tệp lên <span class="text-danger">*</span></label>
+                        <input type="file" asp-for="UploadedFile" class="form-control rounded-3 py-2" />
+                        <small class="text-muted d-block mt-1">Dung lượng tối đa: 50MB.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-end gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .fs-8 {
+            font-size: 0.775rem;
+        }
+        .fs-7 {
+            font-size: 0.875rem;
+        }
+        .bg-gradient-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .header-decoration {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .max-width-600 {
+            max-width: 600px;
+        }
+        .max-width-400 {
+            max-width: 400px;
+        }
+        .bg-light-item {
+            background-color: #fcfcfc !important;
+            border: 1px solid #f1f1f1 !important;
+        }
+        .border-bottom-light {
+            border-bottom: 1px solid #f3f3f3;
+        }
+        .accordion-custom .accordion-button:not(.collapsed) {
+            background-color: #f8fafe;
+            color: #0d6efd;
+        }
+        .accordion-button-wrapper {
+            transition: background-color 0.2s ease;
+        }
+        .accordion-button-wrapper:hover {
+            background-color: #f9fbfd;
+        }
+        .bg-info-subtle {
+            background-color: rgba(13, 202, 240, 0.1) !important;
+            border-color: rgba(13, 202, 240, 0.2) !important;
+        }
+        .bg-danger-subtle {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            border-color: rgba(220, 53, 69, 0.2) !important;
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.3s ease-out;
+        }
+        @@keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Restoring and saving expanded accordion state across page reloads
+        document.addEventListener('DOMContentLoaded', function () {
+            const activeChapter = localStorage.getItem('activeCurriculumChapter');
+            if (activeChapter) {
+                const el = document.getElementById(activeChapter);
+                if (el) {
+                    // Update accordion button styles & attributes
+                    const trigger = document.querySelector(`[data-bs-target="#${activeChapter}"]`);
+                    if (trigger) {
+                        trigger.classList.remove('collapsed');
+                        trigger.setAttribute('aria-expanded', 'true');
+                    }
+                    // Show accordion content
+                    el.classList.add('show');
+                }
+            }
+
+            // Bind show/hide events to all accordion elements
+            const collapseElements = document.querySelectorAll('.accordion-collapse');
+            collapseElements.forEach(el => {
+                el.addEventListener('shown.bs.collapse', function () {
+                    localStorage.setItem('activeCurriculumChapter', this.id);
+                });
+                el.addEventListener('hidden.bs.collapse', function () {
+                    const saved = localStorage.getItem('activeCurriculumChapter');
+                    if (saved === this.id) {
+                        localStorage.removeItem('activeCurriculumChapter');
+                    }
+                });
+            });
+        });
+
+        // Modal helpers
+        function openAddNodeModal(parentId) {
+            document.getElementById('modalParentNodeId').value = parentId || '';
+            const label = document.getElementById('addNodeModalLabel');
+            if (parentId) {
+                label.innerText = 'Thêm Bài Học Mới';
+            } else {
+                label.innerText = 'Thêm Chương Mới';
+            }
+            const modal = new bootstrap.Modal(document.getElementById('addNodeModal'));
+            modal.show();
+        }
+
+        function openAddMaterialModal(nodeId, nodeTitle) {
+            document.getElementById('modalNodeId').value = nodeId;
+            document.getElementById('modalNodeTitleDisplay').innerText = nodeTitle;
+            const modal = new bootstrap.Modal(document.getElementById('addMaterialModal'));
+            modal.show();
+        }
+
+        // JS logic to toggle YouTube vs LocalFile fields in form
+        document.getElementById('materialTypeSelect').addEventListener('change', function () {
+            const val = this.value;
+            const ytGroup = document.getElementById('youtubeInputGroup');
+            const fileGroup = document.getElementById('fileInputGroup');
+            const ytInput = ytGroup.querySelector('input');
+            const fileInput = fileGroup.querySelector('input');
+
+            if (val === 'YouTube') {
+                ytGroup.classList.remove('d-none');
+                fileGroup.classList.add('d-none');
+                ytInput.setAttribute('required', 'required');
+                fileInput.removeAttribute('required');
+            } else {
+                fileGroup.classList.remove('d-none');
+                ytGroup.classList.add('d-none');
+                fileInput.setAttribute('required', 'required');
+                ytInput.removeAttribute('required');
+            }
+        });
+
+        // Initialize required flags based on initial dropdown state
+        window.addEventListener('load', function () {
+            const select = document.getElementById('materialTypeSelect');
+            if (select) {
+                const triggerEvent = new Event('change');
+                select.dispatchEvent(triggerEvent);
+            }
+        });
+    </script>
+}
