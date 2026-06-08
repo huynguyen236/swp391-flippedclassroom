@@ -102,7 +102,7 @@ namespace Flipped_Classroom.Pages.Authentication
             if (user.IsActive == false)
             {
                 _logger.LogWarning("GoogleCallback: User {Email} is deactivated.", email);
-             
+                // Sign out Google scheme để clear temp cookie
                 await HttpContext.SignOutAsync();
                 TempData["ErrorMessage"] = "Your account has been deactivated. Please contact the administrator.";
                 return RedirectToPage("/Authentication/Login");
