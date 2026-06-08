@@ -144,10 +144,17 @@
         <!-- Schedule List -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+                <div class="card-header bg-white border-0 px-4 pt-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h6 class="fw-bold text-muted mb-0">
                         <i class="bi bi-list-ul me-1"></i> Danh sách buổi học — @monthNames[Model.DisplayMonth]
                     </h6>
+                    @if (Model.Schedules.Any())
+                    {
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#updateAllRoomsModal">
+                            <i class="bi bi-geo-alt me-1"></i> Gán phòng tất cả
+                        </button>
+                    }
                 </div>
                 <div class="card-body px-4 pb-4" style="max-height: 500px; overflow-y: auto;">
                     @{
@@ -182,10 +189,26 @@
                                     <div class="fw-semibold small">
                                         @schedule.StudyDate.ToString("dd/MM/yyyy")
                                     </div>
-                                    <small class="text-primary">
-                                        <i class="bi bi-clock me-1"></i>
-                                        @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
-                                    </small>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <small class="text-primary">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
+                                        </small>
+                                        <span class="text-secondary small ms-1" style="font-size: 0.8rem;">
+                                            <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                            <span class="fw-medium">@(string.IsNullOrEmpty(schedule.Room) ? "Chưa gán phòng" : schedule.Room)</span>
+                                        </span>
+                                        @if (!isPast)
+                                        {
+                                            <button type="button" class="btn btn-link p-0 text-decoration-none text-primary ms-1"
+                                                    data-bs-toggle="modal" data-bs-target="#updateRoomModal"
+                                                    data-schedule-id="@schedule.Id" data-room-name="@schedule.Room"
+                                                    data-date="@schedule.StudyDate.ToString("dd/MM/yyyy")"
+                                                    title="Sửa phòng học">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        }
+                                    </div>
                                 </div>
                                 @if (isPast)
                                 {
@@ -200,6 +223,71 @@
                     }
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Room for Single Session -->
+<div class="modal fade" id="updateRoomModal" tabindex="-1" aria-labelledby="updateRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="updateRoomModalLabel">
+                    <i class="bi bi-geo-alt text-primary me-2"></i>Cập nhật Phòng học
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="UpdateRoom">
+                <div class="modal-body pt-2">
+                    <input type="hidden" name="classId" value="@Model.TargetClass.Id" />
+                    <input type="hidden" name="scheduleId" id="modalScheduleId" />
+                    <p class="text-muted mb-3">
+                        Cập nhật phòng học cho buổi học ngày: <strong id="modalScheduleDate" class="text-dark"></strong>
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên phòng học</label>
+                        <input type="text" name="roomName" id="modalRoomName" class="form-control rounded-pill px-3" placeholder="Ví dụ: A101, B202 (Để trống nếu học trực tuyến)" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-check-lg me-1"></i> Lưu lại
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Room for All Sessions -->
+<div class="modal fade" id="updateAllRoomsModal" tabindex="-1" aria-labelledby="updateAllRoomsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="updateAllRoomsModalLabel">
+                    <i class="bi bi-geo-alt text-primary me-2"></i>Gán Phòng học Hàng loạt
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="UpdateAllRooms">
+                <div class="modal-body pt-2">
+                    <input type="hidden" name="classId" value="@Model.TargetClass.Id" />
+                    <p class="text-muted mb-3">
+                        Hành động này sẽ cập nhật phòng học cho **tất cả** các buổi học của lớp <strong class="text-dark">@Model.TargetClass.ClassName</strong>.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên phòng học</label>
+                        <input type="text" name="roomName" class="form-control rounded-pill px-3" placeholder="Ví dụ: A101, B202 (Để trống nếu học trực tuyến)" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-check-lg me-1"></i> Gán phòng tất cả
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -259,4 +347,22 @@
             transform: translateX(4px);
         }
     </style>
+}
+
+@section Scripts {
+    <script>
+        const updateRoomModal = document.getElementById('updateRoomModal');
+        if (updateRoomModal) {
+            updateRoomModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const scheduleId = button.getAttribute('data-schedule-id');
+                const roomName = button.getAttribute('data-room-name');
+                const dateStr = button.getAttribute('data-date');
+
+                updateRoomModal.querySelector('#modalScheduleId').value = scheduleId;
+                updateRoomModal.querySelector('#modalRoomName').value = roomName || '';
+                updateRoomModal.querySelector('#modalScheduleDate').textContent = dateStr;
+            });
+        }
+    </script>
 }

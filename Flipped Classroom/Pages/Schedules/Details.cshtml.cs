@@ -85,5 +85,34 @@ namespace Flipped_Classroom.Pages.Schedules
 
             return Page();
         }
+
+        public async Task<IActionResult> OnPostUpdateRoomAsync(int scheduleId, string? roomName, int classId)
+        {
+            var schedule = await _context.ClassSchedules.FindAsync(scheduleId);
+            if (schedule == null)
+                return NotFound();
+
+            schedule.Room = roomName;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho buổi học ngày {schedule.StudyDate.ToString("dd/MM/yyyy")}.";
+            return RedirectToPage(new { classId });
+        }
+
+        public async Task<IActionResult> OnPostUpdateAllRoomsAsync(int classId, string? roomName)
+        {
+            var schedules = await _context.ClassSchedules
+                .Where(s => s.ClassId == classId)
+                .ToListAsync();
+
+            foreach (var s in schedules)
+            {
+                s.Room = roomName;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho toàn bộ {schedules.Count} buổi học.";
+            return RedirectToPage(new { classId });
+        }
     }
 }
