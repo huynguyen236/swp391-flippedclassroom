@@ -70,6 +70,13 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
         public List<QaThread> QaThreads { get; set; } = new();
 
+        // Tiến độ của từng học sinh: StudentId -> (NodeId -> CompletedAt)
+        public Dictionary<int, Dictionary<int, DateTime?>> StudentProgressMap { get; set; } = new();
+
+        public int TotalLessonsCount { get; set; }
+        public double AvgClassProgress { get; set; }
+        public double AvgSubmissionRate { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null || _context.Classes == null)
@@ -105,6 +112,44 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .GroupBy(p => p.NodeId)
                 .Select(g => new { NodeId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.NodeId, x => x.Count);
+
+            // Tiến độ chi tiết từng học sinh trong lớp
+            var progressList = await _context.StudentProgresses.AsNoTracking()
+                .Where(p => p.ClassId == Class.Id && p.IsCompleted == true)
+                .Select(p => new { p.StudentId, p.NodeId, p.CompletedAt })
+                .ToListAsync();
+
+            StudentProgressMap = progressList
+                .GroupBy(p => p.StudentId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.ToDictionary(x => x.NodeId, x => x.CompletedAt)
+                );
+
+            // Tính toán thống kê cho dashboard
+            if (Class.Curriculum != null && Class.Curriculum.Nodes != null)
+            {
+                var lessonNodes = Class.Curriculum.Nodes
+                    .Where(n => n.ParentNodeId != null)
+                    .ToList();
+                TotalLessonsCount = lessonNodes.Count;
+
+                if (TotalStudents > 0 && TotalLessonsCount > 0)
+                {
+                    var totalPossibleCompletions = TotalStudents * TotalLessonsCount;
+                    var completedLessonNodeIds = lessonNodes.Select(n => n.Id).ToList();
+                    var actualCompletions = progressList
+                        .Count(p => completedLessonNodeIds.Contains(p.NodeId));
+                    AvgClassProgress = Math.Round((double)actualCompletions * 100 / totalPossibleCompletions, 1);
+                }
+            }
+
+            if (Assignments != null && Assignments.Any() && TotalStudents > 0)
+            {
+                var totalPossibleSubmissions = Assignments.Count * TotalStudents;
+                var totalActualSubmissions = AssignmentSubmissions.Values.Sum(list => list.Count);
+                AvgSubmissionRate = Math.Round((double)totalActualSubmissions * 100 / totalPossibleSubmissions, 1);
+            }
 
             return Page();
         }
@@ -428,6 +473,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .Include(c => c.Curriculum)
                     .ThenInclude(cu => cu!.Nodes)
                         .ThenInclude(n => n.Materials)
+                .Include(c => c.ClassSchedules)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (classroom == null)

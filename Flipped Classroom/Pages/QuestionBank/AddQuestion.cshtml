@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Flipped_Classroom.Pages.QuestionBank.AddQuestionModel
 @{
     ViewData["Title"] = "Thêm câu hỏi mới";
@@ -42,6 +42,7 @@
                             <option value="Grammar">Ngữ pháp (Grammar)</option>
                             <option value="Kanji">Chữ Hán (Kanji)</option>
                             <option value="Keigo">Kính ngữ (Keigo)</option>
+                            <option value="Reading">Đọc hiểu (Reading)</option>
                         </select>
                     </div>
 
@@ -50,8 +51,6 @@
                         <select asp-for="NewQuestion.QuestionType" class="form-select" required id="questionType">
                             <option value="MCQ">Trắc nghiệm (MCQ)</option>
                             <option value="Writing">Viết (Writing)</option>
-                            <option value="Reading">Đọc (Reading)</option>
-                            <option value="Listening">Nghe (Listening)</option>
                         </select>
                     </div>
                 </div>
@@ -98,7 +97,7 @@
             <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Mẹo thiết kế câu hỏi</h5>
             <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
                 <li class="mb-2"><strong>Trắc nghiệm (MCQ):</strong> Nhập đủ 4 đáp án A–D và chọn ít nhất một đáp án đúng.</li>
-                <li class="mb-2"><strong>Writing / Reading / Listening:</strong> Chỉ cần một đáp án tham khảo, lưu vào CorrectAnswer.</li>
+                <li class="mb-2"><strong>Viết (Writing):</strong> Chỉ cần một đáp án tham khảo, lưu vào CorrectAnswer.</li>
                 <li class="mb-2"><strong>Đa đáp án:</strong> MCQ có thể chọn nhiều hơn một đáp án đúng nếu cần.</li>
                 <li class="mb-2"><strong>Chủ đề:</strong> Luôn chọn chủ đề phù hợp trước khi lưu câu hỏi.</li>
             </ul>

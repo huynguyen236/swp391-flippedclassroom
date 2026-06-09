@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
+using Flipped_Classroom.Models;
 using Microsoft.AspNetCore.Authorization;
+using Flipped_Classroom.Services.Interfaces;
 
 namespace Flipped_Classroom.Pages.Classrooms
 {
@@ -15,10 +17,12 @@ namespace Flipped_Classroom.Pages.Classrooms
     public class CreateModel : PageModel
     {
         private readonly Flipped_Classroom.Data.Swp391NihongoContext _context;
+        private readonly IQuizService _quizService;
 
-        public CreateModel(Flipped_Classroom.Data.Swp391NihongoContext context)
+        public CreateModel(Flipped_Classroom.Data.Swp391NihongoContext context, IQuizService quizService)
         {
             _context = context;
+            _quizService = quizService;
         }
 
         public IActionResult OnGet()
@@ -55,6 +59,12 @@ namespace Flipped_Classroom.Pages.Classrooms
 
             _context.Classes.Add(Class);
             await _context.SaveChangesAsync();
+
+            // Clone template quizzes from Curriculum to the newly created Class
+            if (Class.CurriculumId > 0)
+            {
+                await _quizService.CloneCurriculumQuizzesToClassAsync(Class.CurriculumId, Class.Id);
+            }
 
             return RedirectToPage("./Index");
         }

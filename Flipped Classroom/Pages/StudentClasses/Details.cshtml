@@ -122,6 +122,11 @@
                                     <i class="bi bi-chat-dots-fill"></i> Hỏi & Đáp (@(Model.QaThreads?.Count ?? 0))
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
+                                    <i class="bi bi-calendar-week"></i> Lịch Học
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -553,6 +558,88 @@
                                     </div>
                                 }
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Schedule Tab -->
+                <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header bg-white p-4 border-bottom">
+                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lịch Học Của Lớp</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            @if (Model.Class.ClassSchedules != null && Model.Class.ClassSchedules.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-light text-muted">
+                                            <tr>
+                                                <th class="px-4 py-3 border-0 fw-semibold">Buổi</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold">Ngày học</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold">Thời gian</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold">Phòng học</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold">Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                var sessionNum = 0;
+                                            }
+                                            @foreach (var schedule in Model.Class.ClassSchedules.OrderBy(s => s.StudyDate).ThenBy(s => s.StartTime))
+                                            {
+                                                sessionNum++;
+                                                var isPast = schedule.StudyDate < DateOnly.FromDateTime(DateTime.Now);
+                                                var isToday = schedule.StudyDate == DateOnly.FromDateTime(DateTime.Now);
+                                                var dayName = Flipped_Classroom.Services.ScheduleSlotHelper.GetVietnameseDayName(schedule.StudyDate.DayOfWeek);
+                                                
+                                                <tr class="align-middle @(isPast ? "opacity-50" : "")">
+                                                    <td class="px-4 py-3 fw-semibold">Buổi @sessionNum</td>
+                                                    <td class="px-4 py-3">
+                                                        <div class="fw-semibold">@schedule.StudyDate.ToString("dd/MM/yyyy")</div>
+                                                        <small class="text-muted">@dayName</small>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-primary">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        @if (!string.IsNullOrEmpty(schedule.Room))
+                                                        {
+                                                            <span><i class="bi bi-geo-alt me-1 text-muted"></i>@schedule.Room</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted fst-italic">Trực tuyến</span>
+                                                        }
+                                                    </td>
+                                                    <td class="px-4 py-3">
+                                                        @if (isToday)
+                                                        {
+                                                            <span class="badge bg-danger rounded-pill px-3">Hôm nay</span>
+                                                        }
+                                                        else if (isPast)
+                                                        {
+                                                            <span class="badge bg-secondary rounded-pill px-3">Đã qua</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-success rounded-pill px-3">Sắp tới</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x display-6 d-block mb-2 opacity-50"></i>
+                                    <h6 class="text-muted">Lớp học này chưa được xếp lịch học.</h6>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

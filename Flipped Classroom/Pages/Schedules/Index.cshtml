@@ -1,0 +1,312 @@
+@page
+@model Flipped_Classroom.Pages.Schedules.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Lịch học";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #1a73e8;">
+                <i class="bi bi-calendar-week-fill me-2"></i>Quản lý Lịch học
+            </h2>
+            <p class="text-muted mb-0">Gán slot lịch cố định cho các lớp học của bạn</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert"
+             style="border-radius: 12px; border-left: 4px solid #28a745 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert"
+             style="border-radius: 12px; border-left: 4px solid #dc3545 !important;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Slot Legend -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-muted mb-3"><i class="bi bi-info-circle me-1"></i> Bảng Slot cố định</h6>
+            <div class="row g-2">
+                @foreach (var slot in Model.AvailableSlots)
+                {
+                    var badgeColor = slot.SlotName switch
+                    {
+                        "N5" => "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);",
+                        "N4" => "background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);",
+                        "N3" => "background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);",
+                        "N2" => "background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);",
+                        "N1" => "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);",
+                        _ => "background: #6c757d;"
+                    };
+                    <div class="col-auto">
+                        <span class="badge text-white px-3 py-2 fw-normal" style="border-radius: 8px; font-size: 0.8rem; @badgeColor">
+                            @slot.DisplayName
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Table -->
+    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
+                            <th class="text-white fw-semibold py-3 px-4">#</th>
+                            <th class="text-white fw-semibold py-3">Tên lớp</th>
+                            <th class="text-white fw-semibold py-3">Ngày bắt đầu</th>
+                            <th class="text-white fw-semibold py-3">Ngày kết thúc</th>
+                            <th class="text-white fw-semibold py-3">Trạng thái</th>
+                            <th class="text-white fw-semibold py-3">Slot đã gán</th>
+                            <th class="text-white fw-semibold py-3 text-center">Số buổi</th>
+                            <th class="text-white fw-semibold py-3 text-center px-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.ClassList.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 mb-0">Bạn chưa có lớp nào.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var index = 0;
+                            @foreach (var item in Model.ClassList)
+                            {
+                                index++;
+                                var slotBadge = item.AssignedSlot switch
+                                {
+                                    "N5" => "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;",
+                                    "N4" => "background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;",
+                                    "N3" => "background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;",
+                                    "N2" => "background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;",
+                                    "N1" => "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;",
+                                    "Custom" => "background: #6c757d; color: white;",
+                                    _ => "background: #e9ecef; color: #6c757d;"
+                                };
+                                var statusBadge = item.Status switch
+                                {
+                                    "Active" => "bg-success",
+                                    "Inactive" => "bg-secondary",
+                                    _ => "bg-warning"
+                                };
+                                <tr>
+                                    <td class="px-4 text-muted">@index</td>
+                                    <td>
+                                        <span class="fw-semibold">@item.ClassName</span>
+                                    </td>
+                                    <td>
+                                        @if (item.StartDate.HasValue)
+                                        {
+                                            <span class="text-muted">@item.StartDate.Value.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted fst-italic">Chưa đặt</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.EndDate.HasValue)
+                                        {
+                                            <span class="text-muted">@item.EndDate.Value.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted fst-italic">Chưa đặt</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @statusBadge rounded-pill px-3">@item.Status</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.AssignedSlot))
+                                        {
+                                            <span class="badge px-3 py-2 fw-normal" style="border-radius: 8px; @slotBadge">
+                                                @item.AssignedSlot
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted fst-italic">—</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.ScheduleCount > 0)
+                                        {
+                                            <span class="badge bg-primary rounded-pill px-3">@item.ScheduleCount buổi</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">0</span>
+                                        }
+                                    </td>
+                                    <td class="text-center px-4">
+                                        <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                            @if (item.ScheduleCount == 0)
+                                            {
+                                                @if (item.StartDate.HasValue && item.EndDate.HasValue)
+                                                {
+                                                    <!-- Assign Slot Button triggers modal -->
+                                                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#assignModal"
+                                                            data-class-id="@item.ClassId"
+                                                            data-class-name="@item.ClassName">
+                                                        <i class="bi bi-calendar-plus me-1"></i> Gán Slot
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small fst-italic" title="Cần đặt StartDate và EndDate trước">
+                                                        <i class="bi bi-exclamation-circle"></i> Thiếu ngày
+                                                    </span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <a asp-page="./Details" asp-route-classId="@item.ClassId"
+                                                   class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-eye me-1"></i> Xem
+                                                </a>
+                                                <form method="post" asp-page-handler="RemoveSchedule" class="d-inline"
+                                                      onsubmit="return confirm('Bạn chắc chắn muốn xóa toàn bộ lịch học của lớp này?');">
+                                                    <input type="hidden" name="classId" value="@item.ClassId" />
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#assignModal"
+                                                        data-class-id="@item.ClassId"
+                                                        data-class-name="@item.ClassName">
+                                                    <i class="bi bi-arrow-repeat me-1"></i> Đổi
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Slot Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="assignModalLabel">
+                    <i class="bi bi-calendar-plus text-primary me-2"></i>Gán Slot lịch học
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="AssignSlot">
+                <div class="modal-body pt-2">
+                    <input type="hidden" name="classId" id="modalClassId" />
+                    <p class="text-muted mb-3">
+                        Gán slot cho lớp: <strong id="modalClassName" class="text-dark"></strong>
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chọn Slot</label>
+                        <div class="d-grid gap-2">
+                            @foreach (var slot in Model.AvailableSlots)
+                            {
+                                var radioColor = slot.SlotName switch
+                                {
+                                    "N5" => "#667eea",
+                                    "N4" => "#f5576c",
+                                    "N3" => "#4facfe",
+                                    "N2" => "#43e97b",
+                                    "N1" => "#fa709a",
+                                    _ => "#6c757d"
+                                };
+                                <label class="slot-option d-flex align-items-center p-3 rounded-3 border"
+                                       style="cursor: pointer; transition: all 0.2s;">
+                                    <input type="radio" name="slotName" value="@slot.SlotName" class="form-check-input me-3"
+                                           style="border-color: @radioColor;" required />
+                                    <div>
+                                        <span class="fw-semibold" style="color: @radioColor;">@slot.SlotName</span>
+                                        <span class="text-muted ms-2 small">
+                                            @{
+                                                var dayNames = slot.Days.Select(d => Flipped_Classroom.Services.ScheduleSlotHelper.GetVietnameseDayName(d));
+                                            }
+                                            @string.Join(" & ", dayNames) | @slot.StartTime.ToString("HH:mm") – @slot.EndTime.ToString("HH:mm")
+                                        </span>
+                                    </div>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-check-lg me-1"></i> Gán Slot
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .slot-option:hover {
+            background-color: #f0f4ff;
+            border-color: #1a73e8 !important;
+        }
+        .slot-option:has(input:checked) {
+            background-color: #e8f0fe;
+            border-color: #1a73e8 !important;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+        .table > :not(caption) > * > * {
+            border-bottom-color: #f0f0f0;
+        }
+        .table > tbody > tr:hover {
+            background-color: #f8f9ff;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Populate modal fields when "Gán Slot" button is clicked
+        const assignModal = document.getElementById('assignModal');
+        if (assignModal) {
+            assignModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const classId = button.getAttribute('data-class-id');
+                const className = button.getAttribute('data-class-name');
+
+                document.getElementById('modalClassId').value = classId;
+                document.getElementById('modalClassName').textContent = className;
+
+                // Reset radio selection
+                const radios = assignModal.querySelectorAll('input[type="radio"]');
+                radios.forEach(r => r.checked = false);
+            });
+        }
+    </script>
+}

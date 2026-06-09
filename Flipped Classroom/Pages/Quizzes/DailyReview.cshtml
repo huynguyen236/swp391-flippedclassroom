@@ -1,4 +1,4 @@
-@page
+    @page
 @model Flipped_Classroom.Pages.Quizzes.DailyReviewModel
 @{
     ViewData["Title"] = "Daily Review";
@@ -43,7 +43,7 @@
                     <div class="d-flex justify-content-between gap-3 mb-3">
                         <div>
                             <h5 class="fw-bold text-dark mb-1">Câu @order</h5>
-                            <div class="text-muted small">@question.Node.Class.ClassName - @question.Node.Title</div>
+                            <div class="text-muted small">@question.Node?.Title</div>
                         </div>
                         <div class="text-end">
                             <span class="badge bg-danger bg-opacity-10 text-danger d-block mb-1">Sai @item.ErrorCount lần</span>
@@ -53,12 +53,19 @@
 
                     <p class="fw-semibold mb-3">@question.Content</p>
 
-                    @foreach (var option in question.QuestionOptions.OrderBy(o => o.Id))
+                    @if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
                     {
-                        <label class="d-flex align-items-start gap-2 border rounded-3 p-3 mb-2 bg-light" style="cursor: pointer;">
-                            <input class="form-check-input mt-1" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required />
-                            <span>@option.OptionContent</span>
-                        </label>
+                        @foreach (var option in question.QuestionOptions.OrderBy(o => o.Id))
+                        {
+                            <label class="d-flex align-items-start gap-2 border rounded-3 p-3 mb-2 bg-light" style="cursor: pointer;">
+                                <input class="form-check-input mt-1" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required />
+                                <span>@option.OptionContent</span>
+                            </label>
+                        }
+                    }
+                    else
+                    {
+                        <input type="text" name="TextAnswers[@question.Id]" class="form-control" placeholder="Nhập câu trả lời của bạn..." required />
                     }
                 </div>
                 order++;

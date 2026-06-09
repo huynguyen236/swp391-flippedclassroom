@@ -137,6 +137,7 @@ namespace Flipped_Classroom.Pages.StudentClasses
                     .ThenInclude(cm => cm.User)
                 .Include(c => c.Groups)
                     .ThenInclude(g => g.GroupMembers)
+                .Include(c => c.ClassSchedules)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (classroom == null)

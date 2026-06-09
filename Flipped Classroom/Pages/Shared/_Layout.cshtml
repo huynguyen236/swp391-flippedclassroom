@@ -109,6 +109,10 @@
                         <i class="bi bi-journal-bookmark-fill"></i>
                         <span>Quản lý lớp học</span>
                     </a>
+                    <a href="/Schedules" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Schedules") ? "active" : "")">
+                        <i class="bi bi-calendar-week-fill"></i>
+                        <span>Quản lý lịch học</span>
+                    </a>
                 }
                 @if (User.IsInRole("Teacher"))
                 {
@@ -136,7 +140,7 @@
                         <i class="bi bi-mortarboard-fill"></i>
                         <span>Lớp học của tôi</span>
                     </a>
-                    <a href="/Schedule" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Schedule") ? "active" : "")">
+                    <a href="/StudentClasses/Schedule" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/StudentClasses/Schedule") ? "active" : "")">
                         <i class="bi bi-calendar-event-fill"></i>
                         <span>Lịch học</span>
                     </a>

@@ -95,6 +95,9 @@
                                         <span>@rootNode.Title</span>
                                     </button>
                                     <div class="d-flex align-items-center gap-1 z-3">
+                                        <a href="/Quizzes/Randomize?IsStrictMode=true&Input.NodeId=@rootNode.Id" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" title="Tạo Test (Strict Mode)">
+                                            <i class="bi bi-file-earmark-check text-warning"></i> <span class="d-none d-sm-inline text-warning" style="font-size: 0.8rem;">Tạo Test</span>
+                                        </a>
                                         <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" onclick="openAddNodeModal(@rootNode.Id)" title="Thêm bài học con">
                                             <i class="bi bi-plus-circle text-primary"></i> <span class="d-none d-sm-inline text-primary" style="font-size: 0.8rem;">Bài học con</span>
                                         </button>
@@ -140,6 +143,26 @@
                                         </div>
                                     }
 
+                                    <!-- Root Node Quizzes -->
+                                    @if (rootNode.Quizzes.Any(q => q.ClassId == null))
+                                    {
+                                        <div class="mb-3">
+                                            <span class="fs-8 fw-semibold text-muted d-block mb-1">Bài test chương (Strict Mode):</span>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach (var quiz in rootNode.Quizzes.Where(q => q.ClassId == null))
+                                                {
+                                                    <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
+                                                        <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                        <span class="fw-medium fs-8 text-dark">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
+                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                        </form>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+
                                     <!-- Child Lessons -->
                                     @if (!childNodes.Any())
                                     {
@@ -176,6 +199,23 @@
                                                                 </span>
                                                             }
                                                         </div>
+
+                                                        <!-- Quizzes -->
+                                                        @if (child.Quizzes.Any(q => q.ClassId == null))
+                                                        {
+                                                            <div class="ps-4 mt-1 d-flex flex-wrap gap-1.5 align-items-center">
+                                                                @foreach (var quiz in child.Quizzes.Where(q => q.ClassId == null))
+                                                                {
+                                                                    <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
+                                                                        <i class="bi bi-file-earmark-check-fill text-warning"></i>
+                                                                        <span class="fw-medium fs-8 text-dark text-truncate" style="max-width: 150px;">@quiz.Title (@quiz.DurationMinutes phút)</span>
+                                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
+                                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
+                                                                        </form>
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        }
                                                     </div>
                                                     <div class="d-flex align-items-center gap-2 self-align-end ms-auto ms-sm-0">
                                                         <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1 fs-8 d-flex align-items-center gap-1 shadow-sm" onclick="openAddMaterialModal(@child.Id, '@child.Title')">
