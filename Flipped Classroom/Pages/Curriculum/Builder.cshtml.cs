@@ -129,7 +129,7 @@ namespace Flipped_Classroom.Pages.Curriculums
             };
 
             await _curriculumService.AddMaterialAsync(material);
-            TempData["SuccessMessage"] = "Đêm học liệu thành công.";
+            TempData["SuccessMessage"] = "Thêm học liệu thành công.";
             return RedirectToPage(new { id });
         }
 
