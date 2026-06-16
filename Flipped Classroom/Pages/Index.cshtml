@@ -1,99 +1,221 @@
-﻿@page
+@page
 @model Flipped_Classroom.Pages.IndexModel
 @{
-    ViewData["Title"] = "Flipped Classroom - Active Learning";
-    ViewData["IsFullWidth"] = true;
+    ViewData["Title"] = "Học Tiếng Nhật theo Lớp học Đảo ngược";
+    Layout = "_LandingLayout";
 }
 
-<section class="hero-section" style="background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); padding: 80px 0;">
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="hero-title" style="color: #1a73e8; font-weight: 800; font-size: 3rem;">Học Tập Chủ Động Với Flipped Classroom</h1>
-                <p class="hero-subtitle" style="color: #5f6368; font-size: 1.2rem; margin-bottom: 2rem;">
-                    Trải nghiệm mô hình lớp học đảo ngược: Nghiên cứu lý thuyết tại nhà, 
-                    thực hành và thảo luận chuyên sâu ngay tại lớp cùng chuyên gia.
+<!-- ============ NAVBAR (Glassmorphism) ============ -->
+<nav class="navbar navbar-expand-lg sticky-top home-navbar py-3">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/Index">
+            <span class="brand-badge d-inline-flex align-items-center justify-content-center rounded-3">
+                <i class="bi bi-mortarboard-fill"></i>
+            </span>
+            <span class="brand-text">Nihongo<span class="text-accent">Portal</span></span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#homeNav" aria-controls="homeNav" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list fs-2"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="homeNav">
+            <ul class="navbar-nav mx-auto gap-lg-2">
+                <li class="nav-item"><a class="nav-link px-3" href="#how-it-works">Cách hoạt động</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#stats">Tính năng</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#footer">Liên hệ</a></li>
+            </ul>
+            <a href="/Authentication/Login" class="btn btn-accent rounded-pill px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero-section position-relative overflow-hidden">
+    <!-- soft sakura blobs -->
+    <span class="hero-blob hero-blob--pink"></span>
+    <span class="hero-blob hero-blob--indigo"></span>
+
+    <div class="container position-relative py-5">
+        <div class="row align-items-center g-5 py-lg-5">
+            <!-- Left -->
+            <div class="col-lg-6 text-center text-lg-start" data-aos="fade-right">
+                <span class="badge-pill-soft d-inline-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-stars"></i> Phương pháp học chủ động
+                </span>
+                <h1 class="hero-title fw-bold mb-4">
+                    Mô hình <span class="text-gradient">Lớp học đảo ngược</span> Tiếng Nhật
+                </h1>
+                <p class="hero-subtitle mb-5 mx-auto mx-lg-0">
+                    Nghiên cứu bài giảng tại nhà theo nhịp độ riêng, dành trọn thời gian trên lớp để
+                    luyện hội thoại, thực hành Kanji và tương tác cùng giảng viên.
                 </p>
-                <div class="hero-buttons">
-                    <a class="btn btn-primary btn-lg px-4 me-3" style="background-color: #1a73e8; border: none;" href="/Authentication/Login">Bắt đầu học ngay</a>
-                    <a class="btn btn-outline-primary btn-lg px-4" href="#features">Tìm hiểu thêm</a>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="/Authentication/Login" class="btn btn-accent btn-lg rounded-pill px-4 fw-semibold cta-pulse d-inline-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-rocket-takeoff"></i> Bắt đầu học miễn phí
+                    </a>
+                    <a href="#how-it-works" class="btn btn-ghost btn-lg rounded-pill px-4 fw-semibold d-inline-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-play-circle"></i> Tìm hiểu thêm
+                    </a>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="hero-image text-center">
-                    <svg width="100%" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="400" height="400" rx="20" fill="#E8F0FE"/>
-                        <rect x="50" y="80" width="300" height="200" rx="10" fill="white" stroke="#1a73e8" stroke-width="2"/>
-                        <path d="M170 140L250 180L170 220V140Z" fill="#1a73e8"/> <rect x="70" y="310" width="100" height="10" rx="5" fill="#1a73e8" opacity="0.3"/>
-                        <rect x="230" y="310" width="100" height="10" rx="5" fill="#1a73e8" opacity="0.3"/>
-                        <circle cx="200" cy="50" r="30" fill="#4285F4" opacity="0.1"/>
-                    </svg>
+
+            <!-- Right -->
+            <div class="col-lg-6" data-aos="fade-left" data-aos-delay="150">
+                <div class="hero-art mx-auto position-relative">
+                    <!-- floating illustration card -->
+                    <div class="hero-card float-anim shadow-lg rounded-4 p-4 bg-white">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <span class="hero-card-avatar rounded-circle d-inline-flex align-items-center justify-content-center">先</span>
+                            <div>
+                                <div class="fw-semibold">Bài 12 · Kính ngữ</div>
+                                <div class="text-muted small">Chuẩn bị trước buổi học</div>
+                            </div>
+                            <span class="ms-auto badge rounded-pill bg-success-subtle text-success">Hoàn thành</span>
+                        </div>
+                        <div class="hero-video rounded-3 d-flex align-items-center justify-content-center mb-4">
+                            <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                        <div class="progress hero-progress rounded-pill mb-2">
+                            <div class="progress-bar" style="width: 78%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>Tiến độ tuần này</span><span class="fw-semibold text-accent">78%</span>
+                        </div>
+                    </div>
+
+                    <!-- floating kana -->
+                    <span class="kana kana-1 float-anim-slow">あ</span>
+                    <span class="kana kana-2 float-anim">カ</span>
+                    <span class="kana kana-3 float-anim-slow">ん</span>
+                    <span class="kana kana-4 float-anim">日</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section id="features" class="features-section" style="padding: 100px 0;">
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how-it-works" class="py-6">
     <div class="container">
-        <h2 class="section-title text-center" style="color: #202124; margin-bottom: 60px;">Tính Năng Đột Phá</h2>
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="badge-pill-soft d-inline-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-diagram-3"></i> Quy trình
+            </span>
+            <h2 class="section-title fw-bold">Lớp học đảo ngược hoạt động ra sao?</h2>
+            <p class="section-lead mx-auto">Ba bước đơn giản để biến mỗi buổi học thành thời gian thực hành giá trị.</p>
+        </div>
 
         <div class="row g-4">
-            <div class="col-md-3 text-center">
-                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px; transition: 0.3s;">
-                    <div class="feature-icon mb-3">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #E8F0FE;">
-                            <i class="bi bi-play-circle-fill" style="font-size: 30px; color: #1a73e8;"></i>
-                        </div>
-                    </div>
-                    <h3 class="h5 fw-bold">Video Bài Giảng</h3>
-                    <p class="text-muted small">Xem bài giảng mọi lúc mọi nơi trước khi lên lớp để nắm vững kiến thức nền tảng.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+                <div class="step-card h-100 rounded-4 p-4 p-lg-5 text-center">
+                    <span class="step-icon step-icon--pink rounded-4 d-inline-flex align-items-center justify-content-center mb-4">
+                        <i class="bi bi-house-heart-fill"></i>
+                    </span>
+                    <span class="step-num">01</span>
+                    <h3 class="h5 fw-bold mt-2 mb-2">Chuẩn bị bài ở nhà</h3>
+                    <p class="text-muted mb-0">Xem video bài giảng và tài liệu được giao trước, học theo tốc độ của riêng bạn.</p>
                 </div>
             </div>
-
-            <div class="col-md-3 text-center">
-                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="feature-icon mb-3">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #E6FFFA;">
-                            <i class="bi bi-chat-dots-fill" style="font-size: 30px; color: #38B2AC;"></i>
-                        </div>
-                    </div>
-                    <h3 class="h5 fw-bold">Thảo Luận Nhóm</h3>
-                    <p class="text-muted small">Tương tác trực tiếp với giảng viên và bạn học qua diễn đàn thảo luận sôi nổi.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="120">
+                <div class="step-card h-100 rounded-4 p-4 p-lg-5 text-center">
+                    <span class="step-icon step-icon--indigo rounded-4 d-inline-flex align-items-center justify-content-center mb-4">
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                    <span class="step-num">02</span>
+                    <h3 class="h5 fw-bold mt-2 mb-2">Tương tác trên lớp</h3>
+                    <p class="text-muted mb-0">Dành thời gian quý giá trên lớp để luyện hội thoại, hỏi đáp và làm bài tập nhóm.</p>
                 </div>
             </div>
-
-            <div class="col-md-3 text-center">
-                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="feature-icon mb-3">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #FFFBEB;">
-                            <i class="bi bi-journal-check" style="font-size: 30px; color: #D97706;"></i>
-                        </div>
-                    </div>
-                    <h3 class="h5 fw-bold">Đánh Giá Năng Lực</h3>
-                    <p class="text-muted small">Hệ thống bài kiểm tra (Quiz) tức thì giúp bạn tự đánh giá mức độ hiểu bài.</p>
-                </div>
-            </div>
-
-            <div class="col-md-3 text-center">
-                <div class="feature-card p-4 border-0 shadow-sm h-100" style="border-radius: 15px;">
-                    <div class="feature-icon mb-3">
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background-color: #F3E8FF;">
-                            <i class="bi bi-bar-chart-steps" style="font-size: 30px; color: #9333EA;"></i>
-                        </div>
-                    </div>
-                    <h3 class="h5 fw-bold">Theo Dõi Lộ Trình</h3>
-                    <p class="text-muted small">Theo dõi tiến độ học tập và điểm số qua biểu đồ trực quan, sinh động.</p>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="240">
+                <div class="step-card h-100 rounded-4 p-4 p-lg-5 text-center">
+                    <span class="step-icon step-icon--gold rounded-4 d-inline-flex align-items-center justify-content-center mb-4">
+                        <i class="bi bi-trophy-fill"></i>
+                    </span>
+                    <span class="step-num">03</span>
+                    <h3 class="h5 fw-bold mt-2 mb-2">Làm chủ kiến thức</h3>
+                    <p class="text-muted mb-0">Củng cố qua quiz và ôn tập hằng ngày, theo dõi tiến độ tới khi thành thạo.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="cta-section text-center" style="background-color: #1a73e8; padding: 80px 0; color: white;">
+<!-- ============ STATS BANNER ============ -->
+<section id="stats" class="py-5 my-5">
     <div class="container">
-        <h2 class="mb-3">Sẵn sàng để nâng tầm tri thức?</h2>
-        <p class="mb-4 opacity-75">Tham gia cùng hàng ngàn sinh viên đang học tập hiệu quả mỗi ngày.</p>
-        <a class="btn btn-light btn-lg px-5 fw-bold" style="color: #1a73e8; border-radius: 30px;" href="/Authentication/login">Đăng nhập</a>
+        <div class="stats-banner rounded-4 px-4 py-5 px-lg-5 text-white" data-aos="zoom-in">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-2">Được tin dùng bởi cộng đồng học tiếng Nhật</h2>
+                <p class="mb-0 opacity-75">Những con số nói lên hiệu quả của phương pháp.</p>
+            </div>
+            <div class="row g-4 text-center">
+                <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="0">
+                    <div class="stat-num"><i class="bi bi-collection-play-fill d-block mb-2"></i>50+</div>
+                    <div class="stat-label">Bài giảng</div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="stat-num"><i class="bi bi-people-fill d-block mb-2"></i>1000+</div>
+                    <div class="stat-label">Học viên</div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="stat-num"><i class="bi bi-patch-question-fill d-block mb-2"></i>5000+</div>
+                    <div class="stat-label">Câu hỏi luyện tập</div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="stat-num"><i class="bi bi-emoji-smile-fill d-block mb-2"></i>98%</div>
+                    <div class="stat-label">Hài lòng</div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+
+<!-- ============ FOOTER ============ -->
+<footer id="footer" class="home-footer pt-6 pb-4">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <a class="navbar-brand d-flex align-items-center gap-2 fw-bold mb-3" href="/Index">
+                    <span class="brand-badge d-inline-flex align-items-center justify-content-center rounded-3">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </span>
+                    <span class="brand-text">Nihongo<span class="text-accent">Portal</span></span>
+                </a>
+                <p class="text-muted pe-lg-4">Nền tảng học Tiếng Nhật theo mô hình Lớp học đảo ngược — học chủ động, tiến bộ mỗi ngày.</p>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="fw-bold mb-3">Khám phá</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="#how-it-works">Cách hoạt động</a></li>
+                    <li><a href="#stats">Tính năng</a></li>
+                    <li><a href="/Authentication/Login">Đăng nhập</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2">
+                <h6 class="fw-bold mb-3">Hỗ trợ</h6>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="#">Câu hỏi thường gặp</a></li>
+                    <li><a href="#">Hướng dẫn</a></li>
+                    <li><a href="/Privacy">Quyền riêng tư</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <h6 class="fw-bold mb-3">Kết nối với chúng tôi</h6>
+                <div class="d-flex gap-2">
+                    <a href="#" class="social-icon rounded-circle d-inline-flex align-items-center justify-content-center"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="social-icon rounded-circle d-inline-flex align-items-center justify-content-center"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="social-icon rounded-circle d-inline-flex align-items-center justify-content-center"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-icon rounded-circle d-inline-flex align-items-center justify-content-center"><i class="bi bi-envelope-fill"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="footer-divider my-4" />
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted small">
+            <span>&copy; 2026 Nihongo Portal · Flipped Classroom. All rights reserved.</span>
+            <span>Made with <i class="bi bi-heart-fill text-danger"></i> for Japanese learners</span>
+        </div>
+    </div>
+</footer>
