@@ -77,6 +77,97 @@
             </div>
         </div>
 
+        <!-- Class Codes Management Section -->
+        <div class="card border-0 shadow-sm rounded-3 p-4 mb-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div>
+                    <h4 class="fw-bold mb-1" style="color: #1a73e8;">
+                        <i class="bi bi-key-fill me-2"></i>Quản lý mã lớp học
+                    </h4>
+                    <p class="text-muted small mb-0">Xem và chia sẻ mã lớp học cho học viên để tham gia lớp.</p>
+                </div>
+                <div style="min-width: 250px;">
+                    <select id="classCodeFilter" class="form-select rounded-pill">
+                        <option value="all">Tất cả lớp học</option>
+                        @foreach (var item in Model.Class)
+                        {
+                            <option value="class-row-@item.Id">@item.ClassName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="border-radius: 8px 0 0 8px;">Tên lớp học</th>
+                            <th scope="col">Mã mời (Invite Code)</th>
+                            <th scope="col" class="text-end" style="border-radius: 0 8px 8px 0; width: 150px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Class)
+                        {
+                            <tr id="class-row-@item.Id" class="class-code-row">
+                                <td class="fw-semibold">@item.ClassName</td>
+                                <td>
+                                    <span class="badge bg-light text-dark font-monospace px-3 py-2 border rounded" style="font-size: 0.9rem; letter-spacing: 0.5px;">
+                                        @(string.IsNullOrEmpty(item.InviteCode) ? "Không có mã" : item.InviteCode)
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    @if (!string.IsNullOrEmpty(item.InviteCode))
+                                    {
+                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 copy-btn" onclick="copyInviteCode(this, '@item.InviteCode')">
+                                            <i class="bi bi-clipboard me-1"></i> Copy
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">N/A</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            function copyInviteCode(btn, code) {
+                navigator.clipboard.writeText(code).then(function() {
+                    var originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Copied';
+                    btn.classList.remove('btn-outline-primary');
+                    btn.classList.add('btn-success', 'text-white');
+                    btn.disabled = true;
+                    
+                    setTimeout(function() {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.remove('btn-success', 'text-white');
+                        btn.classList.add('btn-outline-primary');
+                        btn.disabled = false;
+                    }, 2000);
+                }, function(err) {
+                    console.error('Lỗi khi copy mã: ', err);
+                });
+            }
+
+            document.getElementById('classCodeFilter').addEventListener('change', function() {
+                var selectedValue = this.value;
+                var rows = document.querySelectorAll('.class-code-row');
+                rows.forEach(function(row) {
+                    if (selectedValue === 'all' || row.id === selectedValue) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+
         <!-- Per-class Dashboard Cards -->
         <h4 class="fw-bold mb-4" style="color: #3c4043;">
             <i class="bi bi-grid-1x2-fill text-primary me-2"></i>Tổng quan từng lớp
