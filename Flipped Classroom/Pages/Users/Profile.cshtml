@@ -56,7 +56,7 @@
     <div class="row g-4">
         <!-- Left Column: User Summary Card -->
         <div class="col-lg-4">
-            <div class="card-custom p-4 text-center h-100 d-flex flex-column justify-content-between">
+            <div class="card card-flat rounded-4 p-4 text-center h-100 d-flex flex-column justify-content-between">
                 <div>
                     <!-- Avatar Preview -->
                     <div class="position-relative d-inline-block mb-3">
@@ -103,7 +103,7 @@
 
         <!-- Right Column: Tabs/Forms -->
         <div class="col-lg-8">
-            <div class="card-custom p-0 overflow-hidden h-100">
+            <div class="card card-flat rounded-4 p-0 overflow-hidden h-100">
                 <!-- Navigation Tabs -->
                 <div class="bg-light border-bottom px-4 pt-3">
                     <ul class="nav nav-tabs border-0" id="profileTabs" role="tablist">
@@ -163,7 +163,7 @@
                             </div>
 
                             <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                                <button type="submit" class="btn btn-custom-primary px-4 rounded-pill">
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">
                                     <i class="bi bi-save2 me-1"></i> Lưu thay đổi
                                 </button>
                             </div>
@@ -218,7 +218,7 @@
                             </div>
 
                             <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                                <button type="submit" class="btn btn-custom-primary px-4 rounded-pill">
+                                <button type="submit" class="btn btn-primary px-4 rounded-pill">
                                     <i class="bi bi-shield-check me-1"></i> Thay đổi mật khẩu
                                 </button>
                             </div>
@@ -230,10 +230,6 @@
         </div>
     </div>
 </div>
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/profile.css" asp-append-version="true" />
-}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

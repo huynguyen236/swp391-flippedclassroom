@@ -28,7 +28,7 @@
     };
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,9 +43,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Flipped_Classroom.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FlippedClassroom.styles.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -278,7 +277,7 @@
             }
             else
             {
-                <div class="container-custom py-4">
+                <div class="container py-4">
                     @RenderBody()
                 </div>
             }
