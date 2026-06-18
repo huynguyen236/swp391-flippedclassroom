@@ -46,4 +46,6 @@ public partial class Node
     public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
 
     public virtual ICollection<StudentProgress> StudentProgresses { get; set; } = new List<StudentProgress>();
+
+    public virtual ICollection<Vocabulary> Vocabularies { get; set; } = new List<Vocabulary>();
 }

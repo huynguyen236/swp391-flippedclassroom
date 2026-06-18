@@ -43,6 +43,7 @@ namespace Flipped_Classroom.Services.Implementation
                 return await _db.Nodes
                     .Include(n => n.Materials)
                     .Include(n => n.ParentNode)
+                    .Include(n => n.Vocabularies)
                     .FirstOrDefaultAsync(n => n.Id == nodeId);
             }
             catch (Exception ex)

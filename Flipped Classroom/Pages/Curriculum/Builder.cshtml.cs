@@ -52,11 +52,12 @@ namespace Flipped_Classroom.Pages.Curriculums
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Curriculum = await _curriculumService.GetCurriculumByIdAsync(id);
-            if (Curriculum == null)
+            var curriculum = await _curriculumService.GetCurriculumByIdAsync(id);
+            if (curriculum == null)
             {
                 return NotFound();
             }
+            Curriculum = curriculum;
             return Page();
         }
 

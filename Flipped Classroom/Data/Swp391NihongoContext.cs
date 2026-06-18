@@ -72,7 +72,7 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<ClassSchedule> ClassSchedules { get; set; }
 
-
+    public virtual DbSet<Vocabulary> Vocabularies { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -648,6 +648,22 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.ClassId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ClassSchedule_Class");
+        });
+
+        modelBuilder.Entity<Vocabulary>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Vocabularies");
+
+            entity.Property(e => e.Word).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Hiragana).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.Meaning).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.Romaji).HasMaxLength(255);
+
+            entity.HasOne(d => d.Node)
+                .WithMany(p => p.Vocabularies)
+                .HasForeignKey(d => d.NodeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Vocabulary_Node");
         });
 
         OnModelCreatingPartial(modelBuilder);
