@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,89 +10,111 @@ namespace Flipped_Classroom.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_ClassSchedule_Classes_ClassId",
-                table: "ClassSchedule");
+            migrationBuilder.Sql("""
+                IF OBJECT_ID(N'[ClassSchedule]', N'U') IS NOT NULL
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ClassSchedule_Classes_ClassId')
+                        ALTER TABLE [ClassSchedule] DROP CONSTRAINT [FK_ClassSchedule_Classes_ClassId];
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_ClassSchedule",
-                table: "ClassSchedule");
+                    IF EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'PK_ClassSchedule' AND parent_object_id = OBJECT_ID(N'[ClassSchedule]'))
+                        ALTER TABLE [ClassSchedule] DROP CONSTRAINT [PK_ClassSchedule];
 
-            migrationBuilder.RenameTable(
-                name: "ClassSchedule",
-                newName: "ClassSchedules");
+                    EXEC sp_rename 'ClassSchedule', 'ClassSchedules';
+                END
 
-            migrationBuilder.RenameIndex(
-                name: "IX_ClassSchedule_ClassId",
-                table: "ClassSchedules",
-                newName: "IX_ClassSchedules_ClassId");
+                IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ClassSchedule_ClassId' AND object_id = OBJECT_ID(N'[ClassSchedules]'))
+                BEGIN
+                    EXEC sp_rename 'ClassSchedules.IX_ClassSchedule_ClassId', 'IX_ClassSchedules_ClassId', 'INDEX';
+                END
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Room",
-                table: "ClassSchedules",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
+                ALTER TABLE [ClassSchedules] ALTER COLUMN [Room] nvarchar(50) NULL;
 
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_ClassSchedules",
-                table: "ClassSchedules",
-                column: "Id");
+                DECLARE @pkName nvarchar(255);
+                SELECT @pkName = name 
+                FROM sys.key_constraints 
+                WHERE parent_object_id = OBJECT_ID(N'[ClassSchedules]') AND type = 'PK';
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_ClassSchedule_Class",
-                table: "ClassSchedules",
-                column: "ClassId",
-                principalTable: "Classes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                IF @pkName IS NOT NULL
+                BEGIN
+                    EXEC('ALTER TABLE [ClassSchedules] DROP CONSTRAINT [' + @pkName + ']');
+                END
+
+                IF NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'PK_ClassSchedules' AND parent_object_id = OBJECT_ID(N'[ClassSchedules]'))
+                BEGIN
+                    ALTER TABLE [ClassSchedules] ADD CONSTRAINT [PK_ClassSchedules] PRIMARY KEY ([Id]);
+                END
+
+                DECLARE @fkName nvarchar(255);
+                SELECT @fkName = name 
+                FROM sys.foreign_keys 
+                WHERE parent_object_id = OBJECT_ID(N'[ClassSchedules]') AND referenced_object_id = OBJECT_ID(N'[Classes]');
+
+                IF @fkName IS NOT NULL
+                BEGIN
+                    EXEC('ALTER TABLE [ClassSchedules] DROP CONSTRAINT [' + @fkName + ']');
+                END
+
+                IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ClassSchedule_Class')
+                BEGIN
+                    ALTER TABLE [ClassSchedules] ADD CONSTRAINT [FK_ClassSchedule_Class] 
+                        FOREIGN KEY ([ClassId]) REFERENCES [Classes] ([Id]) ON DELETE CASCADE;
+                END
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_ClassSchedule_Class",
-                table: "ClassSchedules");
+            migrationBuilder.Sql("""
+                IF OBJECT_ID(N'[ClassSchedules]', N'U') IS NOT NULL
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ClassSchedule_Class')
+                        ALTER TABLE [ClassSchedules] DROP CONSTRAINT [FK_ClassSchedule_Class];
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_ClassSchedules",
-                table: "ClassSchedules");
+                    IF EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'PK_ClassSchedules' AND parent_object_id = OBJECT_ID(N'[ClassSchedules]'))
+                        ALTER TABLE [ClassSchedules] DROP CONSTRAINT [PK_ClassSchedules];
 
-            migrationBuilder.RenameTable(
-                name: "ClassSchedules",
-                newName: "ClassSchedule");
+                    EXEC sp_rename 'ClassSchedules', 'ClassSchedule';
+                END
 
-            migrationBuilder.RenameIndex(
-                name: "IX_ClassSchedules_ClassId",
-                table: "ClassSchedule",
-                newName: "IX_ClassSchedule_ClassId");
+                IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ClassSchedules_ClassId' AND object_id = OBJECT_ID(N'[ClassSchedule]'))
+                BEGIN
+                    EXEC sp_rename 'ClassSchedule.IX_ClassSchedules_ClassId', 'IX_ClassSchedule_ClassId', 'INDEX';
+                END
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Room",
-                table: "ClassSchedule",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50,
-                oldNullable: true);
+                ALTER TABLE [ClassSchedule] ALTER COLUMN [Room] nvarchar(max) NULL;
 
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_ClassSchedule",
-                table: "ClassSchedule",
-                column: "Id");
+                DECLARE @pkName nvarchar(255);
+                SELECT @pkName = name 
+                FROM sys.key_constraints 
+                WHERE parent_object_id = OBJECT_ID(N'[ClassSchedule]') AND type = 'PK';
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_ClassSchedule_Classes_ClassId",
-                table: "ClassSchedule",
-                column: "ClassId",
-                principalTable: "Classes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                IF @pkName IS NOT NULL
+                BEGIN
+                    EXEC('ALTER TABLE [ClassSchedule] DROP CONSTRAINT [' + @pkName + ']');
+                END
+
+                IF NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE name = 'PK_ClassSchedule' AND parent_object_id = OBJECT_ID(N'[ClassSchedule]'))
+                BEGIN
+                    ALTER TABLE [ClassSchedule] ADD CONSTRAINT [PK_ClassSchedule] PRIMARY KEY ([Id]);
+                END
+
+                DECLARE @fkName nvarchar(255);
+                SELECT @fkName = name 
+                FROM sys.foreign_keys 
+                WHERE parent_object_id = OBJECT_ID(N'[ClassSchedule]') AND referenced_object_id = OBJECT_ID(N'[Classes]');
+
+                IF @fkName IS NOT NULL
+                BEGIN
+                    EXEC('ALTER TABLE [ClassSchedule] DROP CONSTRAINT [' + @fkName + ']');
+                END
+
+                IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ClassSchedule_Classes_ClassId')
+                BEGIN
+                    ALTER TABLE [ClassSchedule] ADD CONSTRAINT [FK_ClassSchedule_Classes_ClassId] 
+                        FOREIGN KEY ([ClassId]) REFERENCES [Classes] ([Id]) ON DELETE CASCADE;
+                END
+                """);
         }
     }
 }

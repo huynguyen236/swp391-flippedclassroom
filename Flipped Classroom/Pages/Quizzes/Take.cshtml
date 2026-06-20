@@ -10,11 +10,31 @@
         <h2 class="fw-bold mb-0 text-dark">@Model.Quiz.Title</h2>
         <p class="text-muted mb-0">@(Model.Quiz.Class?.ClassName ?? "-") - @Model.Quiz.Node.Title</p>
     </div>
-    <div class="d-flex gap-2 text-muted">
+    <div class="d-flex gap-2 text-muted align-items-center">
         <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">@orderedQuestions.Count câu</span>
-        <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">@Model.Quiz.DurationMinutes phút</span>
+        @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
+        {
+            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 fw-bold" id="desktop-timer-badge">
+                <i class="bi bi-clock me-1"></i> <span id="desktop-timer">--:--</span>
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">Không giới hạn thời gian</span>
+        }
     </div>
 </div>
+
+@if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
+{
+    <div class="sticky-top bg-white border-bottom shadow-sm py-2 px-3 mb-4 rounded-3 d-flex justify-content-between align-items-center" style="top: 15px; z-index: 1020; transition: all 0.3s ease;">
+        <div class="d-flex align-items-center gap-2">
+            <span class="spinner-grow spinner-grow-sm text-danger" role="status" id="timer-pulse"></span>
+            <span class="fw-semibold text-dark">Thời gian làm bài còn lại:</span>
+        </div>
+        <span class="badge bg-danger fs-5 py-2 px-3 fw-bold" id="floating-timer">--:--</span>
+    </div>
+}
 
 @if (TempData["ErrorMessage"] != null)
 {
@@ -25,7 +45,8 @@
     </div>
 }
 
-<form method="post">
+<form method="post" id="quizForm">
+    <input type="hidden" asp-for="StartToken" />
     <div class="d-flex flex-column gap-3">
         @foreach (var quizQuestion in orderedQuestions)
         {
@@ -62,3 +83,92 @@
         </button>
     </div>
 </form>
+
+@section Scripts {
+    @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let remainingSeconds = Math.floor(parseFloat('@Model.RemainingSeconds'));
+                
+                const desktopTimer = document.getElementById("desktop-timer");
+                const floatingTimer = document.getElementById("floating-timer");
+                const timerPulse = document.getElementById("timer-pulse");
+                const timerBadge = document.getElementById("desktop-timer-badge");
+                const form = document.getElementById("quizForm");
+
+                function updateTimer() {
+                    if (remainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        
+                        if (desktopTimer) desktopTimer.textContent = "00:00";
+                        if (floatingTimer) floatingTimer.textContent = "00:00";
+                        if (timerPulse) timerPulse.classList.remove("text-danger");
+
+                        // Disable validation blocks and submit
+                        const inputs = form.querySelectorAll("input");
+                        inputs.forEach(input => {
+                            input.removeAttribute("required");
+                        });
+
+                        // Show friendly overlays/toast
+                        let alertDiv = document.createElement("div");
+                        alertDiv.className = "alert alert-warning fixed-top shadow-lg text-center m-3";
+                        alertDiv.style.zIndex = "9999";
+                        alertDiv.innerHTML = "<strong>Hết giờ làm bài!</strong> Hệ thống đang tự động nộp bài của bạn...";
+                        document.body.appendChild(alertDiv);
+
+                        setTimeout(() => {
+                            form.submit();
+                        }, 1000);
+                        return;
+                    }
+
+                    const minutes = Math.floor(remainingSeconds / 60);
+                    const seconds = remainingSeconds % 60;
+                    const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                    if (desktopTimer) desktopTimer.textContent = formattedTime;
+                    if (floatingTimer) floatingTimer.textContent = formattedTime;
+
+                    // Warning style when less than 1 minute remains
+                    if (remainingSeconds <= 60) {
+                        if (floatingTimer) {
+                            floatingTimer.classList.remove("bg-danger");
+                            floatingTimer.style.backgroundColor = "#dc3545"; // fallback red
+                            floatingTimer.classList.add("animate-pulse"); // custom pulse anim
+                        }
+                        if (timerBadge) {
+                            timerBadge.classList.remove("bg-danger", "bg-opacity-10", "text-danger");
+                            timerBadge.style.backgroundColor = "#dc3545";
+                            timerBadge.style.color = "#ffffff";
+                            timerBadge.classList.add("animate-pulse");
+                        }
+                    }
+
+                    remainingSeconds--;
+                }
+
+                // Initial update and run interval
+                updateTimer();
+                const timerInterval = setInterval(updateTimer, 1000);
+            });
+        </script>
+        
+        <style>
+            .animate-pulse {
+                animation: timer-pulse-animation 1s infinite alternate;
+            }
+            @@keyframes timer-pulse-animation {
+                from {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 rgba(220, 53, 69, 0.4);
+                }
+                to {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 10px rgba(220, 53, 69, 0.8);
+                }
+            }
+        </style>
+    }
+}

@@ -69,7 +69,7 @@ namespace Flipped_Classroom.Services.Implementation
                 .Where(q => q.Status == PublishedStatus
                          && q.ClassId.HasValue
                          && classIds.Contains(q.ClassId.Value)
-                         && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)))
+                         && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.Node.ParentNodeId ?? q.NodeId)))
                 .OrderByDescending(q => q.PublishedAt)
                 .ThenByDescending(q => q.Id)
                 .ToListAsync();
@@ -97,7 +97,7 @@ namespace Flipped_Classroom.Services.Implementation
                     && q.Status == PublishedStatus
                     && q.ClassId.HasValue
                     && classIds.Contains(q.ClassId.Value)
-                    && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.NodeId)));
+                    && (q.IsAlwaysOpen || unlockedNodeIds.Contains(q.Node.ParentNodeId ?? q.NodeId)));
         }
 
         public async Task<int> CountAvailableQuestionsAsync(int nodeId, string category)
