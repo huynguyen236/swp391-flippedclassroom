@@ -23,6 +23,9 @@ namespace Flipped_Classroom.Pages.StudentClasses
 
         public IList<Class> Class { get; set; } = default!;
 
+        [BindProperty]
+        public string InviteCode { get; set; } = string.Empty;
+
         public async Task<IActionResult> OnGetAsync()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -39,6 +42,57 @@ namespace Flipped_Classroom.Pages.StudentClasses
             }
 
             return RedirectToPage("/Authentication/Login");
+        }
+
+        public async Task<IActionResult> OnPostJoinClassAsync()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToPage("/Authentication/Login");
+            }
+
+            if (string.IsNullOrWhiteSpace(InviteCode))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập mã lớp học.";
+                return RedirectToPage();
+            }
+
+            var cleanedCode = InviteCode.Trim();
+
+            var targetClass = await _context.Classes.FirstOrDefaultAsync(c =>
+                c.InviteCode == cleanedCode
+            );
+
+            if (targetClass == null)
+            {
+                TempData["ErrorMessage"] = "Mã lớp học không hợp lệ.";
+                return RedirectToPage();
+            }
+
+            var isAlreadyMember = await _context.ClassMembers.AnyAsync(cm =>
+                cm.ClassId == targetClass.Id && cm.UserId == userId
+            );
+
+            if (isAlreadyMember)
+            {
+                TempData["ErrorMessage"] = "Bạn đã tham gia lớp học này rồi.";
+                return RedirectToPage();
+            }
+
+            var classMember = new ClassMember
+            {
+                ClassId = targetClass.Id,
+                UserId = userId,
+                JoinedAt = DateTime.Now,
+                IsSupportTeam = false,
+            };
+
+            _context.ClassMembers.Add(classMember);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Tham gia lớp học '{targetClass.ClassName}' thành công!";
+            return RedirectToPage();
         }
     }
 }
