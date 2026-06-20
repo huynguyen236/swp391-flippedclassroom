@@ -199,6 +199,12 @@ namespace Flipped_Classroom.Services.Implementations
                 return (null, "Your account has been deactivated. Please contact the administrator.");
             }
 
+            // Kiểm tra tài khoản có bị vô hiệu hóa không
+            if (user.IsActive == false)
+            {
+                return (null, "Your account has been deactivated. Please contact the administrator.");
+            }
+
             return (user, null);
         }
 

@@ -36,185 +36,286 @@
                 </div>
             </div>
 
-            <!-- Materials -->
-            @if (!Model.Lesson.Materials.Any())
-            {
-                <div class="card border-0 shadow-sm text-center py-5" style="border-radius: 15px;">
-                    <div class="card-body text-muted">
-                        <i class="bi bi-folder2-open display-4 d-block mb-2 opacity-50"></i>
-                        <h6>Bài học này chưa có tài liệu.</h6>
-                    </div>
-                </div>
-            }
-            else
-            {
-                foreach (var mat in Model.Lesson.Materials)
-                {
-                    var isYoutube = string.Equals(mat.MaterialType, "YouTube", System.StringComparison.OrdinalIgnoreCase);
-                    var isPdf = mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
-                    var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
-                    var isVideo = ext is ".mp4" or ".webm" or ".ogg";
 
-                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
-                            <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
-                            <span class="fw-semibold">@mat.Title</span>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs border-bottom-0 mb-4" id="lessonTabs" role="tablist" style="gap: 0.5rem;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials-content" type="button" role="tab" aria-controls="materials-content" aria-selected="true">
+                        <i class="bi bi-journal-text me-1"></i> Học liệu
+                    </button>
+                </li>
+                @if (Model.Lesson.Vocabularies != null && Model.Lesson.Vocabularies.Any())
+                {
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="flashcards-tab" data-bs-toggle="tab" data-bs-target="#flashcards-content" type="button" role="tab" aria-controls="flashcards-content" aria-selected="false">
+                            <i class="bi bi-card-text me-1"></i> Flashcard Ôn Tập
+                        </button>
+                    </li>
+                }
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
+                        <i class="bi bi-chat-dots me-1"></i> Hỏi & Đáp
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="lessonTabContent">
+                <!-- Tab Materials -->
+                <div class="tab-pane fade show active" id="materials-content" role="tabpanel" aria-labelledby="materials-tab">
+                    <!-- Materials -->
+                    @if (!Model.Lesson.Materials.Any())
+                    {
+                        <div class="card border-0 shadow-sm text-center py-5 mb-4" style="border-radius: 15px;">
+                            <div class="card-body text-muted">
+                                <i class="bi bi-folder2-open display-4 d-block mb-2 opacity-50"></i>
+                                <h6>Bài học này chưa có tài liệu.</h6>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            @if (isYoutube)
-                            {
-                                var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
-                                <div class="ratio ratio-16x9">
-                                    <iframe src="@embed" title="@mat.Title" frameborder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowfullscreen></iframe>
+                    }
+                    else
+                    {
+                        foreach (var mat in Model.Lesson.Materials)
+                        {
+                            var isYoutube = string.Equals(mat.MaterialType, "YouTube", System.StringComparison.OrdinalIgnoreCase);
+                            var isPdf = mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
+                            var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
+                            var isVideo = ext is ".mp4" or ".webm" or ".ogg";
+
+                            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
+                                <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
+                                    <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
+                                    <span class="fw-semibold">@mat.Title</span>
                                 </div>
-                            }
-                            else if (isVideo)
-                            {
-                                <div class="ratio ratio-16x9 bg-black">
-                                    <video controls preload="metadata" style="width:100%;height:100%;object-fit:contain;">
-                                        <source src="@mat.Url" type="video/@(ext.TrimStart('.'))" />
-                                        Trình duyệt của bạn không hỗ trợ phát video.
-                                    </video>
+                                <div class="card-body p-0">
+                                    @if (isYoutube)
+                                    {
+                                        var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
+                                        <div class="ratio ratio-16x9">
+                                            <iframe src="@embed" title="@mat.Title" frameborder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowfullscreen></iframe>
+                                        </div>
+                                    }
+                                    else if (isVideo)
+                                    {
+                                        <div class="ratio ratio-16x9 bg-black">
+                                            <video controls preload="metadata" style="width:100%;height:100%;object-fit:contain;">
+                                                <source src="@mat.Url" type="video/@(ext.TrimStart('.'))" />
+                                                Trình duyệt của bạn không hỗ trợ phát video.
+                                            </video>
+                                        </div>
+                                    }
+                                    else if (isPdf)
+                                    {
+                                        <div class="ratio" style="--bs-aspect-ratio: 130%;">
+                                            <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
+                                        </div>
+                                        <div class="p-3 border-top">
+                                            <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                <i class="bi bi-download me-1"></i> Tải xuống / Mở tab mới
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="p-4 text-center">
+                                            <p class="text-muted mb-3">Tài liệu đính kèm</p>
+                                            <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4">
+                                                <i class="bi bi-box-arrow-up-right me-1"></i> Mở tài liệu
+                                            </a>
+                                        </div>
+                                    }
                                 </div>
-                            }
-                            else if (isPdf)
-                            {
-                                <div class="ratio" style="--bs-aspect-ratio: 130%;">
-                                    <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Tab Flashcard (Only if vocab exists) -->
+                @if (Model.Lesson.Vocabularies != null && Model.Lesson.Vocabularies.Any())
+                {
+                    <div class="tab-pane fade" id="flashcards-content" role="tabpanel" aria-labelledby="flashcards-tab">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4" style="border-radius: 15px;">
+                            <!-- Progress bar -->
+                            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                                <span class="fs-8 fw-bold text-primary" id="progressText">Thẻ 1 / @Model.Lesson.Vocabularies.Count</span>
+                                <span class="fs-8 text-muted">Bấm <kbd class="bg-dark text-white px-1.5 py-0.5 rounded">Space</kbd> để lật thẻ, <kbd class="bg-dark text-white px-1.5 py-0.5 rounded">←</kbd> <kbd class="bg-dark text-white px-1.5 py-0.5 rounded">→</kbd> để chuyển thẻ</span>
+                            </div>
+                            <div class="progress mb-4 shadow-sm" style="height: 6px; border-radius: 10px;">
+                                <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" id="progressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            <!-- 3D Flashcard container -->
+                            <div class="flashcard-scene mx-auto mb-4" id="flashcardScene" style="max-width: 600px;">
+                                <div class="flashcard-inner" id="flashcardInner">
+                                    <!-- Front of card -->
+                                    <div class="flashcard-face flashcard-front">
+                                        <span class="badge bg-light text-primary position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="frontDiffBadge"></span>
+                                        <div class="flashcard-body-content position-relative w-100">
+                                            <!-- Audio pronounce button -->
+                                            <button type="button" class="btn btn-light btn-sm rounded-circle audio-btn" id="speakBtn" title="Phát âm">
+                                                <i class="bi bi-volume-up-fill fs-5 text-primary"></i>
+                                            </button>
+                                            
+                                            <div class="front-card-content py-4">
+                                                <h1 class="flashcard-text-large" id="frontText">Front Text</h1>
+                                                <p class="romaji-text text-white-50 mt-3" id="romajiText" style="font-size:1.35rem; font-style: italic;"></p>
+                                            </div>
+                                            <p class="text-white-50 fs-8 mt-4"><i class="bi bi-arrow-repeat me-1"></i> Bấm để lật xem nghĩa mặt sau</p>
+                                        </div>
+                                    </div>
+                                    <!-- Back of card -->
+                                    <div class="flashcard-face flashcard-back">
+                                        <span class="badge bg-light text-dark position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="backDiffBadge"></span>
+                                        <div class="flashcard-body-content w-100">
+                                            <div class="back-card-content">
+                                                <!-- Pronunciation (Cách đọc) -->
+                                                <h3 class="pronunciation-text" id="pronunciationText">たべる</h3>
+                                                <hr class="my-3 text-white-50 w-50 mx-auto">
+                                                <!-- Meaning (Nghĩa) -->
+                                                <h2 class="meaning-text" id="backText">Nghĩa của từ</h2>
+                                            </div>
+
+                                            <p class="text-white-50 fs-8 mt-4"><i class="bi bi-arrow-repeat me-1"></i> Bấm để lật lại mặt trước</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="p-3 border-top">
-                                    <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                        <i class="bi bi-download me-1"></i> Tải xuống / Mở tab mới
-                                    </a>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="p-4 text-center">
-                                    <p class="text-muted mb-3">Tài liệu đính kèm</p>
-                                    <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i> Mở tài liệu
-                                    </a>
-                                </div>
-                            }
+                            </div>
+
+                            <!-- Control Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 gap-3 mx-auto" style="max-width: 600px; width: 100%;">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 flex-grow-1 shadow-sm fs-7 d-flex align-items-center justify-content-center gap-1.5" id="prevBtn">
+                                    <i class="bi bi-arrow-left"></i> Trước
+                                </button>
+                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2.5 shadow-sm fs-7" id="shuffleBtn" title="Trộn ngẫu nhiên thứ tự thẻ">
+                                    <i class="bi bi-shuffle"></i> Trộn thẻ
+                                </button>
+                                <button type="button" class="btn btn-primary rounded-pill px-4 py-2.5 flex-grow-1 shadow-sm fs-7 d-flex align-items-center justify-content-center gap-1.5" id="nextBtn">
+                                    Kế tiếp <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 }
-            }
 
-            <!-- Section Hỏi & Đáp (Lesson Comments) -->
-            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-                <div class="card-header bg-white p-4 border-bottom">
-                    <h5 class="fw-bold mb-0 text-primary">
-                        <i class="bi bi-chat-dots me-2"></i> Hỏi đáp & Thảo luận
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <!-- Form đặt câu hỏi/bình luận mới -->
-                    <form id="createCommentForm" class="mb-4">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <textarea id="commentTextInput" class="form-control" rows="3" 
-                                      placeholder="Đặt câu hỏi hoặc viết bình luận về bài học này..." 
-                                      required style="border-radius: 10px; resize: none;"></textarea>
+                <!-- Tab Q&A -->
+                <div class="tab-pane fade" id="qa-content" role="tabpanel" aria-labelledby="qa-tab">
+                    <!-- Section Hỏi & Đáp (Lesson Comments) -->
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                        <div class="card-header bg-white p-4 border-bottom">
+                            <h5 class="fw-bold mb-0 text-primary">
+                                <i class="bi bi-chat-dots me-2"></i> Hỏi đáp & Thảo luận
+                            </h5>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4" style="background-color: #1a73e8; border: none;">
-                            Đăng bình luận
-                        </button>
-                    </form>
-
-                    <!-- Danh sách bình luận -->
-                    <div id="commentsContainer" class="d-flex flex-column gap-4">
-                        @if (Model.QaThreads != null && Model.QaThreads.Any())
-                        {
-                            foreach (var thread in Model.QaThreads)
-                            {
-                                var canDeleteThread = thread.StudentId == currentUserId || isTeacher;
-                                var threadUserRole = thread.Student?.Role ?? "Student";
-                                var isThreadTeacher = threadUserRole == "Teacher" || threadUserRole == "Manager" || threadUserRole == "Admin";
-
-                                <div class="comment-card border-bottom pb-3" data-comment-id="@thread.Id">
-                                    <div class="d-flex align-items-start justify-content-between mb-2">
-                                        <div class="d-flex align-items-center">
-                                            <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
-                                                 style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
-                                                @(thread.Student?.Username?.FirstOrDefault() ?? '?')
-                                            </div>
-                                            <div>
-                                                <strong class="text-dark">@thread.Student?.Username</strong>
-                                                @if (isThreadTeacher)
-                                                {
-                                                    <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>
-                                                }
-                                                <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
-                                            </div>
-                                        </div>
-                                        @if (canDeleteThread)
-                                        {
-                                            <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="@thread.Id" title="Xóa bình luận">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        }
-                                    </div>
-                                    <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">@thread.QuestionText</p>
-                                    
-                                    <!-- Phản hồi (Replies) -->
-                                    <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
-                                        <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="@thread.Id">
-                                            @foreach (var reply in thread.QaReplies.OrderBy(r => r.CreatedAt))
-                                            {
-                                                var canDeleteReply = reply.UserId == currentUserId || isTeacher;
-                                                var replyUserRole = reply.User?.Role ?? "Student";
-                                                var isReplyTeacher = replyUserRole == "Teacher" || replyUserRole == "Manager" || replyUserRole == "Admin";
-
-                                                <div class="reply-item py-1 border-bottom-0" data-reply-id="@reply.Id">
-                                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                                        <div class="d-flex align-items-center">
-                                                            <strong class="@(isReplyTeacher ? "text-primary" : "text-dark") small">
-                                                                @reply.User?.Username
-                                                            </strong>
-                                                            @if (isReplyTeacher)
-                                                            {
-                                                                <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem;">Giáo viên</span>
-                                                            }
-                                                            <span class="text-muted small ms-2" style="font-size: 0.75rem;">@reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
-                                                        </div>
-                                                        @if (canDeleteReply)
-                                                        {
-                                                            <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="@reply.Id" style="font-size: 0.8rem;" title="Xóa phản hồi">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        }
-                                                    </div>
-                                                    <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">@reply.ReplyText</p>
-                                                </div>
-                                            }
-                                        </div>
-
-                                        <!-- Form phản hồi -->
-                                        <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="@thread.Id">
-                                            <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
-                                            <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
-                                                    style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
-                                                <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                        <div class="card-body p-4">
+                            <!-- Form đặt câu hỏi/bình luận mới -->
+                            <form id="createCommentForm" class="mb-4">
+                                @Html.AntiForgeryToken()
+                                <div class="mb-3">
+                                    <textarea id="commentTextInput" class="form-control" rows="3" 
+                                              placeholder="Đặt câu hỏi hoặc viết bình luận về bài học này..." 
+                                              required style="border-radius: 10px; resize: none;"></textarea>
                                 </div>
-                            }
-                        }
-                        else
-                        {
-                            <div id="noCommentsMessage" class="text-center py-4 text-muted">
-                                <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
-                                <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4" style="background-color: #1a73e8; border: none;">
+                                    Đăng bình luận
+                                </button>
+                            </form>
+
+                            <!-- Danh sách bình luận -->
+                            <div id="commentsContainer" class="d-flex flex-column gap-4">
+                                @if (Model.QaThreads != null && Model.QaThreads.Any())
+                                {
+                                    foreach (var thread in Model.QaThreads)
+                                    {
+                                        var canDeleteThread = thread.StudentId == currentUserId || isTeacher;
+                                        var threadUserRole = thread.Student?.Role ?? "Student";
+                                        var isThreadTeacher = threadUserRole == "Teacher" || threadUserRole == "Manager" || threadUserRole == "Admin";
+
+                                        <div class="comment-card border-bottom pb-3" data-comment-id="@thread.Id">
+                                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
+                                                         style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
+                                                        @(thread.Student?.Username?.FirstOrDefault() ?? '?')
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-dark">@thread.Student?.Username</strong>
+                                                        @if (isThreadTeacher)
+                                                        {
+                                                            <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>
+                                                        }
+                                                        <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    </div>
+                                                </div>
+                                                @if (canDeleteThread)
+                                                {
+                                                    <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="@thread.Id" title="Xóa bình luận">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                            <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">@thread.QuestionText</p>
+                                            
+                                            <!-- Phản hồi (Replies) -->
+                                            <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
+                                                <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="@thread.Id">
+                                                    @foreach (var reply in thread.QaReplies.OrderBy(r => r.CreatedAt))
+                                                    {
+                                                        var canDeleteReply = reply.UserId == currentUserId || isTeacher;
+                                                        var replyUserRole = reply.User?.Role ?? "Student";
+                                                        var isReplyTeacher = replyUserRole == "Teacher" || replyUserRole == "Manager" || replyUserRole == "Admin";
+
+                                                        <div class="reply-item py-1 border-bottom-0" data-reply-id="@reply.Id">
+                                                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                                                <div class="d-flex align-items-center">
+                                                                    <strong class="@(isReplyTeacher ? "text-primary" : "text-dark") small">
+                                                                        @reply.User?.Username
+                                                                    </strong>
+                                                                    @if (isReplyTeacher)
+                                                                    {
+                                                                        <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem;">Giáo viên</span>
+                                                                    }
+                                                                    <span class="text-muted small ms-2" style="font-size: 0.75rem;">@reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                                </div>
+                                                                @if (canDeleteReply)
+                                                                {
+                                                                    <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="@reply.Id" style="font-size: 0.8rem;" title="Xóa phản hồi">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                            <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">@reply.ReplyText</p>
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                                <!-- Form phản hồi -->
+                                                <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="@thread.Id">
+                                                    <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
+                                                    <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
+                                                            style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
+                                                        <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div id="noCommentsMessage" class="text-center py-4 text-muted">
+                                        <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
+                                        <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                                    </div>
+                                }
                             </div>
-                        }
+                        </div>
                     </div>
                 </div>
             </div>
+
 
             @if (Model.IsStudentView)
             {
@@ -548,6 +649,246 @@
             document.querySelectorAll('.delete-comment-btn').forEach(btn => bindDeleteCommentBtn(btn));
             document.querySelectorAll('.delete-reply-btn').forEach(btn => bindDeleteReplyBtn(btn));
             document.querySelectorAll('.create-reply-form').forEach(form => bindReplyFormHandler(form));
+
+            // === AJAX / Local Flashcards Logic ===
+            const rawCards = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Lesson.Vocabularies!.Select(c => new {
+                c.Word,
+                c.Hiragana,
+                c.Meaning,
+                c.Romaji,
+                c.DifficultyLevel
+            })));
+
+            if (rawCards && rawCards.length > 0) {
+                let cards = [...rawCards];
+                let currentIndex = 0;
+
+                const scene = document.getElementById('flashcardScene');
+                const inner = document.getElementById('flashcardInner');
+                const frontTextEl = document.getElementById('frontText');
+                const romajiTextEl = document.getElementById('romajiText');
+                const backTextEl = document.getElementById('backText');
+                const pronTextEl = document.getElementById('pronunciationText');
+                
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                const shuffleBtn = document.getElementById('shuffleBtn');
+                const speakBtn = document.getElementById('speakBtn');
+
+                const progressText = document.getElementById('progressText');
+                const progressBar = document.getElementById('progressBar');
+
+                let audioPlayer = null;
+
+                function updateCard() {
+                    inner.classList.remove('is-flipped');
+
+                    setTimeout(() => {
+                        const card = cards[currentIndex];
+                        frontTextEl.innerText = card.Word;
+                        backTextEl.innerText = card.Meaning;
+                        pronTextEl.innerText = card.Hiragana;
+                        
+                        if (card.Romaji) {
+                            romajiTextEl.innerText = card.Romaji;
+                            romajiTextEl.style.display = 'block';
+                        } else {
+                            romajiTextEl.style.display = 'none';
+                        }
+
+                        const diffText = card.DifficultyLevel ? `N${card.DifficultyLevel}` : 'N5';
+                        document.getElementById('frontDiffBadge').innerText = diffText;
+                        document.getElementById('backDiffBadge').innerText = diffText;
+
+                        // Update controls & progress
+                        const numCards = cards.length;
+                        progressText.innerText = `Thẻ ${currentIndex + 1} / ${numCards}`;
+                        
+                        const percent = ((currentIndex + 1) / numCards) * 100;
+                        progressBar.style.width = `${percent}%`;
+                        progressBar.setAttribute('aria-valuenow', percent);
+
+                        prevBtn.disabled = currentIndex === 0;
+                        nextBtn.disabled = currentIndex === numCards - 1;
+                    }, 150);
+                }
+
+                scene.addEventListener('click', function () {
+                    inner.classList.toggle('is-flipped');
+                });
+
+                speakBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const card = cards[currentIndex];
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(card.Word);
+                        utterance.lang = 'ja-JP';
+                        window.speechSynthesis.cancel();
+                        window.speechSynthesis.speak(utterance);
+                    } else {
+                        alert("Trình duyệt không hỗ trợ phát âm.");
+                    }
+                });
+
+                prevBtn.addEventListener('click', function () {
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        updateCard();
+                    }
+                });
+
+                nextBtn.addEventListener('click', function () {
+                    if (currentIndex < cards.length - 1) {
+                        currentIndex++;
+                        updateCard();
+                    }
+                });
+
+                shuffleBtn.addEventListener('click', function () {
+                    if (cards.length <= 1) return;
+                    for (let i = cards.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [cards[i], cards[j]] = [cards[j], cards[i]];
+                    }
+                    currentIndex = 0;
+                    updateCard();
+                    
+                    shuffleBtn.classList.add('bg-primary', 'text-white');
+                    setTimeout(() => shuffleBtn.classList.remove('bg-primary', 'text-white'), 500);
+                });
+
+                // Keyboard Navigation
+                document.addEventListener('keydown', function (e) {
+                    const tab = document.getElementById('flashcards-content');
+                    if (tab && !tab.classList.contains('active')) {
+                        return;
+                    }
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        inner.classList.toggle('is-flipped');
+                    } else if (e.code === 'ArrowLeft') {
+                        if (currentIndex > 0) {
+                            currentIndex--;
+                            updateCard();
+                        }
+                    } else if (e.code === 'ArrowRight') {
+                        if (currentIndex < cards.length - 1) {
+                            currentIndex++;
+                            updateCard();
+                        }
+                    }
+                });
+
+                updateCard();
+            }
         });
     </script>
 }
+
+@section Styles {
+    <style>
+        /* Modern tabs styling */
+        .nav-tabs .nav-link {
+            color: #5f6368;
+            border: 1px solid #dee2e6;
+            background: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        .nav-tabs .nav-link.active {
+            color: #ffffff !important;
+            background: #1a73e8 !important;
+            border-color: #1a73e8 !important;
+        }
+        .nav-tabs .nav-link:hover:not(.active) {
+            background: #e9ecef;
+            color: #1a73e8;
+        }
+
+        /* 3D Card Styling */
+        .flashcard-scene {
+            width: 100%;
+            height: 380px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .flashcard-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+        }
+        .flashcard-back {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #ffffff;
+            transform: rotateY(180deg);
+        }
+        .flashcard-body-content {
+            text-align: center;
+            width: 100%;
+            position: relative;
+        }
+        .flashcard-text-large {
+            font-size: 3.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+        .pronunciation-text {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4fc3f7;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .meaning-text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .audio-btn {
+            position: absolute;
+            top: -70px;
+            right: 0px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .audio-btn:hover {
+            transform: scale(1.1);
+        }
+        .fs-8 {
+            font-size: 0.775rem;
+        }
+        .fs-7 {
+            font-size: 0.875rem;
+        }
+    </style>
+}
+

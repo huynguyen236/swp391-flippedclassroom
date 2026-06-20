@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Quizzes
 {
@@ -39,6 +40,7 @@ namespace Flipped_Classroom.Pages.Quizzes
         {
             if (nodeId.HasValue) Input.NodeId = nodeId.Value;
             if (classId.HasValue) Input.ClassId = classId.Value;
+            
             IsStrictMode = isStrictMode;
 
             await LoadPageDataAsync();
@@ -46,10 +48,14 @@ namespace Flipped_Classroom.Pages.Quizzes
 
         public async Task<IActionResult> OnPostAsync()
         {
+            Input.PublishNow = true;
+
             if (User.IsInRole("Teacher") && !Input.ClassId.HasValue)
             {
                 ModelState.AddModelError("Input.ClassId", "Giảng viên bắt buộc phải chọn lớp học.");
             }
+
+
 
             await LoadPageDataAsync();
 
@@ -95,7 +101,17 @@ namespace Flipped_Classroom.Pages.Quizzes
                 })
                 .ToList();
 
-            var classes = await _quizService.GetClassesAsync();
+            int? managerId = null;
+            if (User.IsInRole("Teacher"))
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    managerId = userId;
+                }
+            }
+
+            var classes = await _quizService.GetClassesAsync(managerId);
             ClassOptions = classes
                 .Select(c => new SelectListItem
                 {

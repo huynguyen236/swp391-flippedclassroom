@@ -52,11 +52,12 @@ namespace Flipped_Classroom.Pages.Curriculums
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            Curriculum = await _curriculumService.GetCurriculumByIdAsync(id);
-            if (Curriculum == null)
+            var curriculum = await _curriculumService.GetCurriculumByIdAsync(id);
+            if (curriculum == null)
             {
                 return NotFound();
             }
+            Curriculum = curriculum;
             return Page();
         }
 
@@ -129,7 +130,7 @@ namespace Flipped_Classroom.Pages.Curriculums
             };
 
             await _curriculumService.AddMaterialAsync(material);
-            TempData["SuccessMessage"] = "Đêm học liệu thành công.";
+            TempData["SuccessMessage"] = "Thêm học liệu thành công.";
             return RedirectToPage(new { id });
         }
 

@@ -1234,11 +1234,14 @@
                         <label for="NewAssignment_NodeId" class="form-label fw-bold">Liên kết bài học (Không bắt buộc)</label>
                         <select name="NewAssignment.NodeId" id="NewAssignment_NodeId" class="form-select" style="border-radius: 8px;">
                             <option value="">-- Không liên kết --</option>
-                            @if (Model.Class.Nodes != null && Model.Class.Nodes.Any())
+                            @if (Model.Class.Curriculum?.Nodes != null)
                             {
-                                foreach (var node in Model.Class.Nodes)
+                                foreach (var node in Model.Class.Curriculum.Nodes)
                                 {
-                                    <option value="@node.Id">@node.Title</option>
+                                    if (node.ParentNodeId == null)
+                                    {
+                                        <option value="@node.Id">@node.Title</option>
+                                    }
                                 }
                             }
                         </select>

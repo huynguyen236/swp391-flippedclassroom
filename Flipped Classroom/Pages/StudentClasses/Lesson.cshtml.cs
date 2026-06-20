@@ -63,7 +63,7 @@ namespace Flipped_Classroom.Pages.StudentClasses
                 return NotFound();
             }
 
-            if (classroom.CurriculumId == null || node.CurriculumId != classroom.CurriculumId)
+            if (node.CurriculumId != classroom.CurriculumId)
             {
                 return Forbid();
             }
@@ -85,6 +85,8 @@ namespace Flipped_Classroom.Pages.StudentClasses
 
             Class = classroom;
             Lesson = node;
+
+
 
             // Nạp danh sách Hỏi & Đáp (Q&A/Lesson Comments) cho bài học này
             QaThreads = await _context.QaThreads

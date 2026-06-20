@@ -14,7 +14,7 @@
 
 <div class="row">
     <div class="col-lg-8">
-        <div class="card-custom p-4">
+        <div class="card border rounded-4 p-4 card-flat">
             <form method="post" autocomplete="off">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -90,8 +90,8 @@
 
                 <!-- Submit buttons -->
                 <div class="d-flex gap-2 justify-content-end">
-                    <a href="/Admin/Users" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
-                    <button type="submit" class="btn btn-custom-primary px-4">
+                    <a href="/Admin/Users" class="btn btn-outline-secondary rounded-pill px-4">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
                         <i class="bi bi-check2-circle"></i> Khởi tạo tài khoản
                     </button>
                 </div>
@@ -101,7 +101,7 @@
     
     <!-- Info Card on the right -->
     <div class="col-lg-4">
-        <div class="card-custom p-4 bg-light border-0">
+        <div class="card card-flat rounded-4 p-4 bg-light border-0">
             <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-exclamation text-warning me-1"></i> Quy định tài khoản</h5>
             <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
                 <li class="mb-2"><strong>Tên tài khoản:</strong> Phải là duy nhất, chỉ chứa ký tự chữ không dấu, chữ số và dấu gạch dưới.</li>
