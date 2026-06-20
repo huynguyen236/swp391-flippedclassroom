@@ -119,6 +119,7 @@
                                         </div>
                                     }
 
+
                                     <!-- Root Node Materials -->
                                     @if (rootNode.Materials.Any())
                                     {
@@ -214,7 +215,10 @@
                                                             </div>
                                                         }
                                                     </div>
-                                                    <div class="d-flex align-items-center gap-2 self-align-end ms-auto ms-sm-0">
+                      <div class="d-flex align-items-center gap-2 self-align-end ms-auto ms-sm-0">
+                                                        <a href="/Curriculum/Vocabularies?nodeId=@child.Id" class="btn btn-sm btn-info text-white rounded-pill px-3 py-1 fs-8 d-flex align-items-center gap-1 shadow-sm">
+                                                            <i class="bi bi-card-text"></i> Từ vựng
+                                                        </a>
                                                         <button type="button" class="btn btn-sm btn-success rounded-pill px-3 py-1 fs-8 d-flex align-items-center gap-1 shadow-sm" onclick="openAddMaterialModal(@child.Id, '@child.Title')">
                                                             <i class="bi bi-plus-lg"></i> Học liệu
                                                         </button>
@@ -223,7 +227,7 @@
                                                                 <i class="bi bi-trash fs-8"></i>
                                                             </button>
                                                         </form>
-                                                    </div>
+                                                      </div>
                                                 </li>
                                             }
                                         </ul>

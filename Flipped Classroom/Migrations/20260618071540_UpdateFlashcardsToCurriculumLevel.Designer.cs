@@ -4,6 +4,7 @@ using Flipped_Classroom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    partial class Swp391NihongoContextModelSnapshot : ModelSnapshot
+    [Migration("20260618071540_UpdateFlashcardsToCurriculumLevel")]
+    partial class UpdateFlashcardsToCurriculumLevel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -326,6 +329,82 @@ namespace Flipped_Classroom.Migrations
                     b.HasIndex("SubmissionId");
 
                     b.ToTable("Feedback_Comments", (string)null);
+                });
+
+            modelBuilder.Entity("Flipped_Classroom.Models.Flashcard", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AudioUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BackText")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FlashcardSetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FrontText")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Pronunciation")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FlashcardSetId");
+
+                    b.ToTable("Flashcards");
+                });
+
+            modelBuilder.Entity("Flipped_Classroom.Models.FlashcardSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurriculumId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurriculumId");
+
+                    b.ToTable("FlashcardSets");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.Grade", b =>
@@ -1165,47 +1244,6 @@ namespace Flipped_Classroom.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.Vocabulary", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("DifficultyLevel")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Hiragana")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Meaning")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("NodeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Romaji")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Word")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Vocabularies");
-
-                    b.HasIndex("NodeId");
-
-                    b.ToTable("Vocabularies");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.Assignment", b =>
                 {
                     b.HasOne("Flipped_Classroom.Models.Class", "Class")
@@ -1342,6 +1380,28 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Reviewer");
 
                     b.Navigation("Submission");
+                });
+
+            modelBuilder.Entity("Flipped_Classroom.Models.Flashcard", b =>
+                {
+                    b.HasOne("Flipped_Classroom.Models.FlashcardSet", "FlashcardSet")
+                        .WithMany("Flashcards")
+                        .HasForeignKey("FlashcardSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FlashcardSet");
+                });
+
+            modelBuilder.Entity("Flipped_Classroom.Models.FlashcardSet", b =>
+                {
+                    b.HasOne("Flipped_Classroom.Models.Curriculum", "Curriculum")
+                        .WithMany("FlashcardSets")
+                        .HasForeignKey("CurriculumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Curriculum");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.Grade", b =>
@@ -1690,18 +1750,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("Flipped_Classroom.Models.Vocabulary", b =>
-                {
-                    b.HasOne("Flipped_Classroom.Models.Node", "Node")
-                        .WithMany("Vocabularies")
-                        .HasForeignKey("NodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Vocabulary_Node");
-
-                    b.Navigation("Node");
-                });
-
             modelBuilder.Entity("Flipped_Classroom.Models.Assignment", b =>
                 {
                     b.Navigation("Submissions");
@@ -1732,7 +1780,14 @@ namespace Flipped_Classroom.Migrations
                 {
                     b.Navigation("Classes");
 
+                    b.Navigation("FlashcardSets");
+
                     b.Navigation("Nodes");
+                });
+
+            modelBuilder.Entity("Flipped_Classroom.Models.FlashcardSet", b =>
+                {
+                    b.Navigation("Flashcards");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.GradeCategory", b =>
@@ -1762,8 +1817,6 @@ namespace Flipped_Classroom.Migrations
                     b.Navigation("Quizzes");
 
                     b.Navigation("StudentProgresses");
-
-                    b.Navigation("Vocabularies");
                 });
 
             modelBuilder.Entity("Flipped_Classroom.Models.Project", b =>

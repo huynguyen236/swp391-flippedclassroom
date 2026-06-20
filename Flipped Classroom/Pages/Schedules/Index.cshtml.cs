@@ -47,30 +47,7 @@ namespace Flipped_Classroom.Pages.Schedules
             ClassList = classes.Select(c =>
             {
                 // Detect assigned slot by matching schedule times
-                string? assignedSlot = null;
-                if (c.ClassSchedules.Any())
-                {
-                    var firstSchedule = c.ClassSchedules.First();
-                    foreach (var slot in ScheduleSlotHelper.GetAllSlots())
-                    {
-                        if (slot.StartTime == firstSchedule.StartTime && slot.EndTime == firstSchedule.EndTime)
-                        {
-                            // Also check that days match
-                            var scheduleDays = c.ClassSchedules
-                                .Select(s => s.StudyDate.DayOfWeek)
-                                .Distinct()
-                                .OrderBy(d => d)
-                                .ToArray();
-                            var slotDays = slot.Days.OrderBy(d => d).ToArray();
-                            if (scheduleDays.SequenceEqual(slotDays))
-                            {
-                                assignedSlot = slot.SlotName;
-                                break;
-                            }
-                        }
-                    }
-                    assignedSlot ??= "Custom";
-                }
+                string? assignedSlot = ScheduleSlotHelper.DetectSlot(c.ClassSchedules);
 
                 return new ClassScheduleViewModel
                 {

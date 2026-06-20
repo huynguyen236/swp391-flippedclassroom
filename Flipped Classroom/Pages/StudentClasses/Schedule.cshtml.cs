@@ -82,29 +82,7 @@ namespace Flipped_Classroom.Pages.StudentClasses
             foreach (var cls in enrolledClasses)
             {
                 // Detect slot cho lớp này
-                string? detectedSlot = null;
-                if (cls.ClassSchedules.Any())
-                {
-                    var firstSchedule = cls.ClassSchedules.First();
-                    foreach (var slot in ScheduleSlotHelper.GetAllSlots())
-                    {
-                        if (slot.StartTime == firstSchedule.StartTime && slot.EndTime == firstSchedule.EndTime)
-                        {
-                            var scheduleDays = cls.ClassSchedules
-                                .Select(s => s.StudyDate.DayOfWeek)
-                                .Distinct()
-                                .OrderBy(d => d)
-                                .ToArray();
-                            var slotDays = slot.Days.OrderBy(d => d).ToArray();
-                            if (scheduleDays.SequenceEqual(slotDays))
-                            {
-                                detectedSlot = slot.SlotName;
-                                break;
-                            }
-                        }
-                    }
-                    detectedSlot ??= "Custom";
-                }
+                string? detectedSlot = ScheduleSlotHelper.DetectSlot(cls.ClassSchedules);
 
                 classInfoList.Add(new ClassInfo
                 {
