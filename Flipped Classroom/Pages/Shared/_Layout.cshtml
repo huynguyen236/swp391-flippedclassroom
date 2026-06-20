@@ -44,6 +44,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/japanese-analyzer.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FlippedClassroom.styles.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
@@ -297,9 +298,86 @@
         </footer>
     }
 
+    @* ── Japanese Language Analyzer Extension ── *@
+    @if (isAuthenticated)
+    {
+        <button class="jp-analyzer-fab" id="jpAnalyzerFab" title="Công cụ phân tích ngữ pháp">
+            <i class="bi bi-translate"></i>
+        </button>
+
+        <div class="jp-analyzer-overlay" id="jpAnalyzerOverlay"></div>
+
+        <div class="jp-analyzer-panel" id="jpAnalyzerPanel">
+            <div class="jp-analyzer-header">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-translate me-2 text-primary"></i>Phân tích ngữ pháp
+                </h6>
+                <button class="jp-analyzer-close" title="Đóng">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="jp-analyzer-tabs">
+                <button class="jp-analyzer-tab active" data-tab="tabSentence">
+                    <i class="bi bi-scissors me-1"></i>Tách Câu
+                </button>
+                <button class="jp-analyzer-tab" data-tab="tabWord">
+                    <i class="bi bi-diagram-3 me-1"></i>Phân Tích Từ
+                </button>
+            </div>
+
+            <div class="jp-analyzer-body">
+                @* ── Tab 1: Sentence Splitter ── *@
+                <div class="jp-analyzer-tab-content active" id="tabSentence">
+                    <div class="jp-analyzer-input">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="bi bi-chat-square-text me-1"></i>Nhập câu tiếng Nhật
+                        </label>
+                        <textarea id="jpInputSplit" rows="3"
+                                  placeholder="例: 私は毎日学校に行きます"></textarea>
+                    </div>
+                    <button class="jp-analyzer-btn" id="jpBtnSplit">
+                        <span class="jp-btn-text"><i class="bi bi-play-fill me-1"></i>Tách câu</span>
+                    </button>
+                    <div class="jp-analyzer-results" id="jpResultsSplit">
+                        <div class="jp-analyzer-empty">
+                            <div><i class="bi bi-scissors"></i></div>
+                            <p>Nhập một câu tiếng Nhật và bấm "Tách câu"</p>
+                        </div>
+                    </div>
+                </div>
+
+                @* ── Tab 2: Word Analyzer ── *@
+                <div class="jp-analyzer-tab-content" id="tabWord">
+                    <div class="jp-analyzer-input">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="bi bi-journal-text me-1"></i>Nhập động từ / tính từ (thể nguyên thể)
+                        </label>
+                        <textarea id="jpInputWord" rows="2"
+                                  placeholder="例: 食べる、書く、高い、静か"></textarea>
+                    </div>
+                    <button class="jp-analyzer-btn" id="jpBtnAnalyze">
+                        <span class="jp-btn-text"><i class="bi bi-play-fill me-1"></i>Phân tích</span>
+                    </button>
+                    <div class="jp-analyzer-results" id="jpResultsWord">
+                        <div class="jp-analyzer-empty">
+                            <div><i class="bi bi-diagram-3"></i></div>
+                            <p>Nhập động từ hoặc tính từ rồi bấm "Phân tích"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (isAuthenticated)
+    {
+        <script src="~/js/japanese-analyzer.js" asp-append-version="true"></script>
+    }
 
     @if (showSidebar)
     {

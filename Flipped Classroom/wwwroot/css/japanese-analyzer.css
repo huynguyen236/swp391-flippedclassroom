@@ -1,0 +1,732 @@
+/* ============================================================
+   Japanese Language Analyzer — Slide-in Panel
+   Premium UI styles for sentence splitting, conjugation,
+   and word-info analysis.
+   
+   Design System:  Inherits tokens from theme.css
+   Author:         SWP391 Team
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   0.  CUSTOM PROPERTIES (local overrides)
+   ------------------------------------------------------------ */
+.jp-analyzer-fab,
+.jp-analyzer-overlay,
+.jp-analyzer-panel {
+    --jp-panel-width: 440px;
+    --jp-fab-size: 56px;
+    --jp-transition-panel: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --jp-transition-base: all 0.3s ease;
+    --jp-z-fab: 1050;
+    --jp-z-overlay: 1051;
+    --jp-z-panel: 1052;
+}
+
+
+/* ============================================================
+   1.  FAB — Floating Action Button
+   ============================================================ */
+.jp-analyzer-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: var(--jp-z-fab);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--jp-fab-size);
+    height: var(--jp-fab-size);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    color: #fff;
+    font-size: 1.35rem;
+    line-height: 1;
+
+    box-shadow:
+        0 6px 16px -4px rgba(var(--accent-rgb), 0.45),
+        0 2px 6px -1px rgba(0, 0, 0, 0.08);
+
+    transition: var(--jp-transition-base);
+    animation: jpPulse 2.8s ease-in-out infinite;
+}
+
+.jp-analyzer-fab:hover {
+    transform: scale(1.1);
+    box-shadow:
+        0 10px 28px -6px rgba(var(--accent-rgb), 0.55),
+        0 4px 10px -2px rgba(0, 0, 0, 0.12);
+    animation: none;
+}
+
+.jp-analyzer-fab:active {
+    transform: scale(1.02);
+}
+
+/* Icon rotation when panel is open */
+.jp-analyzer-fab.active {
+    animation: none;
+}
+
+.jp-analyzer-fab.active i,
+.jp-analyzer-fab.active svg,
+.jp-analyzer-fab.active .jp-fab-icon {
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.jp-analyzer-fab i,
+.jp-analyzer-fab svg,
+.jp-analyzer-fab .jp-fab-icon {
+    transition: transform 0.3s ease;
+}
+
+
+/* ============================================================
+   2.  OVERLAY
+   ============================================================ */
+.jp-analyzer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--jp-z-overlay);
+
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.jp-analyzer-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+
+/* ============================================================
+   3.  PANEL — Slide-in container
+   ============================================================ */
+.jp-analyzer-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--jp-z-panel);
+
+    width: var(--jp-panel-width);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    background: var(--surface);
+    border-left: 1px solid var(--border-soft);
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.1);
+
+    transform: translateX(100%);
+    transition: var(--jp-transition-panel);
+}
+
+.jp-analyzer-panel.open {
+    transform: translateX(0);
+}
+
+
+/* ============================================================
+   4.  PANEL HEADER
+   ============================================================ */
+.jp-analyzer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    flex-shrink: 0;
+}
+
+.jp-analyzer-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.jp-analyzer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: var(--jp-transition-base);
+}
+
+.jp-analyzer-close:hover {
+    background: var(--bg-slate);
+    color: var(--text-dark);
+}
+
+
+/* ============================================================
+   5.  TAB BAR
+   ============================================================ */
+.jp-analyzer-tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    background: var(--bg-slate);
+    flex-shrink: 0;
+}
+
+.jp-analyzer-tab {
+    flex: 1;
+    padding: 12px 16px;
+    text-align: center;
+
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: var(--jp-transition-base);
+}
+
+.jp-analyzer-tab:hover {
+    color: var(--text-dark);
+}
+
+.jp-analyzer-tab.active {
+    color: var(--accent);
+    font-weight: 600;
+    border-bottom-color: var(--accent);
+    background: var(--surface);
+}
+
+
+/* ============================================================
+   6.  PANEL BODY
+   ============================================================ */
+.jp-analyzer-body {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Custom scrollbar */
+.jp-analyzer-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.jp-analyzer-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.jp-analyzer-body::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent-rgb), 0.25);
+    border-radius: 999px;
+}
+
+.jp-analyzer-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--accent-rgb), 0.4);
+}
+
+/* Firefox scrollbar */
+.jp-analyzer-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--accent-rgb), 0.25) transparent;
+}
+
+
+/* ============================================================
+   7.  TAB CONTENT
+   ============================================================ */
+.jp-analyzer-tab-content {
+    display: none;
+}
+
+.jp-analyzer-tab-content.active {
+    display: block;
+    animation: jpFadeIn 0.35s ease both;
+}
+
+
+/* ============================================================
+   8.  INPUT AREA
+   ============================================================ */
+.jp-analyzer-input textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+
+    padding: 14px 16px;
+    border: 1.5px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    outline: none;
+
+    font-family: 'Noto Sans JP', var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background: var(--surface);
+
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.jp-analyzer-input textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.jp-analyzer-input textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+
+/* ============================================================
+   9.  ANALYZE BUTTON
+   ============================================================ */
+.jp-analyzer-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+
+    transition: var(--jp-transition-base);
+}
+
+.jp-analyzer-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 20px -6px rgba(var(--accent-rgb), 0.45),
+        0 3px 8px -2px rgba(0, 0, 0, 0.08);
+}
+
+.jp-analyzer-btn:active {
+    transform: translateY(0);
+}
+
+.jp-analyzer-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Loading state — hides text, shows spinner */
+.jp-analyzer-btn.loading {
+    color: transparent;
+    pointer-events: none;
+    position: relative;
+}
+
+.jp-analyzer-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: jpSpin 0.65s linear infinite;
+}
+
+
+/* ============================================================
+   10. RESULTS SECTION
+   ============================================================ */
+.jp-analyzer-results {
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.jp-analyzer-results.has-results {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* ============================================================
+   11. TOKEN CHIPS — Sentence Splitter
+   ============================================================ */
+.jp-token {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    margin: 4px;
+    border-radius: 999px;
+
+    font-family: 'Noto Sans JP', var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.3;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.jp-token:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Token color variants --- */
+.jp-token--kanji {
+    background: #eef2ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+}
+
+.jp-token--particle {
+    background: var(--sakura-soft);
+    color: #be185d;
+    border: 1px solid var(--sakura);
+}
+
+.jp-token--verb-ending {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.jp-token--hiragana {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.jp-token--katakana {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.jp-token--punctuation {
+    background: var(--bg-slate);
+    color: var(--text-muted);
+    border: 1px solid var(--border-soft);
+}
+
+.jp-token--unknown {
+    background: #f8fafc;
+    color: var(--text-muted);
+    border: 1px dashed var(--border-soft);
+}
+
+
+/* ============================================================
+   12. TOKEN LEGEND
+   ============================================================ */
+.jp-token-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.jp-token-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.jp-token-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.jp-token-legend-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    white-space: nowrap;
+}
+
+/* Legend dot colors matching token types */
+.jp-token-legend-dot--kanji       { background: #3730a3; }
+.jp-token-legend-dot--particle    { background: #be185d; }
+.jp-token-legend-dot--verb-ending { background: #6d28d9; }
+.jp-token-legend-dot--hiragana    { background: #15803d; }
+.jp-token-legend-dot--katakana    { background: #c2410c; }
+.jp-token-legend-dot--punctuation { background: var(--text-muted); }
+.jp-token-legend-dot--unknown     { background: var(--border-soft); }
+
+
+/* ============================================================
+   13. WORD INFO CARD
+   ============================================================ */
+.jp-word-info {
+    background: var(--bg-slate);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--accent);
+}
+
+.jp-word-info:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ============================================================
+   14. WORD TYPE BADGE
+   ============================================================ */
+.jp-word-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.jp-word-badge--verb {
+    background: rgba(var(--accent-rgb), 0.1);
+    color: var(--accent);
+}
+
+.jp-word-badge--i-adj {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
+
+.jp-word-badge--na-adj {
+    background: rgba(234, 88, 12, 0.1);
+    color: #ea580c;
+}
+
+
+/* ============================================================
+   15. CONJUGATION MATRIX TABLE
+   ============================================================ */
+.jp-conjugation-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.jp-conjugation-table thead {
+    background: #f1f5f9;
+}
+
+.jp-conjugation-table th {
+    padding: 10px 14px;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.jp-conjugation-table td {
+    padding: 10px 14px;
+    font-family: 'Noto Sans JP', var(--font-body);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    border-top: 1px solid var(--border-soft);
+}
+
+.jp-conjugation-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.jp-conjugation-table tbody tr:hover {
+    background: rgba(var(--accent-rgb), 0.03);
+}
+
+
+/* ============================================================
+   16. SUFFIX HIGHLIGHT
+   ============================================================ */
+.jp-suffix {
+    color: var(--accent);
+    font-weight: 700;
+    background: rgba(var(--accent-rgb), 0.08);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+
+/* ============================================================
+   17. CONJUGATION FORM LABEL
+   ============================================================ */
+.jp-form-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+}
+
+
+/* ============================================================
+   18. EMPTY STATE
+   ============================================================ */
+.jp-analyzer-empty {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.jp-analyzer-empty-icon {
+    font-size: 3rem;
+    color: var(--text-muted);
+    opacity: 0.3;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.jp-analyzer-empty-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    margin: 0;
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   19. ERROR STATE
+   ============================================================ */
+.jp-analyzer-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    color: #dc2626;
+    font-size: 0.875rem;
+    font-family: var(--font-body);
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   20. KEYFRAME ANIMATIONS
+   ============================================================ */
+@keyframes jpFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes jpPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes jpSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---- Reduced-motion preference ---- */
+@media (prefers-reduced-motion: reduce) {
+    .jp-analyzer-fab,
+    .jp-analyzer-overlay,
+    .jp-analyzer-panel,
+    .jp-analyzer-tab,
+    .jp-analyzer-btn,
+    .jp-analyzer-results,
+    .jp-token,
+    .jp-conjugation-table tbody tr,
+    .jp-analyzer-close {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+
+/* ============================================================
+   21. RESPONSIVE
+   ============================================================ */
+
+/* Tablet — sidebar likely hidden */
+@media (max-width: 991.98px) {
+    .jp-analyzer-panel {
+        --jp-panel-width: 420px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+    .jp-analyzer-panel {
+        --jp-panel-width: 100vw;
+        border-left: none;
+    }
+
+    .jp-analyzer-fab {
+        --jp-fab-size: 48px;
+        bottom: 16px;
+        right: 16px;
+        font-size: 1.15rem;
+    }
+
+    .jp-analyzer-header {
+        padding: 16px 20px;
+    }
+
+    .jp-analyzer-tabs {
+        padding: 0 20px;
+    }
+
+    .jp-analyzer-body {
+        padding: 20px;
+    }
+
+    .jp-analyzer-title {
+        font-size: 1.1rem;
+    }
+}

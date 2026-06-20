@@ -22,21 +22,23 @@
 
                 <div class="mb-3">
                     <label asp-for="NewQuestion.NodeId" class="form-label fw-semibold text-dark">Chủ đề / Node <span class="text-danger">*</span></label>
-                    <select asp-for="NewQuestion.NodeId" asp-items="Model.NodeSelectList" class="form-select" required>
+                    <select asp-for="NewQuestion.NodeId" asp-items="Model.NodeSelectList" class="form-select" required data-val="true" data-val-required="Vui lòng chọn chủ đề.">
                         <option value="">-- Chọn chủ đề --</option>
                     </select>
+                    <span asp-validation-for="NewQuestion.NodeId" class="text-danger small mt-1 d-block"></span>
                     <small class="text-muted d-block mt-1">Chọn chủ đề nơi câu hỏi này sẽ được lưu trong ngân hàng câu hỏi</small>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="NewQuestion.Content" class="form-label fw-semibold text-dark">Nội dung câu hỏi</label>
-                    <textarea asp-for="NewQuestion.Content" class="form-control" rows="3" placeholder="Nhập câu hỏi tại đây..." required></textarea>
+                    <label asp-for="NewQuestion.Content" class="form-label fw-semibold text-dark">Nội dung câu hỏi <span class="text-danger">*</span></label>
+                    <textarea asp-for="NewQuestion.Content" class="form-control" rows="3" placeholder="Nhập câu hỏi tại đây..." required data-val="true" data-val-required="Vui lòng nhập nội dung câu hỏi."></textarea>
+                    <span asp-validation-for="NewQuestion.Content" class="text-danger small mt-1 d-block"></span>
                 </div>
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label asp-for="NewQuestion.Category" class="form-label fw-semibold text-dark">Phân loại (Category)</label>
-                        <select asp-for="NewQuestion.Category" class="form-select" required>
+                        <label asp-for="NewQuestion.Category" class="form-label fw-semibold text-dark">Phân loại (Category) <span class="text-danger">*</span></label>
+                        <select asp-for="NewQuestion.Category" class="form-select" required data-val="true" data-val-required="Vui lòng chọn phân loại.">
                             <option value="">-- Chọn phân loại --</option>
                             <option value="Vocabulary">Từ vựng (Vocabulary)</option>
                             <option value="Grammar">Ngữ pháp (Grammar)</option>
@@ -44,14 +46,16 @@
                             <option value="Keigo">Kính ngữ (Keigo)</option>
                             <option value="Reading">Đọc hiểu (Reading)</option>
                         </select>
+                        <span asp-validation-for="NewQuestion.Category" class="text-danger small mt-1 d-block"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="NewQuestion.QuestionType" class="form-label fw-semibold text-dark">Loại câu hỏi (Type)</label>
-                        <select asp-for="NewQuestion.QuestionType" class="form-select" required id="questionType">
+                        <label asp-for="NewQuestion.QuestionType" class="form-label fw-semibold text-dark">Loại câu hỏi (Type) <span class="text-danger">*</span></label>
+                        <select asp-for="NewQuestion.QuestionType" class="form-select" required id="questionType" data-val="true" data-val-required="Vui lòng chọn loại câu hỏi.">
                             <option value="MCQ">Trắc nghiệm (MCQ)</option>
                             <option value="Writing">Viết (Writing)</option>
                         </select>
+                        <span asp-validation-for="NewQuestion.QuestionType" class="text-danger small mt-1 d-block"></span>
                     </div>
                 </div>
 
@@ -64,7 +68,9 @@
                         <div class="col-md-6">
                             <div class="card bg-light border-0 p-3 h-100">
                                 <label class="form-label fw-semibold text-dark">Đáp án @(char.ConvertFromUtf32(65 + i)) <span class="text-danger">*</span></label>
-                                <input asp-for="Options[i].OptionContent" class="form-control mb-2" placeholder="Nhập nội dung đáp án..." />
+                                <input asp-for="Options[i].OptionContent" class="form-control mb-2" placeholder="Nhập nội dung đáp án..." data-val="true" data-val-required="Vui lòng nhập nội dung đáp án." />
+
+                                <span asp-validation-for="Options[i].OptionContent" class="text-danger small mb-2 d-block"></span>
 
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" asp-for="Options[i].IsCorrect" id="check_@i">
@@ -79,7 +85,9 @@
 
                 <div id="nonMcqAnswer" class="mb-4" style="@(isMcq ? "display:none" : "")">
                     <label asp-for="NewQuestion.CorrectAnswer" class="form-label fw-semibold text-dark">Đáp án tham khảo <span class="text-danger">*</span></label>
-                    <textarea asp-for="NewQuestion.CorrectAnswer" class="form-control" rows="3" placeholder="Nhập đáp án mẫu / đáp án tham khảo..."></textarea>
+                    <textarea asp-for="NewQuestion.CorrectAnswer" class="form-control" rows="3" placeholder="Nhập đáp án mẫu / đáp án tham khảo..." data-val="true" data-val-required="Vui lòng nhập đáp án tham khảo."></textarea>
+
+                    <span asp-validation-for="NewQuestion.CorrectAnswer" class="text-danger small mt-1 d-block"></span>
                 </div>
 
                 <div class="d-flex gap-2 justify-content-end mt-4">

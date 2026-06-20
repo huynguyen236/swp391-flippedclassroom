@@ -31,9 +31,14 @@ namespace Flipped_Classroom.Services.Implementation
                 .ToListAsync();
         }
 
-        public async Task<List<Class>> GetClassesAsync()
+        public async Task<List<Class>> GetClassesAsync(int? managerId = null)
         {
-            return await _context.Classes
+            var query = _context.Classes.AsQueryable();
+            if (managerId.HasValue)
+            {
+                query = query.Where(c => c.ManagerId == managerId.Value);
+            }
+            return await query
                 .OrderBy(c => c.ClassName)
                 .ToListAsync();
         }

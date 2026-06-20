@@ -1,4 +1,5 @@
 using Flipped_Classroom.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Flipped_Classroom.Services.Interfaces
 {
@@ -30,23 +31,32 @@ namespace Flipped_Classroom.Services.Interfaces
 
         Task ResolveQuestionMistakesForClassAsync(int questionId, int classId);
 
-        Task<List<Class>> GetClassesAsync();
+        Task<List<Class>> GetClassesAsync(int? managerId = null);
 
         Task CloneCurriculumQuizzesToClassAsync(int curriculumId, int classId);
     }
 
     public class CreateRandomQuizRequest
     {
+        [Required(ErrorMessage = "Vui lòng chọn bài học.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn bài học.")]
         public int NodeId { get; set; }
 
         public int? ClassId { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng chọn phân loại kiến thức.")]
         public string Category { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Vui lòng nhập tên bài test.")]
+        [StringLength(200, ErrorMessage = "Tên bài test không được vượt quá 200 ký tự.")]
         public string Title { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Vui lòng nhập số lượng câu hỏi.")]
+        [Range(1, 100, ErrorMessage = "Số lượng câu hỏi phải từ 1 đến 100 câu.")]
         public int QuestionCount { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng nhập thời gian làm bài.")]
+        [Range(1, 300, ErrorMessage = "Thời gian làm bài phải từ 1 đến 300 phút.")]
         public int DurationMinutes { get; set; }
 
         public bool PublishNow { get; set; }

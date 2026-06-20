@@ -34,41 +34,62 @@
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @if (Model.IsStrictMode)
+                    {
+                        <span class="badge bg-danger bg-opacity-10 text-danger fw-semibold px-2.5 py-1.5 border border-danger border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
+                            <i class="bi bi-shield-lock-fill"></i> Strict Mode (Bị khóa)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2.5 py-1.5 border border-success border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
+                            <i class="bi bi-unlock-fill"></i> Free Mode (Tự do)
+                        </span>
+                    }
+
+                    <span id="targetModeBadge" class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2.5 py-1.5 border border-secondary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
+                        <i class="bi bi-tag-fill"></i> Đang tải...
+                    </span>
+                </div>
+
                 <div class="mb-3">
-                    <label asp-for="Input.Title" class="form-label fw-semibold">Tên bài test</label>
-                    <input asp-for="Input.Title" class="form-control bg-light" maxlength="200" placeholder="VD: Grammar N5 - Mini test 01" required />
+                    <label asp-for="Input.Title" class="form-label fw-semibold">Tên bài test <span class="text-danger">*</span></label>
+                    <input asp-for="Input.Title" class="form-control bg-light" maxlength="200" placeholder="VD: Grammar N5 - Mini test 01" />
                     <span asp-validation-for="Input.Title" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
                     @if (User.IsInRole("Teacher"))
                     {
-                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học</label>
-                        <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light" required>
+                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-danger">*</span></label>
+                        <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light" required
+                                oninvalid="this.setCustomValidity('Giảng viên bắt buộc phải chọn lớp học.')"
+                                onchange="this.setCustomValidity('')">
                             <option value="">Chọn lớp học</option>
                         </select>
                     }
                     else
                     {
-                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học (để trống nếu tạo Template)</label>
+                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-muted fw-normal" style="font-size: 0.85rem;">(để trống nếu tạo Template)</span></label>
                         <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light">
-                            <option value="">Chọn lớp học</option>
+                            <option value="">Chọn lớp học (Template)</option>
                         </select>
                     }
                     <span asp-validation-for="Input.ClassId" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Input.NodeId" class="form-label fw-semibold">Bài học</label>
-                    <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select bg-light" id="nodeSelect" required>
+                    <label asp-for="Input.NodeId" class="form-label fw-semibold">Bài học <span class="text-danger">*</span></label>
+                    <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select bg-light" id="nodeSelect">
                         <option value="">Chọn bài học</option>
                     </select>
                     <span asp-validation-for="Input.NodeId" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Input.Category" class="form-label fw-semibold">Phân loại kiến thức</label>
-                    <select asp-for="Input.Category" class="form-select bg-light" id="categorySelect" required>
+                    <label asp-for="Input.Category" class="form-label fw-semibold">Phân loại kiến thức <span class="text-danger">*</span></label>
+                    <select asp-for="Input.Category" class="form-select bg-light" id="categorySelect">
                         <option value="">Chọn phân loại</option>
                         <option value="All">Tất cả (All)</option>
                         <option value="Vocabulary">Từ vựng (Vocabulary)</option>
@@ -81,13 +102,13 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label asp-for="Input.QuestionCount" class="form-label fw-semibold">Số lượng câu</label>
-                        <input asp-for="Input.QuestionCount" class="form-control bg-light" type="number" min="1" max="100" required />
+                        <label asp-for="Input.QuestionCount" class="form-label fw-semibold">Số lượng câu <span class="text-danger">*</span></label>
+                        <input asp-for="Input.QuestionCount" class="form-control bg-light" type="number" />
                         <span asp-validation-for="Input.QuestionCount" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Input.DurationMinutes" class="form-label fw-semibold">Thời gian (phút)</label>
-                        <input asp-for="Input.DurationMinutes" class="form-control bg-light" type="number" min="1" max="300" required />
+                        <label asp-for="Input.DurationMinutes" class="form-label fw-semibold">Thời gian (phút) <span class="text-danger">*</span></label>
+                        <input asp-for="Input.DurationMinutes" class="form-control bg-light" type="number" />
                         <span asp-validation-for="Input.DurationMinutes" class="text-danger small"></span>
                     </div>
                 </div>
@@ -97,10 +118,6 @@
                     <span>Hiện có <strong id="availableCount">@(Model.AvailableQuestionCount?.ToString() ?? "-")</strong> câu phù hợp.</span>
                 </div>
 
-                <div class="form-check form-switch mb-4">
-                    <input asp-for="Input.PublishNow" class="form-check-input" type="checkbox" role="switch" />
-                    <label asp-for="Input.PublishNow" class="form-check-label fw-semibold">Phát hành ngay cho học viên trong lớp</label>
-                </div>
                 <input type="hidden" asp-for="IsStrictMode" />
 
                 <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
@@ -176,6 +193,8 @@
         const nodeSelect = document.getElementById('nodeSelect');
         const categorySelect = document.getElementById('categorySelect');
         const availableCount = document.getElementById('availableCount');
+        const classSelect = document.querySelector('select[name="Input.ClassId"]');
+        const targetModeBadge = document.getElementById('targetModeBadge');
 
         async function updateAvailability() {
             const nodeId = nodeSelect.value;
@@ -191,9 +210,34 @@
             availableCount.textContent = data.count;
         }
 
+        function updateTargetBadge() {
+            if (!targetModeBadge) return;
+
+            if (!classSelect) {
+                targetModeBadge.className = "badge bg-primary bg-opacity-10 text-primary fw-semibold px-2.5 py-1.5 border border-primary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
+                targetModeBadge.innerHTML = '<i class="bi bi-journal-bookmark-fill"></i> Bài test cho lớp học';
+                return;
+            }
+
+            if (classSelect.value === "") {
+                targetModeBadge.className = "badge bg-info bg-opacity-10 text-info fw-semibold px-2.5 py-1.5 border border-info border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
+                targetModeBadge.innerHTML = '<i class="bi bi-file-earmark-medical-fill"></i> Bài test mẫu (Template)';
+            } else {
+                const selectedText = classSelect.options[classSelect.selectedIndex].text;
+                targetModeBadge.className = "badge bg-primary bg-opacity-10 text-primary fw-semibold px-2.5 py-1.5 border border-primary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
+                targetModeBadge.innerHTML = `<i class="bi bi-journal-bookmark-fill"></i> Lớp: ${selectedText}`;
+            }
+        }
+
         nodeSelect.addEventListener('change', updateAvailability);
         categorySelect.addEventListener('change', updateAvailability);
+        
+        if (classSelect) {
+            classSelect.addEventListener('change', updateTargetBadge);
+        }
+
         updateAvailability();
+        updateTargetBadge();
     </script>
 }
 

@@ -1,0 +1,23 @@
+khung chương trình là chuẩn (không customize)
+xếp cứng schedule
+phải có sự chuẩn bị trước khi học, diễn biến khi đang học 
+Ưu tiên làm giáo viên trả lời câu hỏi 
+Những nốt ôn tập phải có thể lấy câu hỏi của các nốt khác
+
+
+vận hành lớp học
+manager tạo khung chương trình(5 khung N5-N1), tạo lớp(Add gv, hs và khung chương trình)
+học sinh vào lớp. chọn slot học(mở slot liền sau) 
+schedule sẽ được fix cứng cho từng khung ví dụ N5 học t2-t5
+học sinh học bài theo khung bài học của slot => sau khi học sau sẽ lưu lại tracking của việc học => học xongp theo khung bài thì sẽ có hoạt động như ghi âm bài đọc, quiz(quiz theo bài cần tạo sẵn cho từng node), câu trả lời sai sẽ lưu vào dl review => câu hỏi sẽ được gắn vào từng slot học
+khi lên lớp, giảng viên có thể xem lại các câu trả lời học sinh hay làm sai, các câu hỏi học sinh đặt ra, học sinh nào đã/chưa làm bài, nghe bài ghi âm
+
+nâng cấp chức năng quiz:
+ Manager có thể tạo quiz trong node (khung chương trình)
+ tạo thêm một button cho quiz phần lớp của học sinh
+ quiz còn phải nối với lớp, lớp nào thì làm quiz của lớp đấy
+Tạo một chức năng riêng để upload tất cả các bài tập (chức năng riêng) (khánh làm)
+
+
+Cần phải làm:
+Do đều là quiz nên khi tạo ở đâu, như thế nào thì học sinh đều sẽ nhìn thấy quiz (nên cần tạo một flag để khóa lại những test chưa làm dc)
