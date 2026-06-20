@@ -46,24 +46,7 @@ namespace Flipped_Classroom.Pages.Schedules
             ScheduleDates = new HashSet<DateOnly>(Schedules.Select(s => s.StudyDate));
 
             // Detect slot
-            if (Schedules.Any())
-            {
-                var firstSchedule = Schedules.First();
-                foreach (var slot in ScheduleSlotHelper.GetAllSlots())
-                {
-                    if (slot.StartTime == firstSchedule.StartTime && slot.EndTime == firstSchedule.EndTime)
-                    {
-                        var scheduleDays = Schedules.Select(s => s.StudyDate.DayOfWeek).Distinct().OrderBy(d => d).ToArray();
-                        var slotDays = slot.Days.OrderBy(d => d).ToArray();
-                        if (scheduleDays.SequenceEqual(slotDays))
-                        {
-                            DetectedSlot = slot.SlotName;
-                            break;
-                        }
-                    }
-                }
-                DetectedSlot ??= "Custom";
-            }
+            DetectedSlot = ScheduleSlotHelper.DetectSlot(Schedules);
 
             // Calendar display month
             if (month.HasValue && year.HasValue)

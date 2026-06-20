@@ -1,0 +1,256 @@
+@page
+@model Flipped_Classroom.Pages.Curriculums.VocabulariesModel
+@using System.Text.Encodings.Web
+@{
+    ViewData["Title"] = "Quản lý từ vựng";
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Quay lại Builder -->
+    <div class="mb-3">
+        <a href="/Curriculum/Builder?id=@Model.Node.CurriculumId" class="btn btn-outline-secondary btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1">
+            <i class="bi bi-arrow-left"></i> Quay lại Trình xây dựng lộ trình
+        </a>
+    </div>
+
+    <!-- Header Page -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-gradient-header text-white overflow-hidden position-relative">
+        <div class="card-body p-4 position-relative z-1">
+            <span class="badge bg-white text-primary mb-2 px-3 py-1.5 rounded-pill fw-semibold fs-8 uppercase">Vocabulary Manager</span>
+            <h1 class="h2 mb-1 fw-bold">Từ vựng bài học: @Model.Node.Title</h1>
+            <p class="mb-0 text-white-50">
+                Lộ trình: @Model.Node.Curriculum.CurriculumName | Quản lý danh sách từ vựng ôn tập của bài học này.
+            </p>
+        </div>
+        <div class="header-decoration"></div>
+    </div>
+
+    <!-- Status Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+            <div>
+                @TempData["SuccessMessage"]
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <div>
+                @TempData["ErrorMessage"]
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Main Vocabulary Table -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <h5 class="fw-bold text-dark mb-0">Danh sách từ vựng (@Model.Vocabularies.Count)</h5>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-1.5" onclick="openAddVocabModal()">
+                        <i class="bi bi-plus-lg"></i> Thêm từ vựng mới
+                    </button>
+                </div>
+
+                @if (!Model.Vocabularies.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-collection display-3 opacity-25 mb-3 d-block text-primary"></i>
+                        <h6 class="fw-bold text-dark">Chưa có từ vựng nào</h6>
+                        <p class="small text-muted mb-0">Nhấp vào nút "Thêm từ vựng mới" ở trên để bắt đầu thêm từ vựng cho bài học.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light text-muted">
+                                <tr>
+                                    <th class="border-0">Từ gốc (Kanji/Kana)</th>
+                                    <th class="border-0">Cách đọc (Hiragana)</th>
+                                    <th class="border-0">Romaji</th>
+                                    <th class="border-0">Ý nghĩa</th>
+                                    <th class="border-0">Phát âm</th>
+                                    <th class="border-0">Độ khó</th>
+                                    <th class="border-0 text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Vocabularies)
+                                {
+                                    <tr>
+                                        <td><strong class="fs-5 text-primary">@item.Word</strong></td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary fs-7">@item.Hiragana</span></td>
+                                        <td class="text-muted">@item.Romaji</td>
+                                        <td><strong>@item.Meaning</strong></td>
+                                        <td>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:32px; height:32px;" onclick="speakText('@item.Word')">
+                                                <i class="bi bi-cpu-fill text-muted" title="Phát âm bằng trình duyệt AI"></i>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary-subtle text-primary">N@(item.DifficultyLevel)</span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="openEditVocabModal({
+                                                    id: @item.Id,
+                                                    word: '@Html.Raw(JavaScriptEncoder.Default.Encode(item.Word))',
+                                                    hiragana: '@Html.Raw(JavaScriptEncoder.Default.Encode(item.Hiragana))',
+                                                    meaning: '@Html.Raw(JavaScriptEncoder.Default.Encode(item.Meaning))',
+                                                    romaji: '@Html.Raw(JavaScriptEncoder.Default.Encode(item.Romaji ?? ""))',
+                                                    difficultyLevel: @(item.DifficultyLevel ?? 1)
+                                                })" title="Chỉnh sửa">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form method="post" asp-page-handler="Delete" asp-route-nodeId="@Model.Node.Id" asp-route-vocabId="@item.Id" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa từ vựng này?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Xóa">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa Từ vựng -->
+<div class="modal fade" id="vocabModal" tabindex="-1" aria-labelledby="vocabModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="vocabModalLabel">Thêm Từ Vựng Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" id="vocabForm">
+                <div class="modal-body py-4">
+                    <input type="hidden" name="vocabId" id="modalVocabId" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Word" class="form-label fw-semibold text-muted fs-7">Từ gốc (Kanji/Kana) <span class="text-danger">*</span></label>
+                            <input type="text" asp-for="Word" class="form-control rounded-3 py-2" placeholder="Ví dụ: 食べる, 学生" required id="modalWord" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Hiragana" class="form-label fw-semibold text-muted fs-7">Cách đọc (Hiragana/Katakana) <span class="text-danger">*</span></label>
+                            <input type="text" asp-for="Hiragana" class="form-control rounded-3 py-2" placeholder="Ví dụ: たべる, がくせい" required id="modalHiragana" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="Meaning" class="form-label fw-semibold text-muted fs-7">Ý nghĩa <span class="text-danger">*</span></label>
+                            <input type="text" asp-for="Meaning" class="form-control rounded-3 py-2" placeholder="Ví dụ: Ăn, Học sinh" required id="modalMeaning" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="Romaji" class="form-label fw-semibold text-muted fs-7">Romaji</label>
+                            <input type="text" asp-for="Romaji" class="form-control rounded-3 py-2" placeholder="Ví dụ: taberu, gakusei" id="modalRomaji" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="DifficultyLevel" class="form-label fw-semibold text-muted fs-7">Độ khó từ vựng (N5 - N1)</label>
+                            <select asp-for="DifficultyLevel" class="form-select rounded-3 py-2" id="modalDifficultyLevel">
+                                <option value="5">N5 (Cơ bản)</option>
+                                <option value="4">N4 (Sơ cấp)</option>
+                                <option value="3">N3 (Trung cấp)</option>
+                                <option value="2">N2 (Thượng cấp)</option>
+                                <option value="1">N1 (Cao cấp)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-end gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" id="modalSubmitBtn">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .fs-8 {
+            font-size: 0.775rem;
+        }
+        .fs-7 {
+            font-size: 0.875rem;
+        }
+        .bg-gradient-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .header-decoration {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .text-white-50 {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Trình duyệt không hỗ trợ phát âm AI.");
+            }
+        }
+
+        function openAddVocabModal() {
+            // Reset form
+            document.getElementById('vocabForm').reset();
+            document.getElementById('modalVocabId').value = '';
+            document.getElementById('vocabForm').setAttribute('action', '?handler=Add&nodeId=@Model.Node.Id');
+            
+            document.getElementById('vocabModalLabel').innerText = 'Thêm Từ Vựng Mới';
+            document.getElementById('modalSubmitBtn').innerText = 'Thêm mới';
+            
+            const modal = new bootstrap.Modal(document.getElementById('vocabModal'));
+            modal.show();
+        }
+
+        function openEditVocabModal(data) {
+            document.getElementById('modalVocabId').value = data.id;
+            document.getElementById('modalWord').value = data.word;
+            document.getElementById('modalHiragana').value = data.hiragana;
+            document.getElementById('modalMeaning').value = data.meaning;
+            document.getElementById('modalRomaji').value = data.romaji;
+            document.getElementById('modalDifficultyLevel').value = data.difficultyLevel;
+            
+            document.getElementById('vocabForm').setAttribute('action', '?handler=Update&nodeId=@Model.Node.Id');
+            document.getElementById('vocabModalLabel').innerText = 'Chỉnh Sửa Từ Vựng';
+            document.getElementById('modalSubmitBtn').innerText = 'Cập nhật';
+            
+            const modal = new bootstrap.Modal(document.getElementById('vocabModal'));
+            modal.show();
+        }
+    </script>
+}

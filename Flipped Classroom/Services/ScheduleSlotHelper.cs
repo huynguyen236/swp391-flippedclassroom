@@ -72,6 +72,34 @@ public static class ScheduleSlotHelper
     }
 
     /// <summary>
+    /// Tự động phát hiện slot từ danh sách ClassSchedule dựa trên giờ giấc và thứ trong tuần.
+    /// </summary>
+    public static string? DetectSlot(IEnumerable<ClassSchedule> schedules)
+    {
+        if (schedules == null || !schedules.Any())
+            return null;
+
+        var firstSchedule = schedules.First();
+        foreach (var slot in GetAllSlots())
+        {
+            if (slot.StartTime == firstSchedule.StartTime && slot.EndTime == firstSchedule.EndTime)
+            {
+                var scheduleDays = schedules
+                    .Select(s => s.StudyDate.DayOfWeek)
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToArray();
+                var slotDays = slot.Days.OrderBy(d => d).ToArray();
+                if (scheduleDays.SequenceEqual(slotDays))
+                {
+                    return slot.SlotName;
+                }
+            }
+        }
+        return "Custom";
+    }
+
+    /// <summary>
     /// Lấy tên thứ trong tuần bằng tiếng Việt.
     /// </summary>
     public static string GetVietnameseDayName(DayOfWeek day)

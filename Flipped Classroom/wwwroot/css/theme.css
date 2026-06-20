@@ -1,0 +1,398 @@
+/* ============================================================
+   THEME.CSS — Flipped Classroom (Japanese Minimalism)
+   Hợp nhất: site.css + layout.css + profile.css
+   Nguyên tắc: override Bootstrap qua CSS Variables, 90% layout
+   dùng utility class. Chỉ viết override + keyframes ở đây.
+   ============================================================ */
+
+/* ---------- 1. DESIGN TOKENS (một :root duy nhất) ---------- */
+:root {
+    /* Surfaces */
+    --bg-slate: #f8fafc;
+    --surface: #ffffff;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --border-soft: #e2e8f0;
+
+    /* Accents */
+    --accent: #1e3a8a;          /* Indigo hoàng gia */
+    --accent-hover: #1b3271;
+    --accent-rgb: 30, 58, 138;
+    --sakura: #fbcfe8;          /* Hồng pastel Sakura */
+    --sakura-soft: #fce7f3;
+
+    /* Dark surfaces (sidebar) */
+    --dark-bg: #0f172a;
+    --dark-muted: #94a3b8;
+
+    /* Shape */
+    --radius: 16px;             /* rounded-4 */
+    --radius-sm: 10px;
+    --shadow-soft: 0 4px 6px -1px rgba(0,0,0,.04), 0 2px 4px -1px rgba(0,0,0,.03);
+    --shadow-hover: 0 18px 35px -12px rgba(var(--accent-rgb), .22);
+
+    /* Fonts */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Layout metrics */
+    --sidebar-width: 264px;
+    --navbar-height: 70px;
+
+    /* Override Bootstrap global vars */
+    --bs-body-bg: var(--bg-slate);
+    --bs-body-color: var(--text-dark);
+    --bs-body-font-family: var(--font-body);
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: var(--accent-rgb);
+    --bs-border-color: var(--border-soft);
+    --bs-border-radius: var(--radius-sm);
+    --bs-link-color: var(--accent);
+    --bs-link-hover-color: var(--accent-hover);
+}
+
+/* ---------- 2. BASE ---------- */
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-slate);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .h1, .h2, .h3, .h4, .h5 {
+    font-family: var(--font-heading);
+}
+
+a { transition: color .3s ease; }
+
+/* ---------- 3. BOOTSTRAP COMPONENT OVERRIDES ---------- */
+
+/* Card — bo góc lớn, border mảnh mờ, hover nhô nhẹ */
+.card {
+    --bs-card-border-color: var(--border-soft);
+    --bs-card-border-radius: var(--radius);
+    --bs-card-bg: var(--surface);
+    box-shadow: var(--shadow-soft);
+    transition: all .3s ease;
+}
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+/* Card không hover-lift (vd card thông tin tĩnh) thêm .card-flat */
+.card-flat:hover { transform: none; box-shadow: var(--shadow-soft); }
+
+/* Buttons — transition + hover nhô nhẹ */
+.btn {
+    --bs-btn-border-radius: var(--radius-sm);
+    font-weight: 500;
+    transition: all .3s ease;
+}
+.btn:hover { transform: translateY(-3px); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary {
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent-hover);
+    --bs-btn-hover-border-color: var(--accent-hover);
+    --bs-btn-active-bg: var(--accent-hover);
+    --bs-btn-active-border-color: var(--accent-hover);
+    --bs-btn-disabled-bg: var(--accent);
+    --bs-btn-disabled-border-color: var(--accent);
+}
+.btn-primary:hover { box-shadow: 0 10px 22px rgba(var(--accent-rgb), .3); }
+
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-bg: var(--accent);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-bg: var(--accent);
+}
+
+/* Form controls — border mượt, focus tinh tế */
+.form-control, .form-select {
+    --bs-border-color: var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: .65rem .9rem;
+    transition: border-color .3s ease, box-shadow .3s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 .2rem rgba(var(--accent-rgb), .12);
+}
+.form-label { font-weight: 500; color: var(--text-dark); }
+.input-group-text { background-color: var(--bg-slate); border-color: var(--border-soft); }
+.form-switch .form-check-input:checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Tables — sang trọng, header mờ, hàng hover nhẹ */
+.table {
+    --bs-table-color: var(--text-dark);
+    --bs-table-border-color: var(--border-soft);
+    margin-bottom: 0;
+}
+.table > thead {
+    --bs-table-bg: #f1f5f9;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: .76rem;
+    letter-spacing: .4px;
+}
+.table > thead th { border-bottom: 1px solid var(--border-soft); font-weight: 600; }
+.table > tbody > tr { transition: background-color .2s ease; }
+.table-hover > tbody > tr:hover { --bs-table-hover-bg: rgba(var(--accent-rgb), .04); }
+.table > :not(:first-child) { border-top: none; }
+
+/* Badges, alerts, modal radius */
+.badge { font-weight: 600; }
+.alert { border-radius: var(--radius-sm); border: 1px solid var(--border-soft); }
+.modal-content {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    animation: modalFadeIn .35s ease;
+}
+
+/* Pagination */
+.pagination {
+    --bs-pagination-color: var(--text-muted);
+    --bs-pagination-active-bg: var(--accent);
+    --bs-pagination-active-border-color: var(--accent);
+    --bs-pagination-hover-color: var(--accent);
+    --bs-pagination-focus-box-shadow: 0 0 0 .2rem rgba(var(--accent-rgb), .12);
+}
+
+/* Dropdown menu */
+.dropdown-menu { border-color: var(--border-soft); border-radius: var(--radius-sm); box-shadow: var(--shadow-soft); }
+.dropdown-item:active { background-color: var(--accent); }
+
+/* Utility tokens */
+.text-accent { color: var(--accent) !important; }
+.bg-accent { background-color: var(--accent) !important; }
+.fs-7 { font-size: .875rem; }
+
+/* ---------- 4. LEGACY ALIASES (giữ tương thích, KHÔNG chế class mới) ----------
+   Các class này tồn tại sẵn trong 15 View. Map thẳng vào style chuẩn để
+   không phải sửa từng file mà vẫn lên đúng design system. */
+.card-custom {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    transition: all .3s ease;
+}
+.card-custom:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+.btn-custom-primary {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    padding: .5rem 1.25rem;
+    transition: all .3s ease;
+}
+.btn-custom-primary:hover {
+    background-color: var(--accent-hover);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(var(--accent-rgb), .3);
+}
+.container-custom { max-width: 1140px; margin: 0 auto; padding-left: 1rem; padding-right: 1rem; }
+
+/* ---------- 5. SIDEBAR LAYOUT (từ layout.css) ---------- */
+.admin-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--dark-bg);
+    color: var(--dark-muted);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 24px rgba(0,0,0,.06);
+    transition: transform .3s ease;
+}
+.sidebar-brand {
+    height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-brand-text {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: .3px;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.sidebar-menu { padding: 1.25rem .75rem; flex-grow: 1; overflow-y: auto; }
+.sidebar-section-title {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--dark-muted);
+    opacity: .6;
+    padding: 0 1rem;
+    margin: 1.5rem 0 .5rem;
+}
+/* hover item dạng viên thuốc mờ */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem 1rem;
+    color: var(--dark-muted);
+    text-decoration: none;
+    border-radius: 999px;
+    margin-bottom: .25rem;
+    font-weight: 500;
+    transition: all .3s ease;
+}
+.sidebar-link i { font-size: 1.2rem; }
+.sidebar-link:hover {
+    background-color: rgba(255,255,255,.06);
+    color: #f8fafc;
+    transform: translateX(3px);
+}
+.sidebar-link.active {
+    background-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(var(--accent-rgb), .35);
+}
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+    background-color: rgba(0,0,0,.2);
+}
+
+/* Main wrapper + content */
+.admin-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left .3s ease;
+}
+.admin-content { padding: 2.25rem; flex-grow: 1; }
+
+/* Top navbar — glassmorphism nhạt, dính cố định */
+.admin-navbar {
+    height: var(--navbar-height);
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+}
+.navbar-user-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    background-color: var(--accent);
+    color: #fff;
+}
+.sidebar-toggle-btn {
+    display: none;
+    background: none; border: none;
+    font-size: 1.5rem; color: var(--dark-bg); cursor: pointer;
+}
+
+@media (max-width: 991.98px) {
+    .admin-sidebar { transform: translateX(-100%); }
+    .admin-sidebar.show { transform: translateX(0); }
+    .admin-wrapper { margin-left: 0; }
+    .sidebar-toggle-btn { display: block; }
+    .admin-content { padding: 1.25rem; }
+}
+
+/* ---------- 6. PROFILE (từ profile.css) ---------- */
+#profileTabs .nav-link {
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent !important;
+    transition: all .3s ease;
+}
+#profileTabs .nav-link:hover { color: var(--text-dark); }
+#profileTabs .nav-link.active {
+    color: var(--accent) !important;
+    border-bottom: 2px solid var(--accent) !important;
+}
+
+/* ---------- 7. AUTHENTICATION (từ site.css) ---------- */
+.auth-wrapper {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 15px;
+    background-color: var(--bg-slate);
+}
+.auth-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 18px 40px -18px rgba(var(--accent-rgb), .18);
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+}
+.auth-header { text-align: center; margin-bottom: 30px; }
+.auth-title {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+.auth-subtitle { color: var(--text-muted); font-size: .95rem; }
+.auth-form .form-label { font-weight: 500; color: var(--text-dark); margin-bottom: .5rem; }
+.auth-footer { text-align: center; margin-top: 25px; font-size: .95rem; color: var(--text-muted); }
+.auth-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ---------- Public navbar (layout không sidebar) ---------- */
+.navbar-clean { box-shadow: var(--shadow-soft); }
+.footer-clean { background-color: var(--surface) !important; }
+.navbar-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background-color: var(--accent);
+    color: #fff; font-weight: 700;
+}
+
+/* ---------- 8. KEYFRAMES ---------- */
+@keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-9px); }
+}
+@keyframes floatingSlow {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.float-anim      { animation: floating 3.2s ease-in-out infinite; }
+.float-anim-slow { animation: floatingSlow 4.5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    .float-anim, .float-anim-slow { animation: none; }
+    .card:hover, .btn:hover, .sidebar-link:hover { transform: none; }
+}
