@@ -111,6 +111,13 @@ namespace Flipped_Classroom.Pages.Curriculums
                     return RedirectToPage(new { id });
                 }
 
+                if (UploadedFile.Length > IFileStorageService.MaxUploadBytes)
+                {
+                    var maxMb = IFileStorageService.MaxUploadBytes / (1024 * 1024);
+                    TempData["ErrorMessage"] = $"Tệp tin quá lớn. Dung lượng tối đa cho phép là {maxMb} MB.";
+                    return RedirectToPage(new { id });
+                }
+
                 var savedUrl = await _fileStorage.SaveUploadAsync(UploadedFile, "materials");
                 if (savedUrl == null)
                 {

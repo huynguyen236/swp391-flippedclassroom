@@ -10,6 +10,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+// Tăng giới hạn kích thước upload (mặc định Kestrel chỉ 30MB) để hỗ trợ học liệu video mp4.
+// Đặt cao hơn ngưỡng nghiệp vụ (200MB) một chút để request vẫn vào được handler,
+// nhờ đó handler có thể kiểm tra dung lượng và trả lỗi thân thiện thay vì ngắt kết nối thô.
+const long ServerMaxUploadBytes = Flipped_Classroom.Services.Interfaces.IFileStorageService.MaxUploadBytes + 10L * 1024 * 1024;
+builder.Services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = ServerMaxUploadBytes;
+});
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = ServerMaxUploadBytes;
+});
 builder.Services.AddDbContext<Swp391NihongoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
