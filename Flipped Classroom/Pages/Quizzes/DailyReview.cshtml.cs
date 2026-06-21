@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Security.Claims;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
@@ -20,10 +21,10 @@ namespace Flipped_Classroom.Pages.Quizzes
         public int QuestionCount { get; set; } = 5;
 
         [BindProperty]
-        public Dictionary<int, int> SelectedOptions { get; set; } = new();
+        public Dictionary<string, string> SelectedOptions { get; set; } = new();
 
         [BindProperty]
-        public Dictionary<int, string> TextAnswers { get; set; } = new();
+        public Dictionary<string, string> TextAnswers { get; set; } = new();
 
         public List<StudentMistake> ReviewItems { get; set; } = new();
 
@@ -47,7 +48,15 @@ namespace Flipped_Classroom.Pages.Quizzes
                 return Forbid();
             }
 
-            var result = await _quizService.SubmitDailyReviewAsync(studentId.Value, SelectedOptions, TextAnswers);
+            var selectedOptionsInt = SelectedOptions
+                .Where(kvp => int.TryParse(kvp.Key, out _) && int.TryParse(kvp.Value, out _))
+                .ToDictionary(kvp => int.Parse(kvp.Key), kvp => int.Parse(kvp.Value));
+
+            var textAnswersInt = TextAnswers
+                .Where(kvp => int.TryParse(kvp.Key, out _))
+                .ToDictionary(kvp => int.Parse(kvp.Key), kvp => kvp.Value ?? string.Empty);
+
+            var result = await _quizService.SubmitDailyReviewAsync(studentId.Value, selectedOptionsInt, textAnswersInt);
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;

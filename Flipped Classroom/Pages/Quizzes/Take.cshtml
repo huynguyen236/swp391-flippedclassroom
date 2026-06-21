@@ -89,7 +89,7 @@
     {
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                let remainingSeconds = Math.floor(parseFloat('@Model.RemainingSeconds'));
+                let remainingSeconds = Math.floor(parseFloat('@Model.RemainingSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)'));
                 
                 const desktopTimer = document.getElementById("desktop-timer");
                 const floatingTimer = document.getElementById("floating-timer");

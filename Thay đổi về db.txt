@@ -1,0 +1,10 @@
+30/5
+Thay đổi bảng Quiz bổ sung DurationMinutes, Status và Published at
+Thêm một bảng QuizAnswers để lưu bài làm học sinh (tương lai nếu muốn thêm các chức năng như xem lịch sử làm bài và cái bài để chứng minh học sinh làm đc từng này điểm)
+Daily review (mỗi ngày làm 5 câu, có thể bấm daily review để làm luôn nhưng sau 8h tối thì sẽ bắt buộc phải làm)
+Thêm bảng DailyReviewLog để kiểm soát dailyreview của học sinh
++ Logic bài test đã xong
++ tính điểm và tổng hợp câu sai đã xong (đồng thời bấm vào thì sẽ có thông tin chi tiết)
++ làm daily review cho học viên đã xong
+
+MK fake: Zz0ZC3WJZ2IdokPwbDUM5ovkJ2F03IhlYCOf6pI9Slo=

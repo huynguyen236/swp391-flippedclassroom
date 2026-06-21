@@ -9,6 +9,7 @@
 	<ItemGroup>
 		<PackageReference Include="Google.Apis.Core" Version="1.73.0" />
 		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.73.0.4029" />
+		<PackageReference Include="MeCab.DotNet" Version="1.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
