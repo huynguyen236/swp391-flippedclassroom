@@ -5,86 +5,173 @@
     var orderedQuestions = Model.Quiz.QuizQuestions.OrderBy(q => q.DisplayOrder).ToList();
 }
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-    <div>
-        <h2 class="fw-bold mb-0 text-dark">@Model.Quiz.Title</h2>
-        <p class="text-muted mb-0">@(Model.Quiz.Class?.ClassName ?? "-") - @Model.Quiz.Node.Title</p>
+<div class="container py-5 quiz-take-container">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-2 border-bottom gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary fs-3">assignment</span> @Model.Quiz.Title
+            </h2>
+            <p class="text-muted mb-0 small">@(Model.Quiz.Class?.ClassName ?? "-") — @Model.Quiz.Node.Title</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary-subtle text-primary px-3 py-2 fw-semibold rounded-pill">@orderedQuestions.Count câu hỏi</span>
+            @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
+            {
+                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 fw-bold" id="desktop-timer-badge">
+                    <span id="desktop-timer">--:--</span>
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fw-semibold rounded-pill">Không giới hạn thời gian</span>
+            }
+        </div>
     </div>
-    <div class="d-flex gap-2 text-muted align-items-center">
-        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">@orderedQuestions.Count câu</span>
-        @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
-        {
-            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 fw-bold" id="desktop-timer-badge">
-                <i class="bi bi-clock me-1"></i> <span id="desktop-timer">--:--</span>
-            </span>
-        }
-        else
-        {
-            <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">Không giới hạn thời gian</span>
-        }
-    </div>
+
+    @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
+    {
+        <div class="sticky-top bg-white border-bottom shadow-sm py-2 px-3 mb-4 rounded-3 d-flex justify-content-between align-items-center" style="top: 15px; z-index: 1020; transition: all 0.3s ease;">
+            <div class="d-flex align-items-center gap-2">
+                <span class="spinner-grow spinner-grow-sm text-danger" role="status" id="timer-pulse"></span>
+                <span class="fw-semibold text-dark">Thời gian làm bài còn lại:</span>
+            </div>
+            <span class="badge bg-danger fs-5 py-2 px-3 fw-bold" id="floating-timer">--:--</span>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+            <div>@TempData["ErrorMessage"]</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form method="post" id="quizForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="StartToken" />
+        
+        <div class="row g-4">
+            <!-- Left Panel: Questions -->
+            <div class="col-lg-8">
+                <div class="d-flex flex-column gap-4">
+                    @for (int i = 0; i < orderedQuestions.Count; i++)
+                    {
+                        var quizQuestion = orderedQuestions[i];
+                        var question = quizQuestion.Question;
+                        var questionIndex = i + 1;
+                        <div class="card card-premium p-4 shadow-sm" id="question-card-@questionIndex">
+                            <div class="d-flex justify-content-between align-items-center gap-3 mb-3 border-bottom pb-2">
+                                <h5 class="fw-bold text-primary mb-0">Câu @questionIndex</h5>
+                                <span class="badge bg-info-subtle text-info-emphasis border rounded-pill px-2.5 py-1 fw-bold">@question.Category</span>
+                            </div>
+                            <p class="fw-bold mb-4 text-dark" style="font-size: 1.05rem;">@question.Content</p>
+
+                            @if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <div class="d-flex flex-column gap-2">
+                                    @{
+                                        var optionIndex = 0;
+                                    }
+                                    @foreach (var option in question.QuestionOptions.OrderBy(o => o.Id))
+                                    {
+                                        var labelCode = char.ConvertFromUtf32(65 + optionIndex);
+                                        <label class="d-flex align-items-start gap-2 border rounded-3 p-3 option-label bg-light" style="cursor: pointer; transition: all 0.2s;">
+                                            <input class="form-check-input mt-1 option-radio" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required data-question-idx="@questionIndex" />
+                                            <span class="fw-bold text-muted me-1">@labelCode.</span>
+                                            <span class="text-dark">@option.OptionContent</span>
+                                        </label>
+                                        optionIndex++;
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="text" name="TextAnswers[@question.Id]" class="form-control bg-light option-text-input" placeholder="Nhập câu trả lời của bạn..." required data-question-idx="@questionIndex" />
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Panel: Sticky Timer and Nav Grid -->
+            <div class="col-lg-4">
+                <div class="position-sticky" style="top: 2rem;">
+                    <!-- Question Status Grid Card -->
+                    <div class="card card-premium p-4">
+                        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">grid_on</span> Bản đồ câu hỏi
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+                            @for (int i = 0; i < orderedQuestions.Count; i++)
+                            {
+                                var idx = i + 1;
+                                <button type="button" class="btn btn-outline-secondary d-flex align-items-center justify-content-center fw-bold p-0 rounded-circle question-nav-btn"
+                                        id="nav-btn-@idx" style="width: 40px; height: 40px; font-size: 0.9rem;" onclick="scrollToQuestion(@idx)">
+                                    @idx
+                                </button>
+                            }
+                        </div>
+
+                        <div class="border-top pt-3 d-flex flex-column gap-2">
+                            <button type="submit" class="btn btn-premium-primary w-100 py-2 d-flex align-items-center justify-content-center gap-1 border-0">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">check_circle</span> Nộp bài test
+                            </button>
+                            <a asp-page="/Quizzes/Available" class="btn btn-premium-outline w-100 py-2" onclick="return confirm('Bạn có chắc muốn thoát? Kết quả làm bài sẽ không được lưu.');">Thoát</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
-@if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
-{
-    <div class="sticky-top bg-white border-bottom shadow-sm py-2 px-3 mb-4 rounded-3 d-flex justify-content-between align-items-center" style="top: 15px; z-index: 1020; transition: all 0.3s ease;">
-        <div class="d-flex align-items-center gap-2">
-            <span class="spinner-grow spinner-grow-sm text-danger" role="status" id="timer-pulse"></span>
-            <span class="fw-semibold text-dark">Thời gian làm bài còn lại:</span>
-        </div>
-        <span class="badge bg-danger fs-5 py-2 px-3 fw-bold" id="floating-timer">--:--</span>
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
-        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-        <div>@TempData["ErrorMessage"]</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
-<form method="post" id="quizForm">
-    <input type="hidden" asp-for="StartToken" />
-    <div class="d-flex flex-column gap-3">
-        @foreach (var quizQuestion in orderedQuestions)
-        {
-            var question = quizQuestion.Question;
-            <div class="card card-flat rounded-4 p-4">
-                <div class="d-flex justify-content-between gap-3 mb-3">
-                    <h5 class="fw-bold text-dark mb-0">Câu @quizQuestion.DisplayOrder</h5>
-                    <span class="badge bg-info bg-opacity-10 text-info">@question.Category</span>
-                </div>
-                <p class="fw-semibold mb-3">@question.Content</p>
-
-                @if (string.Equals(question.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase))
-                {
-                    @foreach (var option in question.QuestionOptions.OrderBy(o => o.Id))
-                    {
-                        <label class="d-flex align-items-start gap-2 border rounded-3 p-3 mb-2 bg-light" style="cursor: pointer;">
-                            <input class="form-check-input mt-1" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required />
-                            <span>@option.OptionContent</span>
-                        </label>
-                    }
-                }
-                else
-                {
-                    <input type="text" name="TextAnswers[@question.Id]" class="form-control" placeholder="Nhập câu trả lời của bạn..." required />
-                }
-            </div>
+@section Styles {
+    <style>
+        .option-label:hover {
+            background-color: var(--color-surface-container-high) !important;
+            border-color: var(--color-primary) !important;
+            transform: translateY(-2px);
         }
-    </div>
-
-    <div class="d-flex justify-content-end gap-2 mt-4">
-        <a asp-page="/Quizzes/Available" class="btn btn-outline-secondary px-4">Hủy</a>
-        <button type="submit" class="btn btn-primary px-4">
-            <i class="bi bi-check2-circle me-1"></i> Nộp bài
-        </button>
-    </div>
-</form>
+        .option-label.checked {
+            background-color: var(--color-primary-fixed) !important;
+            border-color: var(--color-primary) !important;
+            box-shadow: 0 2px 6px rgba(0, 74, 198, 0.1);
+        }
+        .question-nav-btn.answered {
+            background-color: var(--color-primary) !important;
+            color: white !important;
+            border-color: var(--color-primary) !important;
+        }
+        .animate-pulse {
+            animation: timer-pulse-animation 1s infinite alternate;
+        }
+        @@keyframes timer-pulse-animation {
+            from {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+            to {
+                transform: scale(1.05);
+                box-shadow: 0 0 10px rgba(220, 53, 69, 0.8);
+            }
+        }
+    </style>
+}
 
 @section Scripts {
+    <script>
+        // Scroll to question helper
+        function scrollToQuestion(index) {
+            const card = document.getElementById('question-card-' + index);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    </script>
+
     @if (Model.Quiz.DurationMinutes.HasValue && Model.Quiz.DurationMinutes.Value > 0)
     {
         <script>
@@ -154,21 +241,44 @@
                 const timerInterval = setInterval(updateTimer, 1000);
             });
         </script>
-        
-        <style>
-            .animate-pulse {
-                animation: timer-pulse-animation 1s infinite alternate;
-            }
-            @@keyframes timer-pulse-animation {
-                from {
-                    transform: scale(1);
-                    box-shadow: 0 0 0 rgba(220, 53, 69, 0.4);
-                }
-                to {
-                    transform: scale(1.05);
-                    box-shadow: 0 0 10px rgba(220, 53, 69, 0.8);
-                }
-            }
-        </style>
     }
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Answer Status Checking
+            // MCQ radio checks
+            const radios = document.querySelectorAll('.option-radio');
+            radios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const qIdx = this.dataset.questionIdx;
+                    // Mark grid nav button
+                    const navBtn = document.getElementById('nav-btn-' + qIdx);
+                    if (navBtn) navBtn.classList.add('answered');
+
+                    // Style label
+                    const name = this.getAttribute('name');
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                        r.closest('.option-label').classList.remove('checked');
+                    });
+                    this.closest('.option-label').classList.add('checked');
+                });
+            });
+
+            // Text inputs
+            const textInputs = document.querySelectorAll('.option-text-input');
+            textInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const qIdx = this.dataset.questionIdx;
+                    const navBtn = document.getElementById('nav-btn-' + qIdx);
+                    if (navBtn) {
+                        if (this.value.trim() !== '') {
+                            navBtn.classList.add('answered');
+                        } else {
+                            navBtn.classList.remove('answered');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 }

@@ -7,55 +7,52 @@
     var isTeacher = User.IsInRole("Teacher") || Model.Class.ManagerId == currentUserId;
 }
 
-<div class="container py-5">
+<div class="container py-5 student-lesson-container">
     <div class="row justify-content-center">
-        <div class="col-lg-9">
+        <div class="col-lg-10">
 
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a asp-page="@(isTeacher ? "/TeacherClasses/Details" : "/StudentClasses/Details")" asp-route-id="@Model.Class.Id" class="text-decoration-none">@Model.Class.ClassName</a>
-                    </li>
-                    @if (Model.Lesson.ParentNode != null)
-                    {
-                        <li class="breadcrumb-item text-muted">@Model.Lesson.ParentNode.Title</li>
-                    }
-                    <li class="breadcrumb-item active" aria-current="page">@Model.Lesson.Title</li>
-                </ol>
-            </nav>
+            <!-- Breadcrumbs -->
+            <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+                <a asp-page="@(isTeacher ? "/TeacherClasses/Details" : "/StudentClasses/Details")" asp-route-id="@Model.Class.Id" class="text-secondary text-decoration-none hover-text-primary">@Model.Class.ClassName</a>
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                @if (Model.Lesson.ParentNode != null)
+                {
+                    <span class="text-secondary">@Model.Lesson.ParentNode.Title</span>
+                    <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                }
+                <span class="text-dark fw-medium">@Model.Lesson.Title</span>
+            </div>
 
-            <!-- Lesson header -->
-            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
-                    <h2 class="fw-bold mb-1">@Model.Lesson.Title</h2>
+            <!-- Lesson Header Section -->
+            <div class="hero-header-banner p-4 p-md-5 mb-4 rounded-3 d-flex flex-column justify-content-between align-items-start position-relative overflow-hidden">
+                <div class="hero-header-decor"></div>
+                <div class="relative z-1">
+                    <h2 class="fw-bold mb-2 text-white" style="font-size: 2rem;">@Model.Lesson.Title</h2>
                     @if (!string.IsNullOrWhiteSpace(Model.Lesson.Description))
                     {
-                        <p class="mb-0 text-white-50">@Model.Lesson.Description</p>
+                        <p class="mb-0 text-white-50" style="max-width: 600px;">@Model.Lesson.Description</p>
                     }
                 </div>
             </div>
 
-
-
             <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs border-bottom-0 mb-4" id="lessonTabs" role="tablist" style="gap: 0.5rem;">
+            <ul class="nav nav-tabs nav-tabs-premium border-bottom-0 mb-4" id="lessonTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials-content" type="button" role="tab" aria-controls="materials-content" aria-selected="true">
-                        <i class="bi bi-journal-text me-1"></i> Học liệu
+                    <button class="nav-link active" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials-content" type="button" role="tab" aria-controls="materials-content" aria-selected="true">
+                        <span class="material-symbols-outlined">menu_book</span> Học liệu
                     </button>
                 </li>
                 @if (Model.Lesson.Vocabularies != null && Model.Lesson.Vocabularies.Any())
                 {
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="flashcards-tab" data-bs-toggle="tab" data-bs-target="#flashcards-content" type="button" role="tab" aria-controls="flashcards-content" aria-selected="false">
-                            <i class="bi bi-card-text me-1"></i> Flashcard Ôn Tập
+                        <button class="nav-link" id="flashcards-tab" data-bs-toggle="tab" data-bs-target="#flashcards-content" type="button" role="tab" aria-controls="flashcards-content" aria-selected="false">
+                            <span class="material-symbols-outlined">style</span> Flashcard Ôn Tập
                         </button>
                     </li>
                 }
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold px-4 py-2.5 rounded-pill shadow-sm border" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
-                        <i class="bi bi-chat-dots me-1"></i> Hỏi & Đáp
+                    <button class="nav-link" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
+                        <span class="material-symbols-outlined">forum</span> Hỏi & Đáp
                     </button>
                 </li>
             </ul>
@@ -64,13 +61,12 @@
             <div class="tab-content" id="lessonTabContent">
                 <!-- Tab Materials -->
                 <div class="tab-pane fade show active" id="materials-content" role="tabpanel" aria-labelledby="materials-tab">
-                    <!-- Materials -->
                     @if (!Model.Lesson.Materials.Any())
                     {
-                        <div class="card border-0 shadow-sm text-center py-5 mb-4" style="border-radius: 15px;">
+                        <div class="card card-premium text-center py-5 mb-4">
                             <div class="card-body text-muted">
-                                <i class="bi bi-folder2-open display-4 d-block mb-2 opacity-50"></i>
-                                <h6>Bài học này chưa có tài liệu.</h6>
+                                <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">folder_open</span>
+                                <h6 class="text-muted fw-bold">Bài học này chưa có tài liệu.</h6>
                             </div>
                         </div>
                     }
@@ -83,12 +79,12 @@
                             var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
                             var isVideo = ext is ".mp4" or ".webm" or ".ogg";
 
-                            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
-                                <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
-                                    <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
-                                    <span class="fw-semibold">@mat.Title</span>
+                            <div class="card card-premium mb-4 overflow-hidden">
+                                <div class="card-premium-header d-flex align-items-center gap-2 py-3 bg-white">
+                                    <span class="material-symbols-outlined text-primary fs-4">@(isYoutube || isVideo ? "play_circle" : isPdf ? "picture_as_pdf" : "description")</span>
+                                    <span class="fw-bold text-dark">@mat.Title</span>
                                 </div>
-                                <div class="card-body p-0">
+                                <div class="card-body p-0 border-top">
                                     @if (isYoutube)
                                     {
                                         var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
@@ -112,18 +108,18 @@
                                         <div class="ratio" style="--bs-aspect-ratio: 130%;">
                                             <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
                                         </div>
-                                        <div class="p-3 border-top">
-                                            <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                <i class="bi bi-download me-1"></i> Tải xuống / Mở tab mới
+                                        <div class="p-3 border-top bg-light">
+                                            <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                                                <span class="material-symbols-outlined" style="font-size: 16px;">download</span> Tải xuống / Mở tab mới
                                             </a>
                                         </div>
                                     }
                                     else
                                     {
                                         <div class="p-4 text-center">
-                                            <p class="text-muted mb-3">Tài liệu đính kèm</p>
-                                            <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4">
-                                                <i class="bi bi-box-arrow-up-right me-1"></i> Mở tài liệu
+                                            <p class="text-muted mb-3 small">Tài liệu đính kèm</p>
+                                            <a href="@mat.Url" target="_blank" class="btn btn-primary rounded-pill px-4 d-inline-flex align-items-center gap-1">
+                                                <span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span> Mở tài liệu
                                             </a>
                                         </div>
                                     }
@@ -137,7 +133,7 @@
                 @if (Model.Lesson.Vocabularies != null && Model.Lesson.Vocabularies.Any())
                 {
                     <div class="tab-pane fade" id="flashcards-content" role="tabpanel" aria-labelledby="flashcards-tab">
-                        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-4" style="border-radius: 15px;">
+                        <div class="card card-premium p-4 mb-4">
                             <!-- Progress bar -->
                             <div class="d-flex justify-content-between align-items-center mb-2 px-1">
                                 <span class="fs-8 fw-bold text-primary" id="progressText">Thẻ 1 / @Model.Lesson.Vocabularies.Count</span>
@@ -152,23 +148,23 @@
                                 <div class="flashcard-inner" id="flashcardInner">
                                     <!-- Front of card -->
                                     <div class="flashcard-face flashcard-front">
-                                        <span class="badge bg-light text-primary position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="frontDiffBadge"></span>
+                                        <span class="badge bg-white text-primary position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="frontDiffBadge"></span>
                                         <div class="flashcard-body-content position-relative w-100">
                                             <!-- Audio pronounce button -->
                                             <button type="button" class="btn btn-light btn-sm rounded-circle audio-btn" id="speakBtn" title="Phát âm">
-                                                <i class="bi bi-volume-up-fill fs-5 text-primary"></i>
+                                                <span class="material-symbols-outlined text-primary" style="font-size: 20px;">volume_up</span>
                                             </button>
                                             
                                             <div class="front-card-content py-4">
                                                 <h1 class="flashcard-text-large" id="frontText">Front Text</h1>
                                                 <p class="romaji-text text-white-50 mt-3" id="romajiText" style="font-size:1.35rem; font-style: italic;"></p>
                                             </div>
-                                            <p class="text-white-50 fs-8 mt-4"><i class="bi bi-arrow-repeat me-1"></i> Bấm để lật xem nghĩa mặt sau</p>
+                                            <p class="text-white-50 fs-8 mt-4"><span class="material-symbols-outlined align-middle" style="font-size: 16px;">sync</span> Bấm để lật xem nghĩa mặt sau</p>
                                         </div>
                                     </div>
                                     <!-- Back of card -->
                                     <div class="flashcard-face flashcard-back">
-                                        <span class="badge bg-light text-dark position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="backDiffBadge"></span>
+                                        <span class="badge bg-white text-dark position-absolute top-0 start-0 m-3 px-3 py-1.5 rounded-pill fw-bold fs-7 shadow-sm" id="backDiffBadge"></span>
                                         <div class="flashcard-body-content w-100">
                                             <div class="back-card-content">
                                                 <!-- Pronunciation (Cách đọc) -->
@@ -178,7 +174,7 @@
                                                 <h2 class="meaning-text" id="backText">Nghĩa của từ</h2>
                                             </div>
 
-                                            <p class="text-white-50 fs-8 mt-4"><i class="bi bi-arrow-repeat me-1"></i> Bấm để lật lại mặt trước</p>
+                                            <p class="text-white-50 fs-8 mt-4"><span class="material-symbols-outlined align-middle" style="font-size: 16px;">sync</span> Bấm để lật lại mặt trước</p>
                                         </div>
                                     </div>
                                 </div>
@@ -187,13 +183,13 @@
                             <!-- Control Buttons -->
                             <div class="d-flex justify-content-between align-items-center mt-3 gap-3 mx-auto" style="max-width: 600px; width: 100%;">
                                 <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2.5 flex-grow-1 shadow-sm fs-7 d-flex align-items-center justify-content-center gap-1.5" id="prevBtn">
-                                    <i class="bi bi-arrow-left"></i> Trước
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Trước
                                 </button>
-                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2.5 shadow-sm fs-7" id="shuffleBtn" title="Trộn ngẫu nhiên thứ tự thẻ">
-                                    <i class="bi bi-shuffle"></i> Trộn thẻ
+                                <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2.5 shadow-sm fs-7 d-flex align-items-center justify-content-center" id="shuffleBtn" title="Trộn ngẫu nhiên thứ tự thẻ">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">shuffle</span>
                                 </button>
                                 <button type="button" class="btn btn-primary rounded-pill px-4 py-2.5 flex-grow-1 shadow-sm fs-7 d-flex align-items-center justify-content-center gap-1.5" id="nextBtn">
-                                    Kế tiếp <i class="bi bi-arrow-right"></i>
+                                    Kế tiếp <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
                                 </button>
                             </div>
                         </div>
@@ -203,10 +199,10 @@
                 <!-- Tab Q&A -->
                 <div class="tab-pane fade" id="qa-content" role="tabpanel" aria-labelledby="qa-tab">
                     <!-- Section Hỏi & Đáp (Lesson Comments) -->
-                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
-                        <div class="card-header bg-white p-4 border-bottom">
-                            <h5 class="fw-bold mb-0 text-primary">
-                                <i class="bi bi-chat-dots me-2"></i> Hỏi đáp & Thảo luận
+                    <div class="card card-premium mb-4">
+                        <div class="card-premium-header">
+                            <h5 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">forum</span> Hỏi đáp & Thảo luận
                             </h5>
                         </div>
                         <div class="card-body p-4">
@@ -214,12 +210,12 @@
                             <form id="createCommentForm" class="mb-4">
                                 @Html.AntiForgeryToken()
                                 <div class="mb-3">
-                                    <textarea id="commentTextInput" class="form-control" rows="3" 
+                                    <textarea id="commentTextInput" class="form-control bg-light" rows="3" 
                                               placeholder="Đặt câu hỏi hoặc viết bình luận về bài học này..." 
                                               required style="border-radius: 10px; resize: none;"></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4" style="background-color: #1a73e8; border: none;">
-                                    Đăng bình luận
+                                <button type="submit" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-1">
+                                    Đăng bình luận <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
                                 </button>
                             </form>
 
@@ -233,11 +229,11 @@
                                         var threadUserRole = thread.Student?.Role ?? "Student";
                                         var isThreadTeacher = threadUserRole == "Teacher" || threadUserRole == "Manager" || threadUserRole == "Admin";
 
-                                        <div class="comment-card border-bottom pb-3" data-comment-id="@thread.Id">
+                                        <div class="comment-card border-bottom pb-4" data-comment-id="@thread.Id">
                                             <div class="d-flex align-items-start justify-content-between mb-2">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
-                                                         style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
+                                                    <div class="rounded-circle text-white text-center me-2 d-flex justify-content-center align-items-center fw-bold" 
+                                                         style="width: 36px; height: 36px; font-size: 14px; background-color: var(--color-outline) !important;">
                                                         @(thread.Student?.Username?.FirstOrDefault() ?? '?')
                                                     </div>
                                                     <div>
@@ -246,20 +242,20 @@
                                                         {
                                                             <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>
                                                         }
-                                                        <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                        <div class="text-muted small" style="font-size: 0.75rem;">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</div>
                                                     </div>
                                                 </div>
                                                 @if (canDeleteThread)
                                                 {
-                                                    <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="@thread.Id" title="Xóa bình luận">
-                                                        <i class="bi bi-trash"></i>
+                                                    <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn d-flex align-items-center" data-comment-id="@thread.Id" title="Xóa bình luận">
+                                                        <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
                                                     </button>
                                                 }
                                             </div>
-                                            <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">@thread.QuestionText</p>
+                                            <p class="text-dark mb-3 fw-semibold" style="white-space: pre-wrap; margin-left: 44px !important; font-size: 0.95rem;">@thread.QuestionText</p>
                                             
                                             <!-- Phản hồi (Replies) -->
-                                            <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
+                                            <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid var(--color-outline-variant) !important; margin-left: 44px !important;">
                                                 <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="@thread.Id">
                                                     @foreach (var reply in thread.QaReplies.OrderBy(r => r.CreatedAt))
                                                     {
@@ -267,10 +263,10 @@
                                                         var replyUserRole = reply.User?.Role ?? "Student";
                                                         var isReplyTeacher = replyUserRole == "Teacher" || replyUserRole == "Manager" || replyUserRole == "Admin";
 
-                                                        <div class="reply-item py-1 border-bottom-0" data-reply-id="@reply.Id">
+                                                        <div class="reply-item py-2 border-bottom-0" data-reply-id="@reply.Id">
                                                             <div class="d-flex align-items-center justify-content-between mb-1">
                                                                 <div class="d-flex align-items-center">
-                                                                    <strong class="@(isReplyTeacher ? "text-primary" : "text-dark") small">
+                                                                    <strong class="@(isReplyTeacher ? "text-primary" : "text-dark") small fw-bold">
                                                                         @reply.User?.Username
                                                                     </strong>
                                                                     @if (isReplyTeacher)
@@ -281,8 +277,8 @@
                                                                 </div>
                                                                 @if (canDeleteReply)
                                                                 {
-                                                                    <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="@reply.Id" style="font-size: 0.8rem;" title="Xóa phản hồi">
-                                                                        <i class="bi bi-trash"></i>
+                                                                    <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn d-flex align-items-center" data-reply-id="@reply.Id" title="Xóa phản hồi">
+                                                                        <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
                                                                     </button>
                                                                 }
                                                             </div>
@@ -293,10 +289,10 @@
 
                                                 <!-- Form phản hồi -->
                                                 <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="@thread.Id">
-                                                    <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
+                                                    <input type="text" class="form-control form-control-sm reply-input bg-white" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
                                                     <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
-                                                            style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
-                                                        <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
+                                                            style="width: 28px; height: 28px; padding: 0;">
+                                                        <span class="material-symbols-outlined text-white" style="font-size: 16px;">send</span>
                                                     </button>
                                                 </form>
                                             </div>
@@ -305,9 +301,9 @@
                                 }
                                 else
                                 {
-                                    <div id="noCommentsMessage" class="text-center py-4 text-muted">
-                                        <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
-                                        <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                                    <div id="noCommentsMessage" class="text-center py-4 text-muted bg-light rounded border">
+                                        <span class="material-symbols-outlined text-muted fs-2 d-block mb-1 opacity-50">forum</span>
+                                        <p class="mb-0 small italic fw-bold">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
                                     </div>
                                 }
                             </div>
@@ -320,19 +316,19 @@
             @if (Model.IsStudentView)
             {
                 @Html.AntiForgeryToken()
-                <div id="lessonCompleteCard" class="card border-0 shadow-sm mb-4" style="border-radius: 15px;"
+                <div id="lessonCompleteCard" class="card card-premium mb-4"
                      data-toggle-url="@Url.Page("./Lesson", "ToggleComplete", new { classId = Model.Class.Id, nodeId = Model.Lesson.Id })">
                     <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3 py-4">
                         <div id="lessonCompleteStatus" class="d-flex align-items-center gap-2">
                             @if (Model.IsCompleted)
                             {
-                                <i class="bi bi-check-circle-fill text-success fs-4"></i>
-                                <span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>
+                                <span class="material-symbols-outlined text-success fs-3">check_circle</span>
+                                <span class="fw-bold text-success">Bạn đã hoàn thành bài học này.</span>
                             }
                             else
                             {
-                                <i class="bi bi-circle text-muted fs-4"></i>
-                                <span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>
+                                <span class="material-symbols-outlined text-muted fs-3">radio_button_unchecked</span>
+                                <span class="fw-semibold text-muted">Học xong rồi? Đánh dấu để hoàn thành bài học.</span>
                             }
                         </div>
                         <button type="button" id="lessonCompleteBtn"
@@ -340,11 +336,11 @@
                                 data-completed="@(Model.IsCompleted ? "true" : "false")">
                             @if (Model.IsCompleted)
                             {
-                                <i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 18px;">history</span> Bỏ hoàn thành</span>
                             }
                             else
                             {
-                                <i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 18px;">check</span> Hoàn thành</span>
                             }
                         </button>
                     </div>
@@ -352,8 +348,8 @@
             }
 
             <div class="text-center">
-                <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="btn btn-outline-secondary px-4 rounded-pill">
-                    <i class="bi bi-arrow-left me-1"></i> Quay lại lớp
+                <a asp-page="./Details" asp-route-id="@Model.Class.Id" class="btn btn-outline-secondary px-4 py-2 d-inline-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Quay lại lớp học
                 </a>
             </div>
 
@@ -403,13 +399,13 @@
                         btn.classList.toggle('btn-outline-secondary', completed);
                         btn.classList.toggle('btn-success', !completed);
                         btn.innerHTML = completed
-                            ? '<i class="bi bi-arrow-counterclockwise me-1"></i> <span class="label">Bỏ đánh dấu</span>'
-                            : '<i class="bi bi-check-lg me-1"></i> <span class="label">Đánh dấu hoàn thành</span>';
+                            ? '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 18px;">history</span> Bỏ hoàn thành</span>'
+                            : '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 18px;">check</span> Hoàn thành</span>';
 
                         // Cập nhật dòng trạng thái
                         status.innerHTML = completed
-                            ? '<i class="bi bi-check-circle-fill text-success fs-4"></i><span class="fw-semibold text-success">Bạn đã đánh dấu hoàn thành bài học này.</span>'
-                            : '<i class="bi bi-circle text-muted fs-4"></i><span class="fw-semibold text-muted">Học xong rồi? Hãy đánh dấu để theo dõi tiến độ.</span>';
+                            ? '<span class="material-symbols-outlined text-success fs-3">check_circle</span><span class="fw-bold text-success">Bạn đã hoàn thành bài học này.</span>'
+                            : '<span class="material-symbols-outlined text-muted fs-3">radio_button_unchecked</span><span class="fw-semibold text-muted">Học xong rồi? Đánh dấu để hoàn thành bài học.</span>';
                     } catch (err) {
                         btn.innerHTML = originalHtml;
                         console.error('Không thể cập nhật trạng thái:', err);
@@ -455,34 +451,34 @@
 
                             const isCommentTeacher = result.comment.userRole === 'Teacher' || result.comment.userRole === 'Manager' || result.comment.userRole === 'Admin';
                             const commentHtml = `
-                                <div class="comment-card border-bottom pb-3" data-comment-id="${result.comment.id}">
+                                <div class="comment-card border-bottom pb-4" data-comment-id="${result.comment.id}">
                                     <div class="d-flex align-items-start justify-content-between mb-2">
                                         <div class="d-flex align-items-center">
-                                            <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" 
-                                                 style="width: 36px; height: 36px; font-size: 14px; font-weight: 600;">
+                                            <div class="rounded-circle text-white text-center me-2 d-flex justify-content-center align-items-center fw-bold" 
+                                                 style="width: 36px; height: 36px; font-size: 14px; background-color: var(--color-outline) !important;">
                                                 ${result.comment.studentName.charAt(0)}
                                             </div>
                                             <div>
                                                 <strong class="text-dark">${result.comment.studentName}</strong>
                                                 ${isCommentTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>' : ''}
-                                                <span class="text-muted small ms-2">${result.comment.createdAtFormatted}</span>
+                                                <div class="text-muted small" style="font-size: 0.75rem;">${result.comment.createdAtFormatted}</div>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn" data-comment-id="${result.comment.id}" title="Xóa bình luận">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="button" class="btn btn-link text-danger p-0 delete-comment-btn d-flex align-items-center" data-comment-id="${result.comment.id}" title="Xóa bình luận">
+                                            <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
                                         </button>
                                     </div>
-                                    <p class="text-dark mb-2 fs-6" style="white-space: pre-wrap; margin-left: 44px !important;">${result.comment.questionText}</p>
+                                    <p class="text-dark mb-3 fw-semibold" style="white-space: pre-wrap; margin-left: 44px !important; font-size: 0.95rem;">${result.comment.questionText}</p>
                                     
-                                    <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid #e2e8f0 !important; margin-left: 44px !important;">
+                                    <div class="replies-wrapper ms-5 ps-3 border-start" style="border-left: 2px solid var(--color-outline-variant) !important; margin-left: 44px !important;">
                                         <div class="replies-list d-flex flex-column gap-2 mb-2" data-comment-id="${result.comment.id}">
                                         </div>
 
                                         <form class="create-reply-form d-flex gap-2 mt-2" data-comment-id="${result.comment.id}">
-                                            <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
+                                            <input type="text" class="form-control form-control-sm reply-input bg-white" placeholder="Viết câu trả lời..." required style="border-radius: 20px;" />
                                             <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" 
-                                                    style="width: 28px; height: 28px; background-color: #1a73e8; border: none; padding: 0;">
-                                                <i class="bi bi-send-fill" style="font-size: 0.7rem; color: white; margin-left: 0 !important; margin-right: 0 !important; width: auto !important; height: auto !important;"></i>
+                                                    style="width: 28px; height: 28px; padding: 0;">
+                                                <span class="material-symbols-outlined text-white" style="font-size: 16px;">send</span>
                                             </button>
                                         </form>
                                     </div>
@@ -538,17 +534,17 @@
                             if (repliesList) {
                                 const isTeacher = result.reply.userRole === 'Teacher' || result.reply.userRole === 'Manager' || result.reply.userRole === 'Admin';
                                 const replyHtml = `
-                                    <div class="reply-item py-1 border-bottom-0" data-reply-id="${result.reply.id}">
+                                    <div class="reply-item py-2 border-bottom-0" data-reply-id="${result.reply.id}">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
                                             <div class="d-flex align-items-center">
-                                                <strong class="${isTeacher ? 'text-primary' : 'text-dark'} small">
+                                                <strong class="${isTeacher ? 'text-primary' : 'text-dark'} small fw-bold">
                                                     ${result.reply.userName}
                                                 </strong>
                                                 ${isTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem;">Giáo viên</span>' : ''}
                                                 <span class="text-muted small ms-2" style="font-size: 0.75rem;">${result.reply.createdAtFormatted}</span>
                                             </div>
-                                            <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn" data-reply-id="${result.reply.id}" style="font-size: 0.8rem;" title="Xóa phản hồi">
-                                                <i class="bi bi-trash"></i>
+                                            <button type="button" class="btn btn-link text-danger p-0 delete-reply-btn d-flex align-items-center" data-reply-id="${result.reply.id}" title="Xóa phản hồi">
+                                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
                                             </button>
                                         </div>
                                         <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
@@ -602,6 +598,7 @@
                 });
             }
 
+            // Bind delete button for replies
             function bindDeleteReplyBtn(btn) {
                 btn.addEventListener('click', async function() {
                     if (!confirm('Bạn có chắc chắn muốn xóa phản hồi này?')) return;
@@ -637,9 +634,9 @@
                 const container = document.getElementById('commentsContainer');
                 if (container && container.querySelectorAll('.comment-card').length === 0) {
                     container.innerHTML = `
-                        <div id="noCommentsMessage" class="text-center py-4 text-muted">
-                            <i class="bi bi-chat-dots d-block fs-3 mb-2 opacity-50"></i>
-                            <p class="mb-0 small italic">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
+                        <div id="noCommentsMessage" class="text-center py-4 text-muted bg-light rounded border">
+                            <span class="material-symbols-outlined text-muted fs-2 d-block mb-1 opacity-50">forum</span>
+                            <p class="mb-0 small italic fw-bold">Chưa có bình luận nào. Hãy bắt đầu cuộc thảo luận đầu tiên!</p>
                         </div>
                     `;
                 }

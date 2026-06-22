@@ -5,163 +5,133 @@
     ViewData["Title"] = "Classroom Details";
 }
 
-<style>
-    .sticky-menu {
-        background: white;
-    }
 
-    .tab-content .tab-pane {
-        display: none;
-    }
 
-    .tab-content .tab-pane.active {
-        display: block;
-    }
-
-    .nav-tabs .nav-link {
-        color: #5f6368;
-        border: none;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease;
-        background: transparent !important;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #1a73e8 !important;
-        border-bottom: 3px solid #1a73e8 !important;
-    }
-
-    .nav-tabs .nav-link:hover {
-        color: #1a73e8;
-    }
-</style>
-
-<div class="container py-5">
+<div class="container py-5 student-details-container">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Class Header -->
-            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header text-white p-5 text-center" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
-                    <h2 class="fw-bold mb-2">@Html.DisplayFor(model => model.Class.ClassName)</h2>
-                    <span class="badge bg-light text-primary rounded-pill px-4 py-2 fs-6 mb-3">@Html.DisplayFor(model => model.Class.Status)</span>
-                </div>
-
-                <div class="card-footer bg-light p-4 text-center border-0 d-flex justify-content-center gap-3">
-                    <a asp-page="./Index" class="btn btn-outline-secondary px-4 rounded-pill">Trở lại Lớp của tôi</a>
-                </div>
+        <div class="col-lg-12">
+            
+            <!-- Breadcrumbs -->
+            <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+                <a asp-page="./Index" class="text-secondary text-decoration-none hover-text-primary">Lớp học của tôi</a>
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                <span class="text-dark fw-medium">Chi tiết lớp học</span>
             </div>
 
-            <!-- Sticky Menu and Description -->
-            <div class="sticky-menu mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                    <div class="card-header bg-white p-4 border-bottom">
-                        <div class="mb-4">
-                            <h5 class="fw-bold text-muted mb-3">Mô tả Lớp Học</h5>
-                            <p class="text-secondary" style="line-height: 1.6; margin: 0;">
-                                @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
-                            </p>
-                        </div>
-
-                        <!-- Date and Manager Info -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
-                                    <div class="me-3 text-primary">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-muted small">Ngày Bắt Đầu</div>
-                                        <div class="fw-medium">@Html.DisplayFor(model => model.Class.StartDate)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
-                                    <div class="me-3 text-primary">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-muted small">Ngày Kết Thúc</div>
-                                        <div class="fw-medium">@Html.DisplayFor(model => model.Class.EndDate)</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                            <div class="d-flex align-items-center">
-                                <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 40px; height: 40px; font-size: 16px; background-color: #5f6368;">
-                                    @(Model.Class.Manager?.Username?.FirstOrDefault() ?? '?')
-                                </div>
-                                <div>
-                                    <div class="text-muted small">Người Quản Lý</div>
-                                    <div class="fw-bold small">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tabs Navigation -->
-                        <ul class="nav nav-tabs border-0 mt-4" id="classroomTabs" role="tablist" style="gap: 1rem;">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active fw-bold" id="learning-path-tab" data-bs-toggle="tab" data-bs-target="#learning-path-content" type="button" role="tab" aria-controls="learning-path-content" aria-selected="true">
-                                    <i class="bi bi-journal-bookmark"></i> Lộ Trình Học
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-content" type="button" role="tab" aria-controls="students-content" aria-selected="false">
-                                    <i class="bi bi-people-fill"></i> Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-content" type="button" role="tab" aria-controls="assignments-content" aria-selected="false">
-                                    <i class="bi bi-file-earmark-text"></i> Bài Tập
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
-                                    <i class="bi bi-chat-dots-fill"></i> Hỏi & Đáp (@(Model.QaThreads?.Count ?? 0))
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
-                                    <i class="bi bi-calendar-week"></i> Lịch Học
-                                </button>
-                            </li>
-                        </ul>
+            <!-- Hero Class Header Section -->
+            <div class="hero-header-banner p-4 p-md-5 mb-4 rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
+                <div class="hero-header-decor"></div>
+                <div class="relative z-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 shadow-sm small fw-bold">@Html.DisplayFor(model => model.Class.Status)</span>
+                    </div>
+                    <h2 class="fw-bold mb-2 text-white" style="font-size: 2rem;">@Html.DisplayFor(model => model.Class.ClassName)</h2>
+                    <p class="mb-0 text-white-50" style="max-width: 600px;">
+                        @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
+                    </p>
+                </div>
+                <div class="glass-card-premium shrink-0 relative z-1">
+                    <span class="text-white-50 small text-uppercase tracking-wider">Hệ thống học tập</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2 bg-white text-dark px-3 py-2 rounded-2 mt-2 border">
+                        <strong class="text-primary font-monospace" style="font-size: 1.1rem;">Nihongo Portal</strong>
                     </div>
                 </div>
             </div>
+
+            <!-- Date and Manager Info Card -->
+            <div class="card card-premium p-4 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <span class="material-symbols-outlined text-primary fs-3 me-3">calendar_today</span>
+                            <div>
+                                <div class="text-muted small">Ngày Bắt Đầu</div>
+                                <div class="fw-bold text-dark">@Model.Class.StartDate?.ToString("dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <span class="material-symbols-outlined text-primary fs-3 me-3">event_available</span>
+                            <div>
+                                <div class="text-muted small">Ngày Kết Thúc</div>
+                                <div class="fw-bold text-dark">@Model.Class.EndDate?.ToString("dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <span class="material-symbols-outlined text-primary fs-3 me-3">person</span>
+                            <div>
+                                <div class="text-muted small">Người Quản Lý</div>
+                                <div class="fw-bold text-dark">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Menu Tabs Navigation -->
+            <ul class="nav nav-tabs nav-tabs-premium mb-4" id="classroomTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="learning-path-tab" data-bs-toggle="tab" data-bs-target="#learning-path-content" type="button" role="tab" aria-controls="learning-path-content" aria-selected="true">
+                        <span class="material-symbols-outlined">route</span> Lộ Trình Học
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-content" type="button" role="tab" aria-controls="students-content" aria-selected="false">
+                        <span class="material-symbols-outlined">group</span> Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-content" type="button" role="tab" aria-controls="assignments-content" aria-selected="false">
+                        <span class="material-symbols-outlined">assignment</span> Bài Tập
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
+                        <span class="material-symbols-outlined">forum</span> Hỏi & Đáp (@(Model.QaThreads?.Count ?? 0))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
+                        <span class="material-symbols-outlined">calendar_month</span> Lịch Học
+                    </button>
+                </li>
+            </ul>
 
             <!-- Tab Content -->
             <div class="tab-content" id="classroomTabContent">
                 <!-- Learning Path Tab -->
                 <div class="tab-pane fade show active" id="learning-path-content" role="tabpanel" aria-labelledby="learning-path-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lộ Trình Học</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">route</span> Lộ Trình Học
+                            </h4>
                             @if (Model.Class.Curriculum != null)
                             {
-                                <span class="badge bg-light text-primary rounded-pill px-3 py-2">@Model.Class.Curriculum.CurriculumName</span>
+                                <span class="badge bg-light text-primary rounded-pill px-3 py-2 border">@Model.Class.Curriculum.CurriculumName</span>
                             }
                         </div>
                         <div class="card-body p-4">
                             @if (Model.Class.Curriculum == null)
                             {
-                                <div class="text-center text-muted py-4">
-                                    <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
-                                    <h6 class="text-muted">Lớp này chưa có khung chương trình.</h6>
+                                <div class="text-center text-muted py-5">
+                                    <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">description</span>
+                                    <h6 class="text-muted fw-bold">Lớp này chưa có khung chương trình.</h6>
                                 </div>
                             }
                             else
                             {
                                 var allNodes = Model.Class.Curriculum.Nodes;
                                 var chapters = allNodes.Where(n => n.ParentNodeId == null).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
-
+ 
                                 if (!chapters.Any())
                                 {
-                                    <div class="text-center text-muted py-4">
-                                        <i class="bi bi-journal display-6 d-block mb-2 opacity-50"></i>
-                                        <h6 class="text-muted">Khung chương trình chưa có bài học nào.</h6>
+                                    <div class="text-center text-muted py-5">
+                                        <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">description</span>
+                                        <h6 class="text-muted fw-bold">Khung chương trình chưa có bài học nào.</h6>
                                     </div>
                                 }
                                 else
@@ -174,15 +144,15 @@
                                             var collapseId = $"lp-collapse-{chapter.Id}";
                                             var headingId = $"lp-heading-{chapter.Id}";
                                             var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
-
-                                            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+ 
+                                            <div class="accordion-item border mb-3 shadow-sm" style="border-radius: var(--radius-sm); overflow: hidden; border-color: var(--color-outline-variant) !important;">
                                                 <h2 class="accordion-header" id="@headingId">
-                                                    <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
-                                                        <i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title
+                                                    <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-bold bg-white text-dark py-3" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
+                                                        <span class="material-symbols-outlined text-warning me-2" style="font-size: 22px;">folder</span> @chapter.Title
                                                     </button>
                                                 </h2>
                                                 <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#learningPathAccordion">
-                                                    <div class="accordion-body p-0">
+                                                    <div class="accordion-body p-0 bg-white border-top">
                                                         @{
                                                             var chapterQuizzes = chapter.Quizzes.Where(q => q.ClassId == Model.Class.Id && q.Status == "Published" && !q.IsAlwaysOpen).ToList();
                                                         }
@@ -196,7 +166,7 @@
                                                                     {
                                                                         <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
                                                                             <div class="d-flex align-items-center gap-2">
-                                                                                <i class="bi bi-file-earmark-check-fill text-warning fs-5"></i>
+                                                                                <span class="material-symbols-outlined text-warning" style="font-size: 20px;">assignment_turned_in</span>
                                                                                 <div>
                                                                                     <span class="fw-semibold text-dark">@quiz.Title</span>
                                                                                     <span class="text-muted small d-block">@quiz.DurationMinutes phút | @quiz.QuizQuestions.Count câu</span>
@@ -204,14 +174,14 @@
                                                                             </div>
                                                                             @if (chapterUnlocked)
                                                                             {
-                                                                                <a asp-page="/Quizzes/Take" asp-route-id="@quiz.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                                                                                    Làm bài <i class="bi bi-play-fill ms-1"></i>
+                                                                                <a asp-page="/Quizzes/Take" asp-route-id="@quiz.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3 d-flex align-items-center gap-1">
+                                                                                    Làm bài <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
                                                                                 </a>
                                                                             }
                                                                             else
                                                                             {
-                                                                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" disabled>
-                                                                                    <i class="bi bi-lock-fill"></i> Đang khóa
+                                                                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 d-flex align-items-center gap-1" disabled>
+                                                                                    <span class="material-symbols-outlined" style="font-size: 14px;">lock</span> Đang khóa
                                                                                 </button>
                                                                             }
                                                                         </div>
@@ -222,7 +192,7 @@
 
                                                         @if (!lessons.Any() && !chapterQuizzes.Any())
                                                         {
-                                                            <p class="text-muted text-center py-3 mb-0 small">Chương này chưa có bài học hoặc bài test.</p>
+                                                            <p class="text-muted text-center py-4 mb-0 small">Chương này chưa có bài học hoặc bài test.</p>
                                                         }
                                                         else if (lessons.Any())
                                                         {
@@ -233,71 +203,76 @@
                                                                     var isCompleted = Model.NodeCompletionStatus.TryGetValue(lesson.Id, out var c) && c;
                                                                     var lessonQuizzes = lesson.Quizzes.Where(q => q.ClassId == Model.Class.Id && q.Status == "Published" && !q.IsAlwaysOpen).ToList();
                                                                     
-                                                                    <li class="list-group-item d-flex flex-column py-3 px-4 @(isUnlocked ? "" : "bg-light text-muted")">
+                                                                    <li class="list-group-item d-flex flex-column py-3 px-4 @(isUnlocked ? "" : "bg-light text-muted opacity-75")">
                                                                         <div class="d-flex justify-content-between align-items-center w-100">
                                                                             <div class="d-flex align-items-center gap-2">
                                                                                 @if (!isUnlocked)
                                                                                 {
-                                                                                    <i class="bi bi-lock-fill text-secondary"></i>
+                                                                                    <span class="material-symbols-outlined text-muted" style="font-size: 20px;">lock</span>
                                                                                 }
                                                                                 else if (isCompleted)
                                                                                 {
-                                                                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                                                                    <span class="material-symbols-outlined text-success" style="font-size: 20px;">check_circle</span>
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    <i class="bi bi-file-earmark-text text-primary"></i>
+                                                                                    <span class="material-symbols-outlined text-primary" style="font-size: 20px;">description</span>
                                                                                 }
-                                                                                <span class="fw-medium @(isUnlocked ? "" : "text-muted")">@lesson.Title</span>
+                                                                                <span class="fw-semibold text-dark">@lesson.Title</span>
                                                                                 @if (isCompleted)
                                                                                 {
-                                                                                    <span class="badge bg-success-subtle text-success rounded-pill">Đã hoàn thành</span>
+                                                                                    <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1">Đã học</span>
                                                                                 }
                                                                                 @if (lesson.Materials.Any())
                                                                                 {
-                                                                                    <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                                    <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">@lesson.Materials.Count tài liệu</span>
                                                                                 }
                                                                             </div>
-                                                                            @if (isUnlocked)
-                                                                            {
-                                                                                <a asp-page="./Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
-                                                                                   class="btn btn-sm btn-primary rounded-pill px-3" style="background-color: #1a73e8; border: none;">
-                                                                                    Vào học <i class="bi bi-arrow-right ms-1"></i>
-                                                                                </a>
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" disabled title="Bài học chưa được giáo viên mở">
-                                                                                    <i class="bi bi-lock me-1"></i> Đang khóa
-                                                                                </button>
-                                                                            }
+                                                                            
+                                                                            <div>
+                                                                                @if (isUnlocked)
+                                                                                {
+                                                                                    <a asp-page="./Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
+                                                                                       class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 d-flex align-items-center gap-1">
+                                                                                        Vào học <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+                                                                                    </a>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 py-1.5 d-flex align-items-center gap-1" disabled title="Bài học chưa được giáo viên mở">
+                                                                                        <span class="material-symbols-outlined" style="font-size: 16px;">lock</span> Đang khóa
+                                                                                    </button>
+                                                                                }
+                                                                            </div>
                                                                         </div>
 
                                                                         @if (lessonQuizzes.Any())
                                                                         {
-                                                                            <div class="mt-2 ps-4 d-flex flex-column gap-2">
+                                                                            <div class="mt-3 ps-4 d-flex flex-column gap-2 border-top pt-2">
                                                                                 @foreach (var quiz in lessonQuizzes)
                                                                                 {
-                                                                                    <div class="d-flex align-items-center justify-content-between py-2 border-top border-light">
+                                                                                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
                                                                                         <div class="d-flex align-items-center gap-2">
-                                                                                            <i class="bi bi-file-earmark-check text-warning fs-5"></i>
+                                                                                            <span class="material-symbols-outlined text-warning" style="font-size: 20px;">assignment_turned_in</span>
                                                                                             <div>
-                                                                                                <span class="fw-semibold text-dark fs-7">@quiz.Title</span>
+                                                                                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@quiz.Title</span>
                                                                                                 <span class="text-muted small d-block">@quiz.DurationMinutes phút | @quiz.QuizQuestions.Count câu</span>
                                                                                             </div>
                                                                                         </div>
-                                                                                        @if (isUnlocked)
-                                                                                        {
-                                                                                            <a asp-page="/Quizzes/Take" asp-route-id="@quiz.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                                                                                                Làm bài <i class="bi bi-play-fill ms-1"></i>
-                                                                                            </a>
-                                                                                        }
-                                                                                        else
-                                                                                        {
-                                                                                            <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" disabled>
-                                                                                                <i class="bi bi-lock-fill"></i> Đang khóa
-                                                                                            </button>
-                                                                                        }
+                                                                                        <div>
+                                                                                            @if (isUnlocked)
+                                                                                            {
+                                                                                                <a asp-page="/Quizzes/Take" asp-route-id="@quiz.Id" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 d-flex align-items-center gap-1">
+                                                                                                    Làm bài <span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+                                                                                                </a>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 py-1 d-flex align-items-center gap-1" disabled>
+                                                                                                    <span class="material-symbols-outlined" style="font-size: 14px;">lock</span> Đang khóa
+                                                                                                </button>
+                                                                                            }
+                                                                                        </div>
                                                                                     </div>
                                                                                 }
                                                                             </div>
@@ -317,17 +292,18 @@
                     </div>
                 </div>
 
-
                 <!-- Assignments Tab -->
                 <div class="tab-pane fade" id="assignments-content" role="tabpanel" aria-labelledby="assignments-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Bài Tập</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">assignment</span> Danh Sách Bài Tập
+                            </h4>
                         </div>
                         <div class="card-body p-4">
                             @if (TempData["SuccessMessage"] != null)
                             {
-                                <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
                                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
@@ -335,7 +311,7 @@
 
                             @if (!ViewData.ModelState.IsValid)
                             {
-                                <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
                                     <div asp-validation-summary="All" class="text-danger small"></div>
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
@@ -348,33 +324,33 @@
                                     {
                                         var isOverdue = assign.DueDate.HasValue && DateTime.Now > assign.DueDate.Value;
                                         <div class="col-12">
-                                            <div class="card border shadow-sm p-4 rounded-3">
+                                            <div class="card card-premium border shadow-sm p-4 rounded-3">
                                                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
                                                     <div>
                                                         <h5 class="fw-bold text-dark mb-1">@assign.Title</h5>
-                                                        <span class="text-muted small">
-                                                            <i class="bi bi-clock me-1"></i> Hạn nộp: 
+                                                        <span class="text-muted small d-flex align-items-center gap-1">
+                                                            <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span> Hạn nộp: 
                                                             @(assign.DueDate.HasValue ? assign.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không giới hạn")
                                                         </span>
                                                     </div>
                                                     <div>
                                                         @if (assign.Status == "Graded")
                                                         {
-                                                            <span class="badge bg-success fs-6 rounded-pill px-3"><i class="bi bi-patch-check"></i> Đã chấm điểm</span>
+                                                            <span class="badge bg-success-subtle text-success fs-6 rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">grade</span> Đã chấm điểm</span>
                                                         }
                                                         else if (assign.Status == "Submitted")
                                                         {
-                                                            <span class="badge bg-primary fs-6 rounded-pill px-3"><i class="bi bi-check-circle"></i> Đã nộp bài</span>
+                                                            <span class="badge bg-primary-subtle text-primary fs-6 rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">task_alt</span> Đã nộp bài</span>
                                                         }
                                                         else
                                                         {
                                                             if (isOverdue)
                                                             {
-                                                                <span class="badge bg-danger fs-6 rounded-pill px-3"><i class="bi bi-exclamation-octagon"></i> Quá hạn</span>
+                                                                <span class="badge bg-danger-subtle text-danger fs-6 rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">warning</span> Quá hạn</span>
                                                             }
                                                             else
                                                             {
-                                                                <span class="badge bg-warning text-dark fs-6 rounded-pill px-3"><i class="bi bi-hourglass-split"></i> Chưa nộp</span>
+                                                                <span class="badge bg-warning-subtle text-warning-emphasis fs-6 rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span> Chưa nộp</span>
                                                             }
                                                         }
                                                     </div>
@@ -383,7 +359,8 @@
                                                 @if (!string.IsNullOrEmpty(assign.RequirementText))
                                                 {
                                                     <div class="bg-light p-3 rounded mb-3 text-secondary text-start" style="font-size: 0.95rem;">
-                                                        <strong>Yêu cầu:</strong> @assign.RequirementText
+                                                        <strong>Yêu cầu bài tập:</strong>
+                                                        <p class="mb-0 mt-1 text-dark">@assign.RequirementText</p>
                                                     </div>
                                                 }
 
@@ -392,7 +369,7 @@
                                                     <div class="card border-success bg-light mb-3" style="border-radius: 8px;">
                                                         <div class="card-body p-3">
                                                             <div class="d-flex align-items-center mb-2 text-success">
-                                                                <i class="bi bi-star-fill me-2 fs-5"></i>
+                                                                <span class="material-symbols-outlined me-2" style="font-size: 20px;">stars</span>
                                                                 <h6 class="fw-bold mb-0">Kết Quả Chấm Điểm</h6>
                                                             </div>
                                                             <div class="fs-4 fw-bold text-dark mb-2">Điểm số: <span class="text-primary">@assign.Score?.ToString("0.0")</span> / 10.0</div>
@@ -400,7 +377,7 @@
                                                             {
                                                                 <div class="text-secondary small mt-1">
                                                                     <strong>Nhận xét của giảng viên:</strong>
-                                                                    <p class="mb-0 italic">"@assign.Feedback"</p>
+                                                                    <p class="mb-0 italic text-dark">"@assign.Feedback"</p>
                                                                 </div>
                                                             }
                                                         </div>
@@ -417,16 +394,16 @@
                                                                 <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">
                                                                     Tải lên bài nộp (Hỗ trợ `.docx` hoặc `.mp3`, tối đa 15MB)
                                                                 </label>
-                                                                <input type="file" name="UploadedFile" class="form-control" accept=".docx,.mp3" required onchange="validateStudentFile(this)" />
+                                                                <input type="file" name="UploadedFile" class="form-control bg-light" accept=".docx,.mp3" required onchange="validateStudentFile(this)" />
                                                                 <div class="form-text">Tải lên file bài giải của bạn.</div>
                                                             </div>
 
                                                             <div class="mb-3">
                                                                 <label class="form-label fw-bold text-secondary" style="font-size: 0.9rem;">Ghi chú (Tùy chọn)</label>
-                                                                <textarea name="ContentText" class="form-control" rows="2" placeholder="Nhập ghi chú cho giáo viên..."></textarea>
+                                                                <textarea name="ContentText" class="form-control bg-light" rows="2" placeholder="Nhập ghi chú cho giáo viên..."></textarea>
                                                             </div>
 
-                                                            <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #1a73e8; border: none;">
+                                                            <button type="submit" class="btn btn-primary px-4 py-2">
                                                                 @(assign.Status == "Submitted" ? "Nộp lại bài tập" : "Nộp bài tập")
                                                             </button>
                                                         </form>
@@ -434,8 +411,8 @@
                                                 }
                                                 else if (isOverdue && assign.Status != "Graded" && assign.Status != "Submitted")
                                                 {
-                                                    <div class="text-danger small mt-2">
-                                                        <i class="bi bi-info-circle"></i> Đã quá hạn nộp bài. Bạn không thể nộp hoặc chỉnh sửa bài tập này nữa.
+                                                    <div class="text-danger small mt-2 d-flex align-items-center gap-1">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px;">info</span> Đã quá hạn nộp bài. Bạn không thể nộp hoặc chỉnh sửa bài tập này nữa.
                                                     </div>
                                                 }
 
@@ -443,9 +420,9 @@
                                                 {
                                                     @if (!string.IsNullOrEmpty(assign.MediaUrl))
                                                     {
-                                                        <div class="mt-2 text-muted small">
-                                                            <i class="bi bi-file-earmark-check"></i> File đã nộp: 
-                                                            <a href="@assign.MediaUrl" target="_blank" class="text-primary text-decoration-none">
+                                                        <div class="mt-2 text-muted small d-flex align-items-center gap-1">
+                                                            <span class="material-symbols-outlined" style="font-size: 16px;">attachment</span> File đã nộp: 
+                                                            <a href="@assign.MediaUrl" target="_blank" class="text-primary text-decoration-none fw-semibold">
                                                                 Tải xuống tệp nộp bài
                                                             </a>
                                                         </div>
@@ -459,8 +436,8 @@
                             else
                             {
                                 <div class="text-center py-5 text-muted">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    <h6 class="text-muted">Chưa có bài tập nào được tạo cho lớp học này.</h6>
+                                    <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">assignment_late</span>
+                                    <h6 class="text-muted fw-bold">Chưa có bài tập nào được tạo cho lớp học này.</h6>
                                 </div>
                             }
                         </div>
@@ -469,18 +446,20 @@
 
                 <!-- Students Tab -->
                 <div class="tab-pane fade" id="students-content" role="tabpanel" aria-labelledby="students-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Học Viên</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">group</span> Danh Sách Học Viên
+                            </h4>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="bg-light text-muted">
-                                        <tr>
-                                            <th class="px-4 py-3 border-0 fw-semibold">Học Viên</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold">Nhóm</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold text-center">Support Team</th>
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
+                                            <th class="px-4 py-3 border-0">Học Viên</th>
+                                            <th class="px-4 py-3 border-0">Nhóm</th>
+                                            <th class="px-4 py-3 border-0 text-center">Support Team</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -488,31 +467,31 @@
                                         {
                                             foreach (var member in Model.Class.ClassMembers)
                                             {
-                                                <tr class="align-middle">
+                                                <tr class="border-bottom">
                                                     <td class="px-4 py-3">
                                                         <div class="d-flex align-items-center">
-                                                            <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 35px; height: 35px; font-size: 14px; background-color: #4285f4;">
+                                                            <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3 bg-secondary fw-bold" style="width: 35px; height: 35px; font-size: 14px; background-color: var(--color-outline) !important;">
                                                                 @(member.User?.Username?.FirstOrDefault() ?? '?')
                                                             </div>
-                                                            <div class="fw-medium text-dark">@(member.User?.Username ?? "Unknown")</div>
+                                                            <div class="fw-semibold text-dark">@(member.User?.Username ?? "Unknown")</div>
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3">
                                                         @{
                                                             var assignedGroup = Model.Class.Groups?.FirstOrDefault(g => g.GroupMembers.Any(gm => gm.StudentId == member.UserId));
                                                         }
-                                                        <span class="badge" style="background-color: #f1f3f4; color: #3c4043; font-size: 0.9em; padding: 0.5em 1em; border-radius: 6px;">
+                                                        <span class="badge bg-light text-dark px-3 py-2 border rounded" style="font-size: 0.8rem;">
                                                             @(assignedGroup != null ? assignedGroup.GroupName : "Chưa có nhóm")
                                                         </span>
                                                     </td>
                                                     <td class="px-4 py-3 text-center">
                                                         @if (member.IsSupportTeam == true)
                                                         {
-                                                            <span class="badge bg-success rounded-pill px-3">Có</span>
+                                                            <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill fw-semibold">Có</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge bg-secondary rounded-pill px-3">Không</span>
+                                                            <span class="badge bg-light text-secondary px-3 py-1.5 rounded-pill border">Không</span>
                                                         }
                                                     </td>
                                                 </tr>
@@ -522,8 +501,8 @@
                                         {
                                             <tr>
                                                 <td colspan="3" class="text-center py-5 text-muted">
-                                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                                    <h6 class="text-muted">Chưa có học viên nào trong lớp</h6>
+                                                    <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">person_off</span>
+                                                    <h6 class="text-muted fw-bold">Chưa có học viên nào trong lớp</h6>
                                                 </td>
                                             </tr>
                                         }
@@ -536,51 +515,53 @@
 
                 <!-- Q&A Tab -->
                 <div class="tab-pane fade" id="qa-content" role="tabpanel" aria-labelledby="qa-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Hỏi & Đáp Lớp Học</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">forum</span> Hỏi & Đáp Lớp Học
+                            </h4>
                         </div>
                         <div class="card-body p-4">
                             <!-- Question Submission Form -->
-                            <div class="card border mb-4 shadow-sm" style="border-radius: 10px;">
+                            <div class="card card-premium border mb-4 shadow-sm" style="border-radius: var(--radius-sm);">
                                 <div class="card-body p-3">
-                                    <h6 class="fw-bold mb-3"><i class="bi bi-question-circle text-primary"></i> Đặt câu hỏi mới</h6>
+                                    <h6 class="fw-bold mb-3 d-flex align-items-center gap-1"><span class="material-symbols-outlined text-primary">add_comment</span> Đặt câu hỏi mới</h6>
                                     <form id="createThreadForm" method="post">
                                         @Html.AntiForgeryToken()
                                         <div class="mb-3">
-                                            <textarea id="questionTextInput" class="form-control" rows="3" placeholder="Nhập câu hỏi của bạn ở đây..." required style="border-radius: 8px;"></textarea>
+                                            <textarea id="questionTextInput" class="form-control bg-light" rows="3" placeholder="Nhập câu hỏi của bạn ở đây..." required style="border-radius: 8px;"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #1a73e8; border: none;">
-                                            Đăng câu hỏi <i class="bi bi-send ms-1"></i>
+                                        <button type="submit" class="btn btn-primary px-4 py-2 d-flex align-items-center gap-1">
+                                            Đăng câu hỏi <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
                                         </button>
                                     </form>
                                 </div>
                             </div>
 
                             <!-- List of Threads -->
-                            <div id="qaThreadsContainer" class="d-flex flex-column gap-3">
+                            <div id="qaThreadsContainer" class="d-flex flex-column gap-4">
                                 @if (Model.QaThreads != null && Model.QaThreads.Any())
                                 {
                                     foreach (var thread in Model.QaThreads)
                                     {
-                                        <div class="card border shadow-sm qa-thread-card" data-thread-id="@thread.Id" style="border-radius: 10px; overflow: hidden;">
+                                        <div class="card card-premium border shadow-sm qa-thread-card" data-thread-id="@thread.Id" style="border-radius: var(--radius-sm); overflow: hidden;">
                                             <div class="card-body p-3">
-                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
                                                     <div class="d-flex align-items-center">
-                                                        <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                                        <div class="rounded-circle text-white text-center me-2 d-flex justify-content-center align-items-center bg-secondary fw-bold" style="width: 36px; height: 36px; font-size: 14px; background-color: var(--color-outline) !important;">
                                                             @(thread.Student?.Username?.FirstOrDefault() ?? '?')
                                                         </div>
                                                         <div>
                                                             <strong class="text-dark">@(thread.Student?.Username ?? "Học viên")</strong>
-                                                            <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                                            <div class="text-muted small" style="font-size: 0.75rem;">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <p class="text-dark mb-3 fs-5" style="white-space: pre-wrap;">@thread.QuestionText</p>
+                                                <p class="text-dark mb-3 fw-bold" style="white-space: pre-wrap; font-size: 1.05rem;">@thread.QuestionText</p>
                                                 
                                                 <!-- Replies Section -->
-                                                <div class="bg-light p-3 rounded" style="border-radius: 8px;">
-                                                    <h6 class="fw-bold text-muted mb-2 small"><i class="bi bi-chat-left-text"></i> Câu trả lời</h6>
+                                                <div class="p-3 rounded" style="background-color: var(--color-surface-container-low); border-radius: 8px;">
+                                                    <h6 class="fw-bold text-muted mb-2 small d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">forum</span> Câu trả lời</h6>
                                                     <div class="replies-list d-flex flex-column gap-2 mb-3" data-thread-id="@thread.Id">
                                                         @if (thread.QaReplies != null && thread.QaReplies.Any())
                                                         {
@@ -589,7 +570,7 @@
                                                                 var isTeacherReply = reply.User?.Role == "Teacher" || reply.User?.Role == "Manager" || reply.User?.Role == "Admin";
                                                                 <div class="border-bottom pb-2">
                                                                     <div class="d-flex align-items-center mb-1">
-                                                                        <strong class="@(isTeacherReply ? "text-primary" : "text-dark") small">
+                                                                        <strong class="@(isTeacherReply ? "text-primary" : "text-dark") small fw-bold">
                                                                             @(reply.User?.Username ?? "User")
                                                                             @if (isTeacherReply)
                                                                             {
@@ -610,9 +591,9 @@
                                                     
                                                     <!-- Reply Form -->
                                                     <form class="create-reply-form d-flex gap-2" data-thread-id="@thread.Id">
-                                                        <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết phản hồi..." required style="border-radius: 20px;" />
-                                                        <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #1a73e8; border: none;">
-                                                            <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>
+                                                        <input type="text" class="form-control form-control-sm reply-input bg-white" placeholder="Viết phản hồi..." required style="border-radius: 20px;" />
+                                                        <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                            <span class="material-symbols-outlined text-white" style="font-size: 16px;">send</span>
                                                         </button>
                                                     </form>
                                                 </div>
@@ -623,8 +604,8 @@
                                 else
                                 {
                                     <div id="noThreadsMessage" class="text-center py-5 text-muted bg-light rounded border">
-                                        <i class="bi bi-chat-square-text display-6 d-block mb-2 opacity-50"></i>
-                                        <h6 class="text-muted">Chưa có chủ đề thảo luận nào. Đặt câu hỏi đầu tiên!</h6>
+                                        <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">forum</span>
+                                        <h6 class="text-muted fw-bold">Chưa có chủ đề thảo luận nào. Đặt câu hỏi đầu tiên!</h6>
                                     </div>
                                 }
                             </div>
@@ -634,22 +615,24 @@
                 
                 <!-- Schedule Tab -->
                 <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lịch Học Của Lớp</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">calendar_month</span> Lịch Học Của Lớp
+                            </h4>
                         </div>
                         <div class="card-body p-4">
                             @if (Model.Class.ClassSchedules != null && Model.Class.ClassSchedules.Any())
                             {
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
-                                        <thead class="bg-light text-muted">
-                                            <tr>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Buổi</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Ngày học</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Thời gian</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Phòng học</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Trạng thái</th>
+                                        <thead>
+                                            <tr class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
+                                                <th class="px-4 py-3 border-0">Buổi</th>
+                                                <th class="px-4 py-3 border-0">Ngày học</th>
+                                                <th class="px-4 py-3 border-0">Thời gian</th>
+                                                <th class="px-4 py-3 border-0">Phòng học</th>
+                                                <th class="px-4 py-3 border-0">Trạng thái</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -664,37 +647,36 @@
                                                 var dayName = Flipped_Classroom.Services.ScheduleSlotHelper.GetVietnameseDayName(schedule.StudyDate.DayOfWeek);
                                                 
                                                 <tr class="align-middle @(isPast ? "opacity-50" : "")">
-                                                    <td class="px-4 py-3 fw-semibold">Buổi @sessionNum</td>
+                                                    <td class="px-4 py-3 fw-bold">Buổi @sessionNum</td>
                                                     <td class="px-4 py-3">
                                                         <div class="fw-semibold">@schedule.StudyDate.ToString("dd/MM/yyyy")</div>
                                                         <small class="text-muted">@dayName</small>
                                                     </td>
-                                                    <td class="px-4 py-3 text-primary">
-                                                        <i class="bi bi-clock me-1"></i>
-                                                        @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
+                                                    <td class="px-4 py-3 text-primary fw-semibold">
+                                                        <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">schedule</span> @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")</span>
                                                     </td>
                                                     <td class="px-4 py-3">
                                                         @if (!string.IsNullOrEmpty(schedule.Room))
                                                         {
-                                                            <span><i class="bi bi-geo-alt me-1 text-muted"></i>@schedule.Room</span>
+                                                            <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined text-muted" style="font-size: 16px;">meeting_room</span> @schedule.Room</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-muted fst-italic">Trực tuyến</span>
+                                                            <span class="text-muted fst-italic d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 16px;">cast_for_education</span> Trực tuyến</span>
                                                         }
                                                     </td>
                                                     <td class="px-4 py-3">
                                                         @if (isToday)
                                                         {
-                                                            <span class="badge bg-danger rounded-pill px-3">Hôm nay</span>
+                                                            <span class="badge bg-danger text-white rounded-pill px-3 py-1.5 fw-bold shadow-sm">Hôm nay</span>
                                                         }
                                                         else if (isPast)
                                                         {
-                                                            <span class="badge bg-secondary rounded-pill px-3">Đã qua</span>
+                                                            <span class="badge bg-secondary text-white rounded-pill px-3 py-1.5">Đã qua</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge bg-success rounded-pill px-3">Sắp tới</span>
+                                                            <span class="badge bg-success text-white rounded-pill px-3 py-1.5">Sắp tới</span>
                                                         }
                                                     </td>
                                                 </tr>
@@ -706,8 +688,8 @@
                             else
                             {
                                 <div class="text-center py-5 text-muted">
-                                    <i class="bi bi-calendar-x display-6 d-block mb-2 opacity-50"></i>
-                                    <h6 class="text-muted">Lớp học này chưa được xếp lịch học.</h6>
+                                    <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">calendar_today</span>
+                                    <h6 class="text-muted fw-bold">Lớp học này chưa được xếp lịch học.</h6>
                                 </div>
                             }
                         </div>

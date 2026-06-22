@@ -4,90 +4,74 @@
     ViewData["Title"] = "My Managed Classes";
 }
 
-<style>
-    .dashboard-kpi {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .dashboard-kpi:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
-    }
-    .class-dashboard-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .class-dashboard-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
-    }
-    .pending-student-badge {
-        font-size: 0.72rem;
-        padding: 0.25em 0.6em;
-    }
-</style>
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold" style="color: #1a73e8;">
-            <i class="bi bi-speedometer2 me-2"></i>Dashboard Giảng Dạy
+
+<div class="container py-5 teacher-dashboard-container">
+    <!-- Title Area -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h2 class="fw-bold d-flex align-items-center gap-2 mb-0" style="color: var(--color-on-background);">
+            <span class="material-symbols-outlined text-primary fs-3">dashboard</span>
+            Dashboard Giảng Dạy
         </h2>
     </div>
 
     @if (Model.Class != null && Model.Class.Any())
     {
-        <!-- KPI Cards Row -->
+        <!-- Bento KPI Cards Row -->
         <div class="row g-4 mb-5">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 p-4 dashboard-kpi" style="background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-secondary small fw-medium">Tổng số lớp</div>
-                            <h3 class="fw-bold text-primary mb-0 mt-1">@Model.TotalClassesCount</h3>
+                <div class="bento-kpi-card bg-primary-fixed">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <span class="fw-semibold text-muted" style="font-size: 0.9rem;">Tổng số lớp</span>
+                        <div class="kpi-icon-container">
+                            <span class="material-symbols-outlined">school</span>
                         </div>
-                        <div class="rounded-circle bg-white text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                            <i class="bi bi-building fs-4"></i>
-                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 class="fw-bold mb-0">@Model.TotalClassesCount</h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 p-4 dashboard-kpi" style="background: linear-gradient(135deg, #e6f4ea 0%, #ceead6 100%);">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-secondary small fw-medium">Tổng học viên</div>
-                            <h3 class="fw-bold text-success mb-0 mt-1">@Model.TotalStudentsAll</h3>
+                <div class="bento-kpi-card bg-tertiary-fixed">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <span class="fw-semibold text-muted" style="font-size: 0.9rem;">Tổng học viên</span>
+                        <div class="kpi-icon-container">
+                            <span class="material-symbols-outlined">group</span>
                         </div>
-                        <div class="rounded-circle bg-white text-success shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                            <i class="bi bi-people-fill fs-4"></i>
-                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 class="fw-bold mb-0">@Model.TotalStudentsAll</h2>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3 p-4 dashboard-kpi" style="background: linear-gradient(135deg, #fef7e0 0%, #feefc3 100%);">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-secondary small fw-medium">Tổng bài tập</div>
-                            <h3 class="fw-bold mb-0 mt-1" style="color: #e8a700;">@Model.TotalAssignmentsAll</h3>
+                <div class="bento-kpi-card bg-secondary-fixed">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <span class="fw-semibold text-muted" style="font-size: 0.9rem;">Tổng bài tập</span>
+                        <div class="kpi-icon-container">
+                            <span class="material-symbols-outlined">task_alt</span>
                         </div>
-                        <div class="rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; color: #e8a700;">
-                            <i class="bi bi-file-earmark-text-fill fs-4"></i>
-                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 class="fw-bold mb-0">@Model.TotalAssignmentsAll</h2>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Class Codes Management Section -->
-        <div class="card border-0 shadow-sm rounded-3 p-4 mb-5">
+        <div class="card card-premium p-4 mb-5">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                 <div>
-                    <h4 class="fw-bold mb-1" style="color: #1a73e8;">
-                        <i class="bi bi-key-fill me-2"></i>Quản lý mã lớp học
+                    <h4 class="fw-bold mb-1 text-primary d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined">key</span>
+                        Quản lý mã lớp học
                     </h4>
                     <p class="text-muted small mb-0">Xem và chia sẻ mã lớp học cho học viên để tham gia lớp.</p>
                 </div>
                 <div style="min-width: 250px;">
-                    <select id="classCodeFilter" class="form-select rounded-pill">
+                    <select id="classCodeFilter" class="form-select rounded-pill px-3">
                         <option value="all">Tất cả lớp học</option>
                         @foreach (var item in Model.Class)
                         {
@@ -99,28 +83,28 @@
 
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col" style="border-radius: 8px 0 0 8px;">Tên lớp học</th>
-                            <th scope="col">Mã mời (Invite Code)</th>
-                            <th scope="col" class="text-end" style="border-radius: 0 8px 8px 0; width: 150px;">Thao tác</th>
+                    <thead>
+                        <tr class="table-light">
+                            <th scope="col" class="border-0 px-4 py-3 text-muted fw-semibold small text-uppercase" style="border-radius: 8px 0 0 8px;">Tên lớp học</th>
+                            <th scope="col" class="border-0 px-4 py-3 text-muted fw-semibold small text-uppercase">Mã mời (Invite Code)</th>
+                            <th scope="col" class="border-0 px-4 py-3 text-muted fw-semibold small text-uppercase text-end" style="border-radius: 0 8px 8px 0; width: 150px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model.Class)
                         {
-                            <tr id="class-row-@item.Id" class="class-code-row">
-                                <td class="fw-semibold">@item.ClassName</td>
-                                <td>
+                            <tr id="class-row-@item.Id" class="class-code-row border-bottom">
+                                <td class="fw-bold px-4 py-3 text-dark">@item.ClassName</td>
+                                <td class="px-4 py-3">
                                     <span class="badge bg-light text-dark font-monospace px-3 py-2 border rounded" style="font-size: 0.9rem; letter-spacing: 0.5px;">
                                         @(string.IsNullOrEmpty(item.InviteCode) ? "Không có mã" : item.InviteCode)
                                     </span>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end px-4 py-3">
                                     @if (!string.IsNullOrEmpty(item.InviteCode))
                                     {
-                                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 copy-btn" onclick="copyInviteCode(this, '@item.InviteCode')">
-                                            <i class="bi bi-clipboard me-1"></i> Copy
+                                        <button class="btn btn-premium-outline btn-sm px-3 py-1.5" onclick="copyInviteCode(this, '@item.InviteCode')">
+                                            <span class="material-symbols-outlined">content_copy</span> Copy
                                         </button>
                                     }
                                     else
@@ -139,15 +123,15 @@
             function copyInviteCode(btn, code) {
                 navigator.clipboard.writeText(code).then(function() {
                     var originalHtml = btn.innerHTML;
-                    btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Copied';
-                    btn.classList.remove('btn-outline-primary');
-                    btn.classList.add('btn-success', 'text-white');
+                    btn.innerHTML = '<span class="material-symbols-outlined">check</span> Copied';
+                    btn.style.borderColor = '#34a853';
+                    btn.style.color = '#34a853';
                     btn.disabled = true;
                     
                     setTimeout(function() {
                         btn.innerHTML = originalHtml;
-                        btn.classList.remove('btn-success', 'text-white');
-                        btn.classList.add('btn-outline-primary');
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
                         btn.disabled = false;
                     }, 2000);
                 }, function(err) {
@@ -169,8 +153,9 @@
         </script>
 
         <!-- Per-class Dashboard Cards -->
-        <h4 class="fw-bold mb-4" style="color: #3c4043;">
-            <i class="bi bi-grid-1x2-fill text-primary me-2"></i>Tổng quan từng lớp
+        <h4 class="fw-bold mb-4 d-flex align-items-center gap-2" style="color: var(--color-on-background);">
+            <span class="material-symbols-outlined text-primary">view_agenda</span>
+            Tổng quan từng lớp
         </h4>
 
         <div class="row g-4">
@@ -182,73 +167,70 @@
                 var pendingStudents = Model.ClassPendingStudents.TryGetValue(item.Id, out var ps) ? ps : new List<string>();
                 var studentCount = Model.ClassStudentCount.TryGetValue(item.Id, out var sc) ? sc : 0;
                 var lessonCount = Model.ClassLessonCount.TryGetValue(item.Id, out var lc) ? lc : 0;
+                var isActive = string.Equals(item.Status, "Active", StringComparison.OrdinalIgnoreCase);
 
                 <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm class-dashboard-card h-100" style="border-radius: 15px; overflow: hidden;">
+                    <div class="class-premium-card h-100">
                         <!-- Card Header -->
-                        <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%); border-bottom: none;">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="mb-0 fw-bold text-truncate me-2" title="@item.ClassName">@item.ClassName</h5>
-                                <span class="badge bg-light text-primary rounded-pill px-3 flex-shrink-0">@item.Status</span>
+                        <div class="class-card-header @(isActive ? "bg-active" : "bg-completed")">
+                            <div class="header-decor-blur"></div>
+                            <div class="d-flex justify-content-between align-items-start mb-2 relative z-1">
+                                <h4 class="mb-0 fw-bold text-truncate me-2" title="@item.ClassName" style="max-width: 75%;">@item.ClassName</h4>
+                                <span class="badge bg-white text-dark rounded-pill px-3 py-1.5 shadow-sm small fw-bold">@item.Status</span>
                             </div>
-                            <div class="d-flex gap-3 mt-2 text-white-50 small">
-                                <span><i class="bi bi-people-fill me-1"></i> @studentCount học viên</span>
-                                <span><i class="bi bi-journal-text me-1"></i> @lessonCount bài học</span>
-                                <span><i class="bi bi-file-earmark-text me-1"></i> @(item.Assignments?.Count ?? 0) bài tập</span>
+                            <div class="d-flex gap-3 mt-3 text-white-50 small relative z-1">
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">group</span> @studentCount học viên</span>
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">menu_book</span> @lessonCount bài học</span>
+                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">assignment</span> @(item.Assignments?.Count ?? 0) bài tập</span>
                             </div>
                         </div>
 
                         <!-- Card Body -->
-                        <div class="card-body p-4">
-                            <!-- Tiến độ lộ trình -->
-                            <div class="mb-4">
+                        <div class="card-body p-4 d-flex flex-column gap-4">
+                            <!-- Progress Lộ trình -->
+                            <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-semibold text-dark small">
-                                        <i class="bi bi-bezier2 text-primary me-1"></i> Tiến độ lộ trình học
+                                    <span class="fw-semibold text-muted small d-flex align-items-center gap-1">
+                                        <span class="material-symbols-outlined text-primary" style="font-size: 18px;">monitoring</span>
+                                        Tiến độ lộ trình học
                                     </span>
-                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2" style="font-size: 0.78rem;">
+                                    <span class="badge bg-light text-primary border rounded-pill px-2">
                                         @progress%
                                     </span>
                                 </div>
-                                <div class="progress" style="height: 8px; border-radius: 10px;">
-                                    <div class="progress-bar rounded"
-                                         role="progressbar"
-                                         style="width: @progress%; background: linear-gradient(90deg, #34a853, #1a73e8);"
-                                         aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100">
-                                    </div>
+                                <div class="progress-track-custom">
+                                    <div class="progress-fill-primary" style="width: @progress%;"></div>
                                 </div>
                             </div>
 
                             <!-- Tỷ lệ nộp bài -->
-                            <div class="mb-3">
+                            <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-semibold text-dark small">
-                                        <i class="bi bi-file-earmark-check text-success me-1"></i> Tỷ lệ nộp bài tập
+                                    <span class="fw-semibold text-muted small d-flex align-items-center gap-1">
+                                        <span class="material-symbols-outlined text-success" style="font-size: 18px;">assignment_turned_in</span>
+                                        Tỷ lệ nộp bài tập
                                     </span>
-                                    <span class="badge bg-success-subtle text-success rounded-pill px-2" style="font-size: 0.78rem;">
+                                    <span class="badge bg-light text-success border rounded-pill px-2">
                                         @subMap.Item1/@subMap.Item2 (@submissionPercent%)
                                     </span>
                                 </div>
-                                <div class="progress" style="height: 8px; border-radius: 10px;">
-                                    <div class="progress-bar bg-success rounded"
-                                         role="progressbar"
-                                         style="width: @submissionPercent%;"
-                                         aria-valuenow="@submissionPercent" aria-valuemin="0" aria-valuemax="100">
-                                    </div>
+                                <div class="progress-track-custom">
+                                    <div class="progress-fill-success" style="width: @submissionPercent%;"></div>
                                 </div>
                             </div>
 
                             <!-- Học sinh chưa nộp bài -->
                             @if (pendingStudents.Any())
                             {
-                                <div class="mt-3 p-3 rounded" style="background-color: #fef7f7; border: 1px solid #fce8e6;">
-                                    <div class="fw-semibold text-danger small mb-2">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Học viên còn thiếu bài nộp (@pendingStudents.Count)
+                                <div class="alert-soft-error">
+                                    <div class="fw-semibold text-danger small mb-2 d-flex align-items-center gap-1">
+                                        <span class="material-symbols-outlined text-danger" style="font-size: 18px;">warning</span>
+                                        Học viên còn thiếu bài nộp (@pendingStudents.Count)
                                     </div>
-                                    <div class="d-flex flex-wrap gap-1">
+                                    <div class="d-flex flex-wrap gap-2 mt-1">
                                         @foreach (var name in pendingStudents)
                                         {
-                                            <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill pending-student-badge">
+                                            <span class="pending-badge-outline">
                                                 @name
                                             </span>
                                         }
@@ -257,9 +239,10 @@
                             }
                             else if ((item.Assignments?.Count ?? 0) > 0 && studentCount > 0)
                             {
-                                <div class="mt-3 p-2 rounded text-center" style="background-color: #e6f4ea;">
-                                    <span class="text-success small fw-medium">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Tất cả học viên đã nộp đầy đủ bài tập
+                                <div class="p-2 rounded text-center" style="background-color: rgba(52, 168, 83, 0.08); border: 1px solid rgba(52, 168, 83, 0.2);">
+                                    <span class="text-success small fw-semibold d-flex align-items-center justify-content-center gap-1">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                                        Tất cả học viên đã nộp đầy đủ bài tập
                                     </span>
                                 </div>
                             }
@@ -267,10 +250,8 @@
 
                         <!-- Card Footer -->
                         <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                            <a asp-page="./Details" asp-route-id="@item.Id"
-                               class="btn btn-primary w-100 rounded-pill shadow-sm"
-                               style="background-color: #1a73e8; border: none;">
-                                <i class="bi bi-gear me-1"></i> Quản lý lớp
+                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-premium-primary w-100">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">settings</span> Quản lý lớp
                             </a>
                         </div>
                     </div>
@@ -282,12 +263,10 @@
     {
         <div class="col-12 text-center py-5">
             <div class="mb-3 text-muted">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                </svg>
+                <span class="material-symbols-outlined" style="font-size: 64px; color: var(--color-outline-variant);">folder_open</span>
             </div>
             <h5 class="text-muted">Bạn chưa được phân giảng dạy lớp nào</h5>
         </div>
     }
 </div>
+
