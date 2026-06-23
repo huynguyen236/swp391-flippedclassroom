@@ -405,47 +405,67 @@
 
 /* --- Token color variants --- */
 .jp-token--kanji {
-    background: #eef2ff;
-    color: #3730a3;
-    border: 1px solid #c7d2fe;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
 }
 
 .jp-token--particle {
-    background: var(--sakura-soft);
-    color: #be185d;
-    border: 1px solid var(--sakura);
+    background: #ffe4e6;
+    color: #be123c;
+    border: 1px solid #fecdd3;
 }
 
 .jp-token--verb-ending {
-    background: #f5f3ff;
-    color: #6d28d9;
-    border: 1px solid #ddd6fe;
+    background: #f3e8ff;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
 }
 
 .jp-token--hiragana {
-    background: #f0fdf4;
-    color: #15803d;
+    background: #dcfce7;
+    color: #166534;
     border: 1px solid #bbf7d0;
 }
 
 .jp-token--katakana {
-    background: #fff7ed;
-    color: #c2410c;
+    background: #ffedd5;
+    color: #9a3412;
     border: 1px solid #fed7aa;
 }
 
 .jp-token--punctuation {
-    background: var(--bg-slate);
-    color: var(--text-muted);
-    border: 1px solid var(--border-soft);
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
 }
 
 .jp-token--unknown {
     background: #f8fafc;
-    color: var(--text-muted);
-    border: 1px dashed var(--border-soft);
+    color: #64748b;
+    border: 1px dashed #cbd5e1;
 }
 
+/* --- Inline Sentence & Tokens --- */
+.jp-original-sentence {
+    background: var(--bg-slate);
+    padding: 16px 20px;
+    border-radius: var(--radius-sm);
+    line-height: 1.8;
+    margin-bottom: 20px;
+    border-left: 3.5px solid var(--accent);
+}
+
+.jp-inline-token {
+    padding: 3px 5px;
+    margin: 0 1.5px;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    font-family: 'Noto Sans JP', var(--font-body);
+    border: none !important; /* Remove individual borders in flow */
+    box-shadow: none !important;
+}
 
 /* ============================================================
    12. TOKEN LEGEND
@@ -453,14 +473,15 @@
 .jp-token-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 2px 4px;
 }
 
 .jp-token-legend-item {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
 }
 
 .jp-token-legend-dot {
@@ -471,20 +492,20 @@
 }
 
 .jp-token-legend-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     font-family: var(--font-body);
     white-space: nowrap;
 }
 
 /* Legend dot colors matching token types */
-.jp-token-legend-dot--kanji       { background: #3730a3; }
-.jp-token-legend-dot--particle    { background: #be185d; }
-.jp-token-legend-dot--verb-ending { background: #6d28d9; }
-.jp-token-legend-dot--hiragana    { background: #15803d; }
-.jp-token-legend-dot--katakana    { background: #c2410c; }
-.jp-token-legend-dot--punctuation { background: var(--text-muted); }
-.jp-token-legend-dot--unknown     { background: var(--border-soft); }
+.jp-token-legend-dot--kanji       { background: #0369a1; }
+.jp-token-legend-dot--particle    { background: #be123c; }
+.jp-token-legend-dot--verb-ending { background: #6b21a8; }
+.jp-token-legend-dot--hiragana    { background: #166534; }
+.jp-token-legend-dot--katakana    { background: #9a3412; }
+.jp-token-legend-dot--punctuation { background: #475569; }
+.jp-token-legend-dot--unknown     { background: #64748b; }
 
 
 /* ============================================================

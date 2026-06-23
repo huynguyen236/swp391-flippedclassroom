@@ -200,6 +200,26 @@ const JapaneseAnalyzer = (() => {
                     let block = '';
                     let i = 0;
                     while (i < remaining.length && CharUtils.isHiragana(remaining[i])) {
+                        if (i > 0) {
+                            const sub = remaining.substring(i);
+                            
+                            // Check if this hiragana sequence starts a particle
+                            const possibleParticle = this._matchLongest(sub, PARTICLES);
+                            if (possibleParticle) {
+                                // Check if block + particle forms a demonstrative (あの, この, その, どの)
+                                const fullWord = block + possibleParticle;
+                                const isDemo = ['あの', 'この', 'その', 'どの'].includes(fullWord);
+                                if (!isDemo) {
+                                    break;
+                                }
+                            }
+                            
+                            // Check if this hiragana sequence starts a verb/adj/copula ending
+                            const possibleEnding = this._matchLongest(sub, [...VERB_ENDINGS, ...ADJ_ENDINGS, ...COPULA_ENDINGS]);
+                            if (possibleEnding) {
+                                break;
+                            }
+                        }
                         block += remaining[i];
                         i++;
                     }
@@ -1081,13 +1101,13 @@ const JapaneseAnalyzer = (() => {
             if (!tokens.length) return this._renderEmpty('Không tìm thấy token nào');
 
             const TYPE_LABELS = {
-                'kanji': '漢字 Kanji',
-                'hiragana': 'ひらがな Hiragana',
-                'katakana': 'カタカナ Katakana',
-                'particle': '助詞 Trợ từ',
-                'verb-ending': '活用 Đuôi động từ',
-                'punctuation': '句読点 Dấu câu',
-                'unknown': '？ Khác',
+                'kanji': 'Kanji',
+                'hiragana': 'Hiragana (Chữ mềm)',
+                'katakana': 'Katakana (Chữ cứng)',
+                'particle': 'Trợ từ',
+                'verb-ending': 'Đuôi biến đổi',
+                'punctuation': 'Dấu câu',
+                'unknown': 'Khác',
             };
 
             // Legend
@@ -1119,7 +1139,7 @@ const JapaneseAnalyzer = (() => {
         _renderWordAnalysis(word, info, conjugations) {
             // Word info card
             const badgeClass = info.type === 'verb' ? 'verb' : (info.type === 'i-adj' ? 'i-adj' : 'na-adj');
-            const typeLabel = info.type === 'verb' ? '動詞 Động từ' : (info.type === 'i-adj' ? '形容詞 Tính từ い' : '形容動詞 Tính từ な');
+            const typeLabel = info.type === 'verb' ? 'Động từ' : (info.type === 'i-adj' ? 'Tính từ đuôi い' : 'Tính từ đuôi な');
 
             let html = `
                 <div class="jp-word-info">
