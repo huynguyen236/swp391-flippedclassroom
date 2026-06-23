@@ -78,18 +78,70 @@
                     {
                         foreach (var mat in Model.Lesson.Materials)
                         {
+                            var isSpeech = string.Equals(mat.MaterialType, "speech", System.StringComparison.OrdinalIgnoreCase);
                             var isYoutube = string.Equals(mat.MaterialType, "YouTube", System.StringComparison.OrdinalIgnoreCase);
-                            var isPdf = mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
-                            var ext = System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
+                            var isPdf = !isSpeech && mat.Url.EndsWith(".pdf", System.StringComparison.OrdinalIgnoreCase);
+                            var ext = isSpeech ? "" : System.IO.Path.GetExtension(mat.Url).ToLowerInvariant();
                             var isVideo = ext is ".mp4" or ".webm" or ".ogg";
 
                             <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
                                 <div class="card-header bg-white border-bottom d-flex align-items-center gap-2 py-3">
-                                    <i class="bi @(isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
+                                    <i class="bi @(isSpeech ? "bi-mic-fill text-primary" : isYoutube || isVideo ? "bi-play-circle text-danger" : isPdf ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-text text-primary") fs-5"></i>
                                     <span class="fw-semibold">@mat.Title</span>
+                                    @if (isSpeech)
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill ms-auto">Luyện nói</span>
+                                    }
                                 </div>
                                 <div class="card-body p-0">
-                                    @if (isYoutube)
+                                    @if (isSpeech)
+                                    {
+                                        <div class="speech-practice p-4" data-material-id="@mat.Id"
+                                             data-compare-url="@Url.Page("/StudentClasses/Lesson", "CompareSpeech", new { classId = Model.Class.Id, nodeId = Model.Lesson.Id })">
+                                            <div class="sentence-box active mb-4 text-center">
+                                                <div class="japanese-text speech-target">@mat.SpeechTargetText</div>
+                                                @if (!string.IsNullOrWhiteSpace(mat.SpeechMeaning))
+                                                {
+                                                    <div class="vietnamese-text">@mat.SpeechMeaning</div>
+                                                }
+                                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-4 mt-3 speech-tts-btn">
+                                                    <i class="bi bi-volume-up-fill me-1"></i> Nghe mẫu
+                                                </button>
+                                            </div>
+
+                                            <div class="text-center">
+                                                <div class="mic-btn-wrapper">
+                                                    <button type="button" class="mic-btn speech-record-btn"><i class="bi bi-mic-fill"></i></button>
+                                                    <div class="pulse-ring"></div>
+                                                </div>
+                                                <div class="speech-status text-muted fw-semibold small text-uppercase">Bấm nút để bắt đầu nói</div>
+                                            </div>
+
+                                            <div class="speech-result mt-3" style="display:none;">
+                                                <div class="score-container">
+                                                    <div class="position-relative" style="width:100px;height:100px;">
+                                                        <svg class="progress-ring" width="100" height="100">
+                                                            <circle stroke="#e9ecef" stroke-width="8" fill="transparent" r="40" cx="50" cy="50" />
+                                                            <circle class="progress-ring__circle speech-score-circle" stroke="#2ec4b6" stroke-width="8" fill="transparent" r="40" cx="50" cy="50" />
+                                                        </svg>
+                                                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                                            <span class="score-number speech-score-text">0</span><span class="small fw-bold text-muted">%</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="comparison-card small">
+                                                            <div class="mb-1"><strong>Bạn nói:</strong> <span class="text-primary fw-medium speech-spoken-text"></span></div>
+                                                            <div class="mb-1"><strong>Âm câu gốc:</strong> <span class="text-secondary font-monospace speech-target-hira"></span></div>
+                                                            <div class="mb-2"><strong>Âm bạn nói:</strong> <span class="text-secondary font-monospace speech-spoken-hira"></span></div>
+                                                            <div class="mb-1"><strong>Phân tích chi tiết:</strong></div>
+                                                            <div class="speech-alignment fs-4 p-2 bg-white rounded border d-flex flex-wrap gap-1 font-monospace"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (isYoutube)
                                     {
                                         var embed = Flipped_Classroom.Pages.StudentClasses.LessonModel.ToYouTubeEmbed(mat.Url);
                                         <div class="ratio ratio-16x9">
@@ -362,6 +414,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/speech-practice.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // === Học sinh tự tích / bỏ tích hoàn thành bằng AJAX (không reload trang) ===
@@ -787,6 +840,87 @@
 
 @section Styles {
     <style>
+        /* ===== Speech Practice (Luyện nói) ===== */
+        .speech-practice .sentence-box {
+            background: #f8f9fa;
+            border-radius: 16px;
+            border: 2px solid #e9ecef;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        .speech-practice .sentence-box.active {
+            border-color: #1a73e8;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.12);
+        }
+        .speech-practice .japanese-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1d3557;
+            margin-bottom: 8px;
+        }
+        .speech-practice .vietnamese-text {
+            font-size: 1rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .speech-practice .mic-btn-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 16px auto;
+        }
+        .speech-practice .mic-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            font-size: 1.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(26, 115, 232, 0.25);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        .speech-practice .mic-btn:hover { transform: scale(1.05); background: #1557b0; }
+        .speech-practice .mic-btn.recording { background: #e63946; animation: speechPulseRed 1.5s infinite; }
+        .speech-practice .pulse-ring {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%; border: 2px solid #1a73e8; opacity: 0; z-index: 1; transform: scale(1);
+        }
+        .speech-practice .mic-btn.recording ~ .pulse-ring { animation: speechRipple 1.5s infinite; border-color: #e63946; }
+        @@keyframes speechPulseRed {
+            0%   { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.4); }
+            70%  { box-shadow: 0 0 0 15px rgba(230, 57, 70, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
+        }
+        @@keyframes speechRipple {
+            0%   { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .speech-practice .progress-ring { transform: rotate(-90deg); }
+        .speech-practice .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+            stroke-dasharray: 251.2; /* 2πr, r=40 */
+            stroke-dashoffset: 251.2;
+        }
+        .speech-practice .score-container {
+            display: flex; align-items: center; gap: 24px;
+            padding-top: 20px; border-top: 1px dashed #dee2e6;
+        }
+        .speech-practice .score-number { font-size: 2rem; font-weight: 700; color: #1d3557; }
+        .speech-practice .comparison-card {
+            background: #f8f9fa; border-radius: 12px; padding: 16px; border-left: 4px solid #1a73e8;
+        }
+        .speech-practice .align-match { color: #2ec4b6; font-weight: bold; }
+        .speech-practice .align-mismatch { color: #e63946; font-weight: bold; border-bottom: 2px dashed #e63946; cursor: help; }
+        .speech-practice .align-delete { color: #adb5bd; text-decoration: line-through; }
+        .speech-practice .align-insert { color: #fff; background: #e63946; padding: 0 4px; border-radius: 4px; font-weight: bold; }
+
         /* Modern tabs styling */
         .nav-tabs .nav-link {
             color: #5f6368;

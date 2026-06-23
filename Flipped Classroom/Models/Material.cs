@@ -17,5 +17,15 @@ public partial class Material
 
     public int? Duration { get; set; }
 
+    /// <summary>
+    /// Câu mẫu tiếng Nhật để luyện nói. Chỉ dùng khi MaterialType == "speech".
+    /// </summary>
+    public string? SpeechTargetText { get; set; }
+
+    /// <summary>
+    /// Nghĩa tiếng Việt của câu mẫu, hiển thị dưới câu Nhật. Chỉ dùng khi MaterialType == "speech".
+    /// </summary>
+    public string? SpeechMeaning { get; set; }
+
     public virtual Node Node { get; set; } = null!;
 }

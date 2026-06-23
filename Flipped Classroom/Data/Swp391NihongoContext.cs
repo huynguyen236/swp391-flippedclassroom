@@ -299,6 +299,8 @@ public partial class Swp391NihongoContext : DbContext
 
             entity.Property(e => e.MaterialType).HasMaxLength(50);
             entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.SpeechTargetText).HasMaxLength(500);
+            entity.Property(e => e.SpeechMeaning).HasMaxLength(500);
 
             entity.HasOne(d => d.Node).WithMany(p => p.Materials)
                 .HasForeignKey(d => d.NodeId)
