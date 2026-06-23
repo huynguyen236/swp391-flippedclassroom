@@ -19,6 +19,7 @@
         @if (Model.ReturnClassId.HasValue)
         {
             <form method="post" asp-page-handler="Resolve" asp-route-questionId="@detail.QuestionId">
+                <input type="hidden" name="ReturnClassId" value="@Model.ReturnClassId" />
                 <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 shadow-sm fw-medium">
                     <i class="bi bi-check2-circle fs-5"></i>
                     Đánh dấu đã chữa câu này

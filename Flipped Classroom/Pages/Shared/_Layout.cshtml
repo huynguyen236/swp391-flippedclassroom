@@ -96,13 +96,9 @@
                         <i class="bi bi-diagram-3-fill"></i>
                         <span>Quản lý khung chương trình</span>
                     </a>
-                    <a href="/Quizzes/Randomize" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/Randomize") ? "active" : "")">
+                    <a href="/Quizzes/Randomize?reset=true" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/Randomize") ? "active" : "")">
                         <i class="bi bi-shuffle"></i>
                         <span>Tạo quiz ngẫu nhiên</span>
-                    </a>
-                    <a href="/Quizzes/MistakeStats" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/MistakeStats") ? "active" : "")">
-                        <i class="bi bi-clipboard-data-fill"></i>
-                        <span>Thống kê lỗi sai</span>
                     </a>
                     <a href="/Classrooms" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Classrooms") ? "active" : "")">
 
@@ -122,7 +118,7 @@
                         <i class="bi bi-journal-bookmark-fill"></i>
                         <span>Lớp học của tôi</span>
                     </a>
-                    <a href="/Quizzes/Randomize" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/Randomize") ? "active" : "")">
+                    <a href="/Quizzes/Randomize?reset=true" class="sidebar-link @(Context.Request.Path.StartsWithSegments("/Quizzes/Randomize") ? "active" : "")">
                         <i class="bi bi-shuffle"></i>
                         <span>Tạo quiz ngẫu nhiên</span>
                     </a>

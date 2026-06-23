@@ -63,27 +63,65 @@
                     @if (User.IsInRole("Teacher"))
                     {
                         <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-danger">*</span></label>
-                        <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light" required
+                        <select asp-for="Input.ClassId" class="form-select bg-light" id="classSelect" required
                                 oninvalid="this.setCustomValidity('Giảng viên bắt buộc phải chọn lớp học.')"
                                 onchange="this.setCustomValidity('')">
                             <option value="">Chọn lớp học</option>
+                            @foreach (var c in Model.ClassesList)
+                            {
+                                <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
+                            }
                         </select>
                     }
                     else
                     {
                         <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-muted fw-normal" style="font-size: 0.85rem;">(để trống nếu tạo Template)</span></label>
-                        <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select bg-light">
+                        <select asp-for="Input.ClassId" class="form-select bg-light" id="classSelect">
                             <option value="">Chọn lớp học (Template)</option>
+                            @foreach (var c in Model.ClassesList)
+                            {
+                                <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
+                            }
                         </select>
                     }
                     <span asp-validation-for="Input.ClassId" class="text-danger small"></span>
                 </div>
 
+                <!-- Curriculum selection (only for Template mode) -->
+                <div class="mb-3 d-none" id="curriculumSelectGroup">
+                    <label class="form-label fw-semibold">Khung chương trình <span class="text-danger">*</span></label>
+                    <select id="curriculumSelect" class="form-select bg-light">
+                        <option value="">Chọn khung chương trình</option>
+                        @foreach (var curr in Model.CurriculumsList)
+                        {
+                            <option value="@curr.Id">@curr.CurriculumName</option>
+                        }
+                    </select>
+                </div>
+
                 <div class="mb-3">
                     <label asp-for="Input.NodeId" class="form-label fw-semibold">Bài học <span class="text-danger">*</span></label>
-                    <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select bg-light" id="nodeSelect">
-                        <option value="">Chọn bài học</option>
-                    </select>
+                    @if (Model.IsStrictMode)
+                    {
+                        <select asp-for="Input.NodeId" class="form-select bg-light" id="nodeSelect" disabled>
+                            <option value="">Chọn bài học</option>
+                            @foreach (var n in Model.NodesList)
+                            {
+                                <option value="@n.Id" data-curriculum-id="@n.CurriculumId" selected="@(Model.Input.NodeId == n.Id)">@n.Title</option>
+                            }
+                        </select>
+                        <input type="hidden" asp-for="Input.NodeId" />
+                    }
+                    else
+                    {
+                        <select asp-for="Input.NodeId" class="form-select bg-light" id="nodeSelect">
+                            <option value="">Chọn bài học</option>
+                            @foreach (var n in Model.NodesList)
+                            {
+                                <option value="@n.Id" data-curriculum-id="@n.CurriculumId" selected="@(Model.Input.NodeId == n.Id)">@n.Title</option>
+                            }
+                        </select>
+                    }
                     <span asp-validation-for="Input.NodeId" class="text-danger small"></span>
                 </div>
 
@@ -195,6 +233,12 @@
         const availableCount = document.getElementById('availableCount');
         const classSelect = document.querySelector('select[name="Input.ClassId"]');
         const targetModeBadge = document.getElementById('targetModeBadge');
+        
+        const originalNodeOptions = Array.from(nodeSelect.options);
+        const originalClassOptions = classSelect ? Array.from(classSelect.options) : [];
+        const curriculumSelectGroup = document.getElementById('curriculumSelectGroup');
+        const curriculumSelect = document.getElementById('curriculumSelect');
+        const isStrictMode = @(Model.IsStrictMode ? "true" : "false");
 
         async function updateAvailability() {
             const nodeId = nodeSelect.value;
@@ -229,14 +273,129 @@
             }
         }
 
+        // Helper to update node select options based on curriculumId
+        function updateNodeSelect(curriculumId) {
+            const currentValue = nodeSelect.value;
+            
+            // Clear current options
+            nodeSelect.innerHTML = '';
+            
+            // Add matching options
+            let valueStillExists = false;
+            originalNodeOptions.forEach(opt => {
+                if (opt.value === '' || opt.getAttribute('data-curriculum-id') == curriculumId) {
+                    nodeSelect.appendChild(opt.cloneNode(true));
+                    if (opt.value !== '' && opt.value === currentValue) {
+                        valueStillExists = true;
+                    }
+                }
+            });
+            
+            // Restore previous value if it still exists, otherwise reset
+            if (valueStillExists) {
+                nodeSelect.value = currentValue;
+            } else {
+                nodeSelect.value = '';
+            }
+            
+            updateAvailability();
+        }
+
+        // Helper to update class select options based on curriculumId (for strict mode)
+        function updateClassSelectForCurriculum(curriculumId) {
+            if (!classSelect) return;
+            const currentValue = classSelect.value;
+            classSelect.innerHTML = '';
+            
+            originalClassOptions.forEach(opt => {
+                if (opt.value === '' || opt.getAttribute('data-curriculum-id') == curriculumId) {
+                    classSelect.appendChild(opt.cloneNode(true));
+                }
+            });
+            
+            // Restore value if available
+            classSelect.value = currentValue;
+            updateTargetBadge();
+        }
+
+        function handleFilterLogic() {
+            if (isStrictMode) {
+                // If strict mode is active, the node is selected and disabled.
+                // Find its curriculum ID.
+                const selectedNodeId = nodeSelect.value;
+                const selectedNodeOpt = originalNodeOptions.find(opt => opt.value == selectedNodeId);
+                if (selectedNodeOpt) {
+                    const curriculumId = selectedNodeOpt.getAttribute('data-curriculum-id');
+                    // Filter class dropdown to only show classes using this curriculum
+                    updateClassSelectForCurriculum(curriculumId);
+                }
+                // Hide curriculum selection group in strict mode
+                if (curriculumSelectGroup) {
+                    curriculumSelectGroup.classList.add('d-none');
+                }
+                return;
+            }
+
+            // Normal/Free mode filtering
+            if (classSelect && classSelect.value !== "") {
+                // Class is selected
+                if (curriculumSelectGroup) {
+                    curriculumSelectGroup.classList.add('d-none');
+                }
+                const selectedClassOpt = classSelect.options[classSelect.selectedIndex];
+                const curriculumId = selectedClassOpt.getAttribute('data-curriculum-id');
+                updateNodeSelect(curriculumId);
+            } else {
+                // Template Mode (No class selected)
+                if (curriculumSelectGroup) {
+                    curriculumSelectGroup.classList.remove('d-none');
+                }
+                const curriculumId = curriculumSelect.value;
+                if (curriculumId) {
+                    updateNodeSelect(curriculumId);
+                } else {
+                    // Show no nodes
+                    nodeSelect.innerHTML = '';
+                    const defaultOpt = originalNodeOptions.find(opt => opt.value === '');
+                    if (defaultOpt) {
+                        nodeSelect.appendChild(defaultOpt.cloneNode(true));
+                    }
+                    nodeSelect.value = '';
+                    updateAvailability();
+                }
+            }
+        }
+
         nodeSelect.addEventListener('change', updateAvailability);
         categorySelect.addEventListener('change', updateAvailability);
         
         if (classSelect) {
-            classSelect.addEventListener('change', updateTargetBadge);
+            classSelect.addEventListener('change', () => {
+                handleFilterLogic();
+                updateTargetBadge();
+            });
         }
 
-        updateAvailability();
+        if (curriculumSelect) {
+            curriculumSelect.addEventListener('change', () => {
+                handleFilterLogic();
+            });
+        }
+
+        // Initialize state on page load
+        if (!classSelect || classSelect.value === "") {
+            // Template mode on load
+            const selectedNodeId = nodeSelect.value;
+            if (selectedNodeId) {
+                const selectedNodeOpt = originalNodeOptions.find(opt => opt.value == selectedNodeId);
+                if (selectedNodeOpt && curriculumSelect) {
+                    const curriculumId = selectedNodeOpt.getAttribute('data-curriculum-id');
+                    curriculumSelect.value = curriculumId;
+                }
+            }
+        }
+
+        handleFilterLogic();
         updateTargetBadge();
     </script>
 }

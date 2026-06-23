@@ -578,7 +578,7 @@ namespace Flipped_Classroom.Services.Implementation
             };
         }
 
-        public async Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId)
+        public async Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId, int? managerId = null)
         {
             var query = from sm in _context.StudentMistakes
                         where sm.IsResolved != true
@@ -592,12 +592,18 @@ namespace Flipped_Classroom.Services.Implementation
                             sm.ErrorCount,
                             Question = q,
                             ClassId = c.Id,
-                            ClassName = c.ClassName
+                            ClassName = c.ClassName,
+                            ManagerId = c.ManagerId
                         };
 
             if (classId.HasValue)
             {
                 query = query.Where(x => x.ClassId == classId.Value);
+            }
+
+            if (managerId.HasValue)
+            {
+                query = query.Where(x => x.ManagerId == managerId.Value);
             }
 
             var rows = await query
@@ -626,8 +632,18 @@ namespace Flipped_Classroom.Services.Implementation
                 .Take(50)
                 .ToListAsync();
 
-            var classStudentCounts = await _context.ClassMembers
-                .Where(cm => !classId.HasValue || cm.ClassId == classId.Value)
+            var classStudentCountsQuery = _context.ClassMembers.AsQueryable();
+            if (classId.HasValue)
+            {
+                classStudentCountsQuery = classStudentCountsQuery.Where(cm => cm.ClassId == classId.Value);
+            }
+            else if (managerId.HasValue)
+            {
+                classStudentCountsQuery = classStudentCountsQuery.Where(cm => _context.Classes
+                    .Any(c => c.Id == cm.ClassId && c.ManagerId == managerId.Value));
+            }
+
+            var classStudentCounts = await classStudentCountsQuery
                 .GroupBy(cm => cm.ClassId)
                 .Select(g => new { ClassId = g.Key, Count = g.Select(cm => cm.UserId).Distinct().Count() })
                 .ToDictionaryAsync(x => x.ClassId, x => x.Count);
@@ -654,7 +670,7 @@ namespace Flipped_Classroom.Services.Implementation
             }).ToList();
         }
 
-        public async Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId, int? classId = null)
+        public async Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId, int? classId = null, int? managerId = null)
         {
             var question = await _context.Questions
                 .Include(q => q.QuestionOptions)
@@ -664,6 +680,28 @@ namespace Flipped_Classroom.Services.Implementation
             if (question == null)
             {
                 return null;
+            }
+
+            if (classId.HasValue)
+            {
+                if (managerId.HasValue)
+                {
+                    var isManaged = await _context.Classes.AnyAsync(c => c.Id == classId.Value && c.ManagerId == managerId.Value);
+                    if (!isManaged)
+                    {
+                        return null;
+                    }
+                }
+            }
+            else if (managerId.HasValue)
+            {
+                var managedClass = await _context.Classes
+                    .FirstOrDefaultAsync(c => c.CurriculumId == question.Node.CurriculumId && c.ManagerId == managerId.Value);
+                if (managedClass == null)
+                {
+                    return null;
+                }
+                classId = managedClass.Id;
             }
 
             var mistakesQuery = _context.StudentMistakes
@@ -757,8 +795,17 @@ namespace Flipped_Classroom.Services.Implementation
             };
         }
 
-        public async Task ResolveQuestionMistakesForClassAsync(int questionId, int classId)
+        public async Task ResolveQuestionMistakesForClassAsync(int questionId, int classId, int? managerId = null)
         {
+            if (managerId.HasValue)
+            {
+                var isManaged = await _context.Classes.AnyAsync(c => c.Id == classId && c.ManagerId == managerId.Value);
+                if (!isManaged)
+                {
+                    throw new UnauthorizedAccessException("Bạn không có quyền thực hiện thao tác này.");
+                }
+            }
+
             var studentIds = await _context.ClassMembers
                 .Where(cm => cm.ClassId == classId)
                 .Select(cm => cm.UserId)

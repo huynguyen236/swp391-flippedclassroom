@@ -289,6 +289,48 @@ const JapaneseAnalyzer = (() => {
 
     const WordClassifier = {
         /**
+         * Validate a Japanese word for conjugation.
+         * @param {string} word
+         * @returns {string|null} Error message or null if valid
+         */
+        validate(word) {
+            if (!word || !word.trim()) return 'Vui lòng nhập động từ hoặc tính từ.';
+            word = word.trim();
+
+            // 1. Kiểm tra ký tự tiếng Nhật
+            for (let i = 0; i < word.length; i++) {
+                if (!CharUtils.isJapanese(word[i])) {
+                    return 'Từ nhập vào phải viết bằng tiếng Nhật (Kanji, Hiragana hoặc Katakana), không bao gồm chữ cái La-tinh, chữ số hay ký tự đặc biệt.';
+                }
+            }
+
+            // 2. Kiểm tra độ dài
+            if (word.length === 1) {
+                if (!CharUtils.isKanji(word[0])) {
+                    return 'Ký tự đơn lẻ không phải chữ Hán (Kanji) không thể là động từ hoặc tính từ hợp lệ.';
+                }
+            }
+
+            // 3. Kiểm tra xem có nhập từ đã chia thì lịch sự (Masu) hay không
+            const conjugatedEndings = ['ます', 'ません', 'ました', 'ませんでした', 'てください', 'でください'];
+            for (const ending of conjugatedEndings) {
+                if (word.endsWith(ending) && word.length > ending.length) {
+                    return `Vui lòng nhập thể nguyên mẫu (thể từ điển). Từ bạn nhập dường như đã được chia ở thể lịch sự hoặc thể khác ("${ending}").`;
+                }
+            }
+
+            // 4. Kiểm tra tính từ đã chia thì quá khứ/phủ định
+            if (word.endsWith('かった') && word.length > 3) {
+                return 'Tính từ dường như đã được chia ở thể quá khứ ("かった"). Vui lòng nhập thể nguyên mẫu kết thúc bằng "い".';
+            }
+            if (word.endsWith('くない') && word.length > 3) {
+                return 'Tính từ dường như đã được chia ở thể phủ định ("くない"). Vui lòng nhập thể nguyên mẫu kết thúc bằng "い".';
+            }
+
+            return null;
+        },
+
+        /**
          * Classify a Japanese word.
          * @param {string} word - Dictionary form of the word
          * @returns {{type: string, group: string|null, root: string, suffix: string, display: string}}
@@ -296,6 +338,20 @@ const JapaneseAnalyzer = (() => {
         classify(word) {
             if (!word || !word.trim()) return null;
             word = word.trim();
+
+            // 1. Kiểm tra tất cả ký tự có phải tiếng Nhật không
+            for (let i = 0; i < word.length; i++) {
+                if (!CharUtils.isJapanese(word[i])) {
+                    return null; // Có ký tự không phải tiếng Nhật
+                }
+            }
+
+            // 2. Kiểm tra độ dài: Chỉ chấp nhận 1 ký tự nếu đó là chữ Hán (Kanji) có nghĩa (ví dụ: 変, 楽, 楽)
+            if (word.length === 1) {
+                if (!CharUtils.isKanji(word[0])) {
+                    return null;
+                }
+            }
 
             // ── Check Group 3 verbs ──
             if (word === 'する' || word === '為る') {
@@ -1047,6 +1103,7 @@ const JapaneseAnalyzer = (() => {
                     resultsDiv.classList.add('has-results');
                 } catch (err) {
                     resultsDiv.innerHTML = this._renderError('Lỗi phân tích: ' + err.message);
+                    resultsDiv.classList.add('has-results');
                 }
                 btn?.classList.remove('loading');
             }, 300);
@@ -1067,9 +1124,19 @@ const JapaneseAnalyzer = (() => {
 
             setTimeout(() => {
                 try {
+                    // Kiểm tra lỗi nhập liệu trước
+                    const validationError = WordClassifier.validate(text);
+                    if (validationError) {
+                        resultsDiv.innerHTML = this._renderError(validationError);
+                        resultsDiv.classList.add('has-results');
+                        btn?.classList.remove('loading');
+                        return;
+                    }
+
                     const info = WordClassifier.classify(text);
                     if (!info) {
-                        resultsDiv.innerHTML = this._renderError('Không nhận diện được loại từ.');
+                        resultsDiv.innerHTML = this._renderError('Không nhận diện được động từ hoặc tính từ hợp lệ ở thể nguyên mẫu.');
+                        resultsDiv.classList.add('has-results');
                         btn?.classList.remove('loading');
                         return;
                     }
@@ -1078,6 +1145,7 @@ const JapaneseAnalyzer = (() => {
                     resultsDiv.classList.add('has-results');
                 } catch (err) {
                     resultsDiv.innerHTML = this._renderError('Lỗi phân tích: ' + err.message);
+                    resultsDiv.classList.add('has-results');
                 }
                 btn?.classList.remove('loading');
             }, 300);
