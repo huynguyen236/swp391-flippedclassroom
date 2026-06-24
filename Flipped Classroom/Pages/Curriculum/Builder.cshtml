@@ -129,9 +129,19 @@
                                                 @foreach (var mat in rootNode.Materials)
                                                 {
                                                     var isYoutube = string.Equals(mat.MaterialType, "YouTube", StringComparison.OrdinalIgnoreCase);
-                                                    <span class="badge @(isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") border rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1.5">
-                                                        <i class="bi @(isYoutube ? "bi-youtube" : "bi-file-earmark-pdf")"></i>
-                                                        <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fw-medium fs-8 text-truncate" style="max-width: 150px;">@mat.Title</a>
+                                                    var isSpeech = string.Equals(mat.MaterialType, "speech", StringComparison.OrdinalIgnoreCase);
+                                                    var badgeCls = isSpeech ? "bg-primary-subtle text-primary" : isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger";
+                                                    var iconCls = isSpeech ? "bi-mic-fill" : isYoutube ? "bi-youtube" : "bi-file-earmark-pdf";
+                                                    <span class="badge @badgeCls border rounded-pill d-inline-flex align-items-center gap-1 px-3 py-1.5">
+                                                        <i class="bi @iconCls"></i>
+                                                        @if (isSpeech)
+                                                        {
+                                                            <span class="fw-medium fs-8 text-truncate" style="max-width: 150px;" title="@mat.SpeechTargetText">@mat.Title</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fw-medium fs-8 text-truncate" style="max-width: 150px;">@mat.Title</a>
+                                                        }
                                                         <form method="post" asp-page-handler="DeleteMaterial" asp-route-materialId="@mat.Id" class="d-inline" onsubmit="return confirm('Xóa học liệu này?');">
                                                             <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
                                                         </form>
@@ -188,9 +198,19 @@
                                                             @foreach (var mat in child.Materials)
                                                             {
                                                                 var isYoutube = string.Equals(mat.MaterialType, "YouTube", StringComparison.OrdinalIgnoreCase);
-                                                                <span class="badge @(isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger") border rounded-pill d-inline-flex align-items-center gap-1 px-2.5 py-1">
-                                                                    <i class="bi @(isYoutube ? "bi-youtube" : "bi-file-earmark-pdf")"></i>
-                                                                    <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fs-8 text-truncate" style="max-width: 120px;">@mat.Title</a>
+                                                                var isSpeech = string.Equals(mat.MaterialType, "speech", StringComparison.OrdinalIgnoreCase);
+                                                                var badgeCls = isSpeech ? "bg-primary-subtle text-primary" : isYoutube ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger";
+                                                                var iconCls = isSpeech ? "bi-mic-fill" : isYoutube ? "bi-youtube" : "bi-file-earmark-pdf";
+                                                                <span class="badge @badgeCls border rounded-pill d-inline-flex align-items-center gap-1 px-2.5 py-1">
+                                                                    <i class="bi @iconCls"></i>
+                                                                    @if (isSpeech)
+                                                                    {
+                                                                        <span class="fs-8 text-truncate" style="max-width: 120px;" title="@mat.SpeechTargetText">@mat.Title</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <a href="@mat.Url" target="_blank" class="text-decoration-none @(isYoutube ? "text-info" : "text-danger") fs-8 text-truncate" style="max-width: 120px;">@mat.Title</a>
+                                                                    }
                                                                     <form method="post" asp-page-handler="DeleteMaterial" asp-route-materialId="@mat.Id" class="d-inline" onsubmit="return confirm('Xóa học liệu này?');">
                                                                         <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
                                                                     </form>
@@ -340,7 +360,17 @@
                         <select asp-for="MaterialType" class="form-select rounded-3 py-2.5" id="materialTypeSelect" required>
                             <option value="YouTube">Video YouTube</option>
                             <option value="LocalFile">File tài liệu (PDF, Word, Powerpoint, Video...)</option>
+                            <option value="speech">Luyện nói (phân tích phát âm)</option>
                         </select>
+                    </div>
+
+                    <!-- Speech Practice Input -->
+                    <div class="mb-0 animate-fade-in-down d-none" id="speechInputGroup">
+                        <label for="SpeechTargetText" class="form-label fw-semibold text-muted fs-7">Câu mẫu tiếng Nhật <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="SpeechTargetText" class="form-control rounded-3 py-2.5 mb-2" placeholder="Ví dụ: 日本の料理はおいしいです" />
+                        <label for="SpeechMeaning" class="form-label fw-semibold text-muted fs-7">Nghĩa tiếng Việt</label>
+                        <input type="text" asp-for="SpeechMeaning" class="form-control rounded-3 py-2.5" placeholder="Ví dụ: Món ăn Nhật Bản ngon" />
+                        <small class="text-muted d-block mt-1">Hệ thống tự chuẩn hóa về Hiragana (MeCab) khi chấm điểm — có thể nhập Kanji.</small>
                     </div>
 
                     <!-- YouTube URL Input -->
@@ -353,7 +383,7 @@
                     <div class="mb-0 animate-fade-in-down d-none" id="fileInputGroup">
                         <label for="UploadedFile" class="form-label fw-semibold text-muted fs-7">Tải tệp lên <span class="text-danger">*</span></label>
                         <input type="file" asp-for="UploadedFile" class="form-control rounded-3 py-2" />
-                        <small class="text-muted d-block mt-1">Dung lượng tối đa: 50MB.</small>
+                        <small class="text-muted d-block mt-1">Dung lượng tối đa: 200MB.</small>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 justify-content-end gap-2">
@@ -490,24 +520,33 @@
             modal.show();
         }
 
-        // JS logic to toggle YouTube vs LocalFile fields in form
+        // JS logic to toggle YouTube / LocalFile / Speech fields in form
         document.getElementById('materialTypeSelect').addEventListener('change', function () {
             const val = this.value;
             const ytGroup = document.getElementById('youtubeInputGroup');
             const fileGroup = document.getElementById('fileInputGroup');
+            const speechGroup = document.getElementById('speechInputGroup');
             const ytInput = ytGroup.querySelector('input');
             const fileInput = fileGroup.querySelector('input');
+            const speechInput = speechGroup.querySelector('input'); // SpeechTargetText (input đầu tiên)
+
+            // Ẩn tất cả + bỏ required
+            ytGroup.classList.add('d-none');
+            fileGroup.classList.add('d-none');
+            speechGroup.classList.add('d-none');
+            ytInput.removeAttribute('required');
+            fileInput.removeAttribute('required');
+            speechInput.removeAttribute('required');
 
             if (val === 'YouTube') {
                 ytGroup.classList.remove('d-none');
-                fileGroup.classList.add('d-none');
                 ytInput.setAttribute('required', 'required');
-                fileInput.removeAttribute('required');
+            } else if (val === 'speech') {
+                speechGroup.classList.remove('d-none');
+                speechInput.setAttribute('required', 'required');
             } else {
                 fileGroup.classList.remove('d-none');
-                ytGroup.classList.add('d-none');
                 fileInput.setAttribute('required', 'required');
-                ytInput.removeAttribute('required');
             }
         });
 

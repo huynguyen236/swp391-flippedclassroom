@@ -50,6 +50,13 @@ namespace Flipped_Classroom.Pages.Curriculums
         [BindProperty]
         public IFormFile? UploadedFile { get; set; }
 
+        // Dành cho MaterialType == "speech" (luyện nói)
+        [BindProperty]
+        public string? SpeechTargetText { get; set; }
+
+        [BindProperty]
+        public string? SpeechMeaning { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var curriculum = await _curriculumService.GetCurriculumByIdAsync(id);
@@ -93,8 +100,21 @@ namespace Flipped_Classroom.Pages.Curriculums
             }
 
             string url = string.Empty;
+            string? speechTargetText = null;
+            string? speechMeaning = null;
 
-            if (MaterialType == "YouTube")
+            if (MaterialType == "speech")
+            {
+                if (string.IsNullOrWhiteSpace(SpeechTargetText))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập câu mẫu tiếng Nhật để luyện nói.";
+                    return RedirectToPage(new { id });
+                }
+                speechTargetText = SpeechTargetText.Trim();
+                speechMeaning = SpeechMeaning?.Trim();
+                // url để rỗng — material loại speech không có file/đường dẫn
+            }
+            else if (MaterialType == "YouTube")
             {
                 if (string.IsNullOrWhiteSpace(ExternalUrl))
                 {
@@ -108,6 +128,13 @@ namespace Flipped_Classroom.Pages.Curriculums
                 if (UploadedFile == null || UploadedFile.Length == 0)
                 {
                     TempData["ErrorMessage"] = "Vui lòng chọn tệp tin học liệu.";
+                    return RedirectToPage(new { id });
+                }
+
+                if (UploadedFile.Length > IFileStorageService.MaxUploadBytes)
+                {
+                    var maxMb = IFileStorageService.MaxUploadBytes / (1024 * 1024);
+                    TempData["ErrorMessage"] = $"Tệp tin quá lớn. Dung lượng tối đa cho phép là {maxMb} MB.";
                     return RedirectToPage(new { id });
                 }
 
@@ -126,7 +153,9 @@ namespace Flipped_Classroom.Pages.Curriculums
                 NodeId = NodeId,
                 Title = MaterialTitle.Trim(),
                 MaterialType = MaterialType,
-                Url = url
+                Url = url,
+                SpeechTargetText = speechTargetText,
+                SpeechMeaning = speechMeaning
             };
 
             await _curriculumService.AddMaterialAsync(material);
