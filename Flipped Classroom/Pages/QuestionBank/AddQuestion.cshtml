@@ -5,6 +5,21 @@
     var isMcq = string.Equals(Model.NewQuestion?.QuestionType, "MCQ", StringComparison.OrdinalIgnoreCase)
         || string.IsNullOrEmpty(Model.NewQuestion?.QuestionType);
 }
+<style>
+    .custom-curved-card {
+        border-radius: 24px !important;
+        border: 1px solid var(--color-outline-variant) !important;
+    }
+    .custom-curved-card-flat {
+        border-radius: 24px !important;
+    }
+    .form-control, .form-select, .btn {
+        border-radius: 14px !important;
+    }
+    .form-check-input {
+        border-radius: 6px !important;
+    }
+</style>
 
 <div class="mb-4">
     <a href="/QuestionBank/QuestionList" class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 small fw-medium">
@@ -16,7 +31,7 @@
 
 <div class="row">
     <div class="col-lg-8">
-        <div class="card card-flat rounded-4 p-4">
+        <div class="card card-flat custom-curved-card p-4">
             <form method="post" autocomplete="off" id="addQuestionForm">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -101,7 +116,7 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card card-flat rounded-4 p-4 bg-light border-0">
+        <div class="card card-flat custom-curved-card-flat p-4 bg-light border-0">
             <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Mẹo thiết kế câu hỏi</h5>
             <ul class="text-muted ps-3 mb-0" style="font-size: 0.9rem; line-height: 1.6;">
                 <li class="mb-2"><strong>Trắc nghiệm (MCQ):</strong> Nhập đủ 4 đáp án A–D và chọn ít nhất một đáp án đúng.</li>

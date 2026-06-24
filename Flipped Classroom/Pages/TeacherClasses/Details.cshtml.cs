@@ -24,13 +24,15 @@ namespace Flipped_Classroom.Pages.TeacherClasses
         private readonly ISubmissionService _submissionService;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILessonService _lessonService;
+        private readonly IAuthService _authService;
 
         public DetailsModel(
             Flipped_Classroom.Data.Swp391NihongoContext context,
             IAssignmentService assignmentService,
             ISubmissionService submissionService,
             IWebHostEnvironment webHostEnvironment,
-            ILessonService lessonService
+            ILessonService lessonService,
+            IAuthService authService
         )
         {
             _context = context;
@@ -38,6 +40,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             _submissionService = submissionService;
             _webHostEnvironment = webHostEnvironment;
             _lessonService = lessonService;
+            _authService = authService;
         }
 
         public Class Class { get; set; } = default!;
@@ -367,6 +370,56 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             await _assignmentService.CreateAssignmentAsync(assignment);
             TempData["SuccessMessage"] = "Tạo bài tập thành công!";
+
+            // Send notification emails to all students in the class
+            try
+            {
+                var students = await _context.ClassMembers
+                    .Include(cm => cm.User)
+                    .Where(cm => cm.ClassId == id && cm.User != null && cm.User.Role == "Student" && !string.IsNullOrEmpty(cm.User.Email))
+                    .Select(cm => new { cm.User.Email, cm.User.Username })
+                    .ToListAsync();
+
+                if (students.Any())
+                {
+                    var classroom = await _context.Classes.FindAsync(id);
+                    var className = classroom?.ClassName ?? "Lớp học";
+
+                    foreach (var student in students)
+                    {
+                        var subject = $"[NihongoPortal] Bài tập mới - {assignment.Title}";
+                        var bodyHtml = $@"
+<h2>Thông báo bài tập mới</h2>
+<p>Chào <strong>{student.Username}</strong>,</p>
+<p>Giáo viên đã đăng một bài tập mới trong lớp học <strong>{className}</strong>.</p>
+<p><strong>Thông tin bài tập:</strong></p>
+<ul>
+    <li><strong>Tiêu đề:</strong> {assignment.Title}</li>
+    <li><strong>Loại bài tập:</strong> {assignment.Type}</li>
+    <li><strong>Hạn nộp:</strong> {(assignment.DueDate.HasValue ? assignment.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không có hạn chót")}</li>
+</ul>
+<p>Vui lòng đăng nhập vào Nihongo Portal để xem chi tiết yêu cầu và nộp bài đúng hạn.</p>
+<p>Trân trọng,<br/>Zenith Education</p>";
+
+                        // Send asynchronously in a background task to prevent blocking the UI thread
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _authService.SendEmailAsync(student.Email!, subject, bodyHtml);
+                            }
+                            catch (Exception)
+                            {
+                                // Fail silently inside background tasks
+                            }
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Gracefully fail database queries so page does not crash on email failure
+            }
 
             return RedirectToPage(new { id = id });
         }

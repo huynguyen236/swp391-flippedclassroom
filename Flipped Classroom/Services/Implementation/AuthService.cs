@@ -211,6 +211,19 @@ namespace Flipped_Classroom.Services.Implementations
     
         public async Task<bool> SendResetEmailAsync(string email, string resetLink)
         {
+            var subject = "NihongoFlipedClassroom";
+            var bodyHtml = $@"
+<h2>Đặt lại mật khẩu</h2>
+<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
+<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
+<p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
+<p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>";
+
+            return await SendEmailAsync(email, subject, bodyHtml);
+        }
+
+        public async Task<bool> SendEmailAsync(string email, string subject, string bodyHtml)
+        {
             try
             {
                 var fromEmail = _config["EmailSettings:GmailApi:FromEmail"];
@@ -221,20 +234,12 @@ namespace Flipped_Classroom.Services.Implementations
                     return false;
                 }
 
-                var subject = "NihongoFlipedClassroom";
-                var bodyHtml = $@"
-<h2>Đặt lại mật khẩu</h2>
-<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
-<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
-<p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
-<p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>";
-
                 var gmailService = await CreateGmailServiceAsync(fromEmail);
                 var raw = BuildRawMimeMessage(fromEmail, email, subject, bodyHtml);
                 var message = new Message { Raw = raw };
 
                 await gmailService.Users.Messages.Send(message, "me").ExecuteAsync();
-                _logger.LogInformation("Gửi email reset password cho: {Email}", email);
+                _logger.LogInformation("Gửi email thành công cho: {Email}", email);
                 return true;
             }
             catch (Exception ex)

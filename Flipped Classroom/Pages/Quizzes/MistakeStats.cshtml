@@ -29,12 +29,12 @@
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-6 col-lg-4">
                 <label asp-for="ClassId" class="form-label fw-semibold text-secondary small">Lớp học</label>
-                <select asp-for="ClassId" asp-items="Model.ClassOptions" class="form-select bg-light">
+                <select asp-for="ClassId" asp-items="Model.ClassOptions" class="form-select bg-light" style="height: 45px;">
                     <option value="">Tất cả lớp</option>
                 </select>
             </div>
             <div class="col-md-auto">
-                <button type="submit" class="btn btn-outline-primary px-4 py-2 d-flex align-items-center gap-1">
+                <button type="submit" class="btn btn-outline-primary px-4 d-flex align-items-center justify-content-center gap-1" style="height: 45px;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">filter_alt</span> Lọc kết quả
                 </button>
             </div>
