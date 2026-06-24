@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Flipped_Classroom</RootNamespace>
+    <!-- MeCab.DotNet tự copy bộ từ điển ipadic kèm package vào thư mục output (bin/.../dic). -->
+    <MeCabUseDefaultDictionary>True</MeCabUseDefaultDictionary>
   </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Google.Apis.Core" Version="1.73.0" />

@@ -18,11 +18,13 @@ namespace Flipped_Classroom.Pages.StudentClasses
     {
         private readonly ILessonService _lessonService;
         private readonly Swp391NihongoContext _context;
+        private readonly ISpeechService _speechService;
 
-        public LessonModel(ILessonService lessonService, Swp391NihongoContext context)
+        public LessonModel(ILessonService lessonService, Swp391NihongoContext context, ISpeechService speechService)
         {
             _lessonService = lessonService;
             _context = context;
+            _speechService = speechService;
         }
 
         public Class Class { get; set; } = default!;
@@ -165,6 +167,33 @@ namespace Flipped_Classroom.Pages.StudentClasses
             }
 
             return url;
+        }
+
+        // GET .../Lesson/{classId}/{nodeId}?handler=CompareSpeech&materialId=...&spokenText=...
+        // Chấm điểm phát âm: lấy câu mẫu từ DB theo materialId (chống sửa câu mẫu phía client),
+        // chuẩn hóa về Hiragana bằng MeCab rồi so khớp với câu học sinh nói.
+        public async Task<IActionResult> OnGetCompareSpeechAsync(int materialId, string spokenText)
+        {
+            var material = await _context.Materials
+                .FirstOrDefaultAsync(m => m.Id == materialId && m.MaterialType == "speech");
+
+            if (material == null || string.IsNullOrWhiteSpace(material.SpeechTargetText))
+            {
+                return new JsonResult(new { success = false, message = "Không tìm thấy câu mẫu luyện nói." });
+            }
+
+            var result = _speechService.CompareSpeech(material.SpeechTargetText, spokenText);
+
+            return new JsonResult(new
+            {
+                success = result.Success,
+                message = result.Message,
+                score = result.Score,
+                targetHiragana = result.TargetHiragana,
+                spokenHiragana = result.SpokenHiragana,
+                distance = result.Distance,
+                alignment = result.Alignment
+            });
         }
 
         public async Task<IActionResult> OnPostCreateCommentAsync(int classId, int nodeId, string questionText)
