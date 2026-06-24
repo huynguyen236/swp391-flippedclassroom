@@ -63,11 +63,12 @@
                     {
                         var cls = Model.EnrolledClasses[ci];
                         var colorStyle = classColors[ci % classColors.Length];
+                        var detectedSlot = ScheduleSlotHelper.DetectSlot(cls.ClassSchedules);
                         <span class="badge text-white px-3 py-2 fw-normal" style="border-radius: 8px; font-size: 0.85rem; @colorStyle">
                             @cls.ClassName
-                            @if (!string.IsNullOrEmpty(cls.DetectedSlot))
+                            @if (!string.IsNullOrEmpty(detectedSlot))
                             {
-                                <span class="ms-1 opacity-75">(@cls.DetectedSlot)</span>
+                                <span class="ms-1 opacity-75">(@detectedSlot)</span>
                             }
                         </span>
                     }
@@ -137,7 +138,7 @@
                                         if (isToday) cellClass += " cal-today";
 
                                         var dayClasses = isScheduleDay
-                                            ? Model.ScheduleItems.Where(s => s.StudyDate == currentDate).Select(s => s.ClassName).Distinct().ToList()
+                                            ? Model.ScheduleItems.Where(s => s.StudyDate == currentDate).Select(s => s.Class?.ClassName ?? string.Empty).Distinct().ToList()
                                             : new List<string>();
                                         var tooltip = isScheduleDay
                                             ? ScheduleSlotHelper.GetVietnameseDayName(currentDate.DayOfWeek) + " — " + string.Join(", ", dayClasses)
@@ -230,19 +231,20 @@
                                         </div>
                                         @foreach (var schedule in dateGroup.OrderBy(s => s.StartTime))
                                         {
-                                            var cIndex = Model.EnrolledClasses.FindIndex(c => c.ClassId == schedule.ClassId);
+                                            var cIndex = Model.EnrolledClasses.FindIndex(c => c.Id == schedule.ClassId);
                                             var itemColor = cIndex >= 0 ? classColors[cIndex % classColors.Length] : "background: #6c757d;";
+                                            var detectedSlot = ScheduleSlotHelper.DetectSlot(schedule.Class?.ClassSchedules ?? new List<ClassSchedule>());
 
                                             <div class="schedule-item d-flex align-items-center gap-3 p-3 mb-1 rounded-3"
                                                  style="background: #f8f9fa; transition: all 0.2s; border-left: 4px solid transparent;">
                                                 <div class="flex-grow-1">
                                                     <div class="d-flex align-items-center gap-2 mb-1">
                                                         <span class="badge text-white px-2 py-1 fw-normal" style="border-radius: 6px; font-size: 0.75rem; @itemColor">
-                                                            @schedule.ClassName
+                                                            @schedule.Class?.ClassName
                                                         </span>
-                                                        @if (!string.IsNullOrEmpty(schedule.DetectedSlot))
+                                                        @if (!string.IsNullOrEmpty(detectedSlot))
                                                         {
-                                                            <span class="text-muted" style="font-size: 0.7rem;">@schedule.DetectedSlot</span>
+                                                            <span class="text-muted" style="font-size: 0.7rem;">@detectedSlot</span>
                                                         }
                                                     </div>
                                                     <small class="text-primary">
