@@ -414,6 +414,9 @@
 </div>
 
 @section Scripts {
+    <script>
+        window.currentLessonNodeId = @Model.Lesson.Id;
+    </script>
     <script src="~/js/speech-practice.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
