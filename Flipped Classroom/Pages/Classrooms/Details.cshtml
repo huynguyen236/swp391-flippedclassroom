@@ -117,6 +117,9 @@
                                 <span class="material-symbols-outlined">group</span> Danh Sách Học Viên
                             </h4>
                             <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-premium-outline px-3 send-email-btn shadow-sm text-nowrap" data-class-id="@Model.Class.Id" data-class-name="@Model.Class.ClassName">
+                                    <span class="material-symbols-outlined text-[20px] align-middle me-1">mail</span> Gửi Email
+                                </button>
                                 <button type="button" class="btn btn-premium-outline px-3 shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#createGroupModal">
                                     <span class="material-symbols-outlined text-[20px] align-middle me-1">groups</span> Chia Nhóm (@(Model.Class.Groups?.Count ?? 0))
                                 </button>
@@ -406,6 +409,229 @@
                 button.addEventListener('shown.bs.tab', function(e) {
                     localStorage.setItem(activeTabKey, this.id);
                 });
+            });
+        });
+    </script>
+
+    <!-- Email Notification Modal -->
+    <div class="modal fade" id="emailNotificationModal" tabindex="-1" aria-labelledby="emailNotificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; background: var(--color-surface-container);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="emailNotificationModalLabel" style="color: var(--color-on-background);">
+                        <span class="material-symbols-outlined text-primary">mail</span>
+                        Gửi Email Thông Báo - <span id="modalClassName" class="text-primary"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <form id="emailNotificationForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="emailClassId" name="classId" />
+
+                        <!-- Recipient Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase tracking-wider text-muted">Người nhận</label>
+                            <div class="d-flex gap-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="recipientType" id="recipientAll" value="all" checked>
+                                    <label class="form-check-label fw-medium" for="recipientAll">
+                                        Tất cả học viên
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="recipientType" id="recipientSelect" value="select">
+                                    <label class="form-check-label fw-medium" for="recipientSelect">
+                                        Chọn học viên cụ thể
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Student List (Hidden by default, shown when recipientSelect is active) -->
+                            <div id="studentSelectionContainer" class="border rounded p-3 bg-light" style="display: none; max-height: 200px; overflow-y: auto;">
+                                <div class="form-check mb-2 pb-2 border-bottom">
+                                    <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                                    <label class="form-check-label fw-bold text-dark" for="selectAllStudents">
+                                        Chọn tất cả
+                                    </label>
+                                </div>
+                                <div id="studentListContainer">
+                                    <!-- Populated via AJAX -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="mb-3">
+                            <label for="emailSubject" class="form-label fw-bold small text-uppercase tracking-wider text-muted">Tiêu đề (Subject)</label>
+                            <input type="text" class="form-control rounded-3" id="emailSubject" name="subject" placeholder="Nhập tiêu đề thông báo..." required>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="mb-3">
+                            <label for="emailBody" class="form-label fw-bold small text-uppercase tracking-wider text-muted">Nội dung thông báo (Body)</label>
+                            <textarea class="form-control rounded-3" id="emailBody" name="body" rows="6" placeholder="Nhập nội dung chi tiết..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-premium-outline" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-premium-primary" id="btnSendEmail">
+                        <span class="d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">send</span> Gửi Email
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = new bootstrap.Modal(document.getElementById('emailNotificationModal'));
+            const modalClassName = document.getElementById('modalClassName');
+            const emailClassId = document.getElementById('emailClassId');
+            const studentSelectionContainer = document.getElementById('studentSelectionContainer');
+            const studentListContainer = document.getElementById('studentListContainer');
+            const selectAllStudents = document.getElementById('selectAllStudents');
+            const btnSendEmail = document.getElementById('btnSendEmail');
+            const form = document.getElementById('emailNotificationForm');
+
+            // Toggle recipient selector list
+            document.querySelectorAll('input[name="recipientType"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'select') {
+                        studentSelectionContainer.style.display = 'block';
+                    } else {
+                        studentSelectionContainer.style.display = 'none';
+                    }
+                });
+            });
+
+            // Select/Deselect all students checkbox
+            selectAllStudents.addEventListener('change', function () {
+                document.querySelectorAll('.student-checkbox').forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+
+            // Click "Gửi Email" button
+            document.querySelectorAll('.send-email-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const classId = this.dataset.classId;
+                    const className = this.dataset.className;
+
+                    modalClassName.textContent = className;
+                    emailClassId.value = classId;
+                    studentListContainer.innerHTML = '<div class="text-center py-2"><span class="spinner-border spinner-border-sm text-primary"></span> Đang tải...</div>';
+                    
+                    // Reset form fields
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailBody').value = '';
+                    document.getElementById('recipientAll').checked = true;
+                    studentSelectionContainer.style.display = 'none';
+                    selectAllStudents.checked = false;
+
+                    modal.show();
+
+                    try {
+                        const res = await fetch(`/Classrooms/Details?handler=ClassMembers&classId=${classId}`);
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const students = await res.json();
+                        
+                        studentListContainer.innerHTML = '';
+                        if (!students || students.length === 0) {
+                            studentListContainer.innerHTML = '<p class="text-muted small mb-0">Không có học viên nào trong lớp.</p>';
+                        } else {
+                            students.forEach(student => {
+                                const div = document.createElement('div');
+                                div.className = 'form-check py-1';
+                                div.innerHTML = `
+                                    <input class="form-check-input student-checkbox" type="checkbox" value="${student.id}" id="student-${student.id}">
+                                    <label class="form-check-label text-dark" for="student-${student.id}">
+                                        ${student.username} (${student.email || 'N/A'})
+                                    </label>
+                                `;
+                                studentListContainer.appendChild(div);
+                            });
+                            
+                            // Bind change events to student checkboxes to sync "Select All" status
+                            document.querySelectorAll('.student-checkbox').forEach(cb => {
+                                cb.addEventListener('change', function () {
+                                    const allCbs = document.querySelectorAll('.student-checkbox');
+                                    const checkedCbs = document.querySelectorAll('.student-checkbox:checked');
+                                    selectAllStudents.checked = allCbs.length === checkedCbs.length;
+                                });
+                            });
+                        }
+                    } catch (err) {
+                        studentListContainer.innerHTML = '<p class="text-danger small mb-0">Lỗi khi tải danh sách học viên.</p>';
+                    }
+                });
+            });
+
+            // Click "Gửi" button inside modal
+            btnSendEmail.addEventListener('click', async function () {
+                const classId = emailClassId.value;
+                const subject = document.getElementById('emailSubject').value.trim();
+                const body = document.getElementById('emailBody').value.trim();
+                const isSelect = document.getElementById('recipientSelect').checked;
+
+                if (!subject || !body) {
+                    alert('Vui lòng điền đầy đủ tiêu đề và nội dung.');
+                    return;
+                }
+
+                const selectedStudentIds = [];
+                if (isSelect) {
+                    document.querySelectorAll('.student-checkbox:checked').forEach(cb => {
+                        selectedStudentIds.push(parseInt(cb.value));
+                    });
+                    if (selectedStudentIds.length === 0) {
+                        alert('Vui lòng chọn ít nhất một học viên.');
+                        return;
+                    }
+                }
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                const originalHtml = btnSendEmail.innerHTML;
+                btnSendEmail.disabled = true;
+                btnSendEmail.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('classId', classId);
+                    formData.append('subject', subject);
+                    formData.append('body', body);
+                    selectedStudentIds.forEach(id => {
+                        formData.append('selectedStudentIds', id);
+                    });
+                    formData.append('__RequestVerificationToken', token);
+
+                    const res = await fetch('/Classrooms/Details?handler=SendNotification', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        body: formData
+                    });
+
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        alert(data.message || 'Gửi email thành công!');
+                        modal.hide();
+                    } else {
+                        alert('Gửi email thất bại: ' + (data.message || 'Lỗi không xác định'));
+                    }
+                } catch (err) {
+                    alert('Có lỗi xảy ra: ' + err.message);
+                } finally {
+                    btnSendEmail.disabled = false;
+                    btnSendEmail.innerHTML = originalHtml;
+                }
             });
         });
     </script>
