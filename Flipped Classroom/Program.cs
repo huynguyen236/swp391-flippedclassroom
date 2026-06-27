@@ -62,6 +62,7 @@ builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IVocabularyService, VocabularyService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IWordExcelImportService, WordExcelImportService>();
 
 builder.Services.AddAuthorization();
 var app = builder.Build();

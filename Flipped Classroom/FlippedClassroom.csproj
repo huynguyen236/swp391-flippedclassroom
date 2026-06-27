@@ -7,6 +7,8 @@
     <RootNamespace>Flipped_Classroom</RootNamespace>
   </PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
+		<PackageReference Include="ExcelDataReader" Version="3.9.0" />
 		<PackageReference Include="Google.Apis.Core" Version="1.73.0" />
 		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.73.0.4029" />
 		<PackageReference Include="MeCab.DotNet" Version="1.2.0" />

@@ -54,9 +54,14 @@
             <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <h5 class="fw-bold text-dark mb-0">Danh sách từ vựng (@Model.Vocabularies.Count)</h5>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-1.5" onclick="openAddVocabModal()">
-                        <i class="bi bi-plus-lg"></i> Thêm từ vựng mới
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1.5" onclick="openImportModal()">
+                            <i class="bi bi-file-earmark-excel"></i> Nhập từ file (Excel/Word)
+                        </button>
+                        <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm d-flex align-items-center gap-1.5" onclick="openAddVocabModal()">
+                            <i class="bi bi-plus-lg"></i> Thêm từ vựng mới
+                        </button>
+                    </div>
                 </div>
 
                 @if (!Model.Vocabularies.Any())
@@ -252,5 +257,66 @@
             const modal = new bootstrap.Modal(document.getElementById('vocabModal'));
             modal.show();
         }
+
+        function openImportModal() {
+            const modal = new bootstrap.Modal(document.getElementById('importModal'));
+            modal.show();
+        }
+
+        function updateFileName(input) {
+            const placeholder = document.getElementById('fileNamePlaceholder');
+            if (input.files && input.files.length > 0) {
+                placeholder.innerText = input.files[0].name;
+                placeholder.classList.add('text-success');
+            } else {
+                placeholder.innerText = "Kéo thả file hoặc click để duyệt file";
+                placeholder.classList.remove('text-success');
+            }
+        }
     </script>
 }
+
+<!-- Modal Import File -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="importModalLabel">Import Từ Vựng Hàng Loạt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="ImportFile" asp-route-nodeId="@Model.Node.Id" enctype="multipart/form-data">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-3">Tải lên danh sách từ vựng của bài học thông qua file Excel/CSV hoặc Word. Bạn có thể sử dụng file tự chuẩn bị hoặc tải các file mẫu bên dưới để xem đúng cấu trúc.</p>
+                    
+                    <!-- Download Templates -->
+                    <div class="d-flex gap-2 mb-4 bg-light p-3 rounded-3">
+                        <div class="flex-grow-1 text-center border-end">
+                            <a asp-page-handler="DownloadTemplate" asp-route-type="excel" class="text-decoration-none text-success fw-semibold small">
+                                <i class="bi bi-file-earmark-spreadsheet-fill fs-5 d-block text-success mb-1"></i> Tải Excel/CSV mẫu
+                            </a>
+                        </div>
+                        <div class="flex-grow-1 text-center">
+                            <a asp-page-handler="DownloadTemplate" asp-route-type="word" class="text-decoration-none text-primary fw-semibold small">
+                                <i class="bi bi-file-earmark-word-fill fs-5 d-block text-primary mb-1"></i> Tải Word mẫu
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- File input drag & drop style -->
+                    <div class="border border-primary border-2 p-4 text-center rounded-3 position-relative" style="background-color: #f8fbff; border-style: dashed !important; border-width: 2px !important;">
+                        <input type="file" asp-for="UploadedFile" class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer" style="cursor: pointer;" required id="importFile" accept=".xlsx, .xls, .csv, .docx" onchange="updateFileName(this)" />
+                        <i class="bi bi-cloud-arrow-up-fill text-primary display-6 mb-2 d-block"></i>
+                        <span class="d-block fw-bold text-dark mb-1" id="fileNamePlaceholder">Kéo thả file hoặc click để duyệt file</span>
+                        <span class="text-muted small">Hỗ trợ định dạng: .xlsx, .xls, .csv, .docx</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-check-lg me-1"></i> Bắt đầu Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
