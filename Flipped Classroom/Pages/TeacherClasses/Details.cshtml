@@ -5,210 +5,187 @@
     ViewData["Title"] = "Classroom Details";
 }
 
-<style>
-    .sticky-menu {
-        background: white;
-    }
 
-    .tab-content .tab-pane {
-        display: none;
-    }
-
-    .tab-content .tab-pane.active {
-        display: block;
-    }
-
-    .nav-tabs .nav-link {
-        color: #5f6368;
-        border: none;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease;
-        background: transparent !important;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #1a73e8 !important;
-        border-bottom: 3px solid #1a73e8 !important;
-    }
-
-    .nav-tabs .nav-link:hover {
-        color: #1a73e8;
-    }
-</style>
-
-<div class="container py-5">
+<div class="container py-5 teacher-details-container">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Class Header -->
-            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; overflow: hidden;">
-                <div class="card-header text-white p-5 text-center" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
-                    <h2 class="fw-bold mb-2">@Html.DisplayFor(model => model.Class.ClassName)</h2>
-                    <span class="badge bg-light text-primary rounded-pill px-4 py-2 fs-6 mb-3">@Html.DisplayFor(model => model.Class.Status)</span>
-                    <p class="mb-0 text-white-50">Mã Tham Gia (Invite Code): <strong class="text-white fs-5">@Html.DisplayFor(model => model.Class.InviteCode)</strong></p>
-                </div>
-
-                <div class="card-footer bg-light p-4 text-center border-0 d-flex justify-content-center gap-3">
-                    <a asp-page="./Index" class="btn btn-outline-secondary px-4 rounded-pill">Trở lại Danh sách</a>
-                </div>
+        <div class="col-lg-12">
+            
+            <!-- Breadcrumbs -->
+            <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+                <a asp-page="./Index" class="text-secondary text-decoration-none hover-text-primary">Lớp học của tôi</a>
+                <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+                <span class="text-dark fw-medium">Chi tiết lớp học</span>
             </div>
 
-            <!-- Sticky Menu and Description -->
-            <div class="sticky-menu mb-4">
-                <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                    <div class="card-header bg-white p-4 border-bottom">
-                        <div class="mb-4">
-                            <h5 class="fw-bold text-muted mb-3">Mô tả Lớp Học</h5>
-                            <p class="text-secondary" style="line-height: 1.6; margin: 0;">
-                                @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
-                            </p>
-                        </div>
-
-                        <!-- Date and Manager Info -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
-                                    <div class="me-3 text-primary">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-muted small">Ngày Bắt Đầu</div>
-                                        <div class="fw-medium">@Html.DisplayFor(model => model.Class.StartDate)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8f9fa;">
-                                    <div class="me-3 text-primary">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                                    </div>
-                                    <div>
-                                        <div class="text-muted small">Ngày Kết Thúc</div>
-                                        <div class="fw-medium">@Html.DisplayFor(model => model.Class.EndDate)</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                            <div class="d-flex align-items-center">
-                                <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 40px; height: 40px; font-size: 16px; background-color: #5f6368;">
-                                    @(Model.Class.Manager?.Username?.FirstOrDefault() ?? '?')
-                                </div>
-                                <div>
-                                    <div class="text-muted small">Người Quản Lý</div>
-                                    <div class="fw-bold small">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tabs Navigation -->
-                        <ul class="nav nav-tabs border-0 mt-4" id="classroomTabs" role="tablist" style="gap: 1rem;">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active fw-bold" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-content" type="button" role="tab" aria-controls="dashboard-content" aria-selected="true">
-                                    <i class="bi bi-speedometer2"></i> Tổng Quan
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="curriculum-tab" data-bs-toggle="tab" data-bs-target="#curriculum-content" type="button" role="tab" aria-controls="curriculum-content" aria-selected="false">
-                                    <i class="bi bi-journal-bookmark"></i> Lộ Trình Học
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-content" type="button" role="tab" aria-controls="students-content" aria-selected="false">
-                                    <i class="bi bi-people-fill"></i> Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-content" type="button" role="tab" aria-controls="assignments-content" aria-selected="false">
-                                    <i class="bi bi-file-earmark-text"></i> Bài Tập
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
-                                    <i class="bi bi-chat-dots-fill"></i> Hỏi & Đáp (@(Model.QaThreads?.Count ?? 0))
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-bold" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
-                                    <i class="bi bi-calendar-week"></i> Lịch Học
-                                </button>
-                            </li>
-                        </ul>
+            <!-- Hero Class Header Section -->
+            <div class="hero-header-banner p-4 p-md-5 mb-4 rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
+                <div class="hero-header-decor"></div>
+                <div class="relative z-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 shadow-sm small fw-bold">@Html.DisplayFor(model => model.Class.Status)</span>
+                    </div>
+                    <h2 class="fw-bold mb-2 text-white" style="font-size: 2rem;">@Html.DisplayFor(model => model.Class.ClassName)</h2>
+                    <p class="mb-0 text-white-50" style="max-width: 600px;">
+                        @(string.IsNullOrEmpty(Model.Class.Description) ? "Chưa có mô tả cho lớp học này." : Model.Class.Description)
+                    </p>
+                </div>
+                <div class="glass-card-premium shrink-0 relative z-1">
+                    <span class="text-white-50 small text-uppercase tracking-wider">Mã Tham Gia</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2 bg-white text-dark px-3 py-2 rounded-2 mt-2 border">
+                        <strong class="font-monospace text-primary" style="font-size: 1.15rem; letter-spacing: 0.5px;">@Html.DisplayFor(model => model.Class.InviteCode)</strong>
+                        <button class="btn p-0 text-secondary hover-text-primary d-flex align-items-center justify-content-center" onclick="copyInviteCodeDetails(this, '@Model.Class.InviteCode')" title="Copy mã">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+                        </button>
                     </div>
                 </div>
             </div>
+
+            <!-- Date and Manager Info Card -->
+            <div class="card card-premium p-4 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <span class="material-symbols-outlined text-primary fs-3 me-3">calendar_today</span>
+                            <div>
+                                <div class="text-muted small">Ngày Bắt Đầu</div>
+                                <div class="fw-bold">@Html.DisplayFor(model => model.Class.StartDate)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <span class="material-symbols-outlined text-primary fs-3 me-3">event</span>
+                            <div>
+                                <div class="text-muted small">Ngày Kết Thúc</div>
+                                <div class="fw-bold">@Html.DisplayFor(model => model.Class.EndDate)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-3 rounded" style="background-color: var(--color-surface-container-low);">
+                            <div class="avatar-initials-circle bg-primary me-3 text-white">
+                                @(Model.Class.Manager?.Username?.FirstOrDefault() ?? '?')
+                            </div>
+                            <div>
+                                <div class="text-muted small">Người Quản Lý</div>
+                                <div class="fw-bold">@Html.DisplayFor(model => model.Class.Manager.Username)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function copyInviteCodeDetails(btn, code) {
+                    navigator.clipboard.writeText(code).then(function() {
+                        var originalHtml = btn.innerHTML;
+                        btn.innerHTML = '<span class="material-symbols-outlined" style="color: #34a853;">check</span>';
+                        setTimeout(function() {
+                            btn.innerHTML = originalHtml;
+                        }, 2000);
+                    }, function(err) {
+                        console.error('Lỗi khi copy mã: ', err);
+                    });
+                }
+            </script>
+
+            <!-- Sticky Menu Tabs Navigation -->
+            <ul class="nav nav-tabs nav-tabs-premium mb-4" id="classroomTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-content" type="button" role="tab" aria-controls="dashboard-content" aria-selected="true">
+                        <span class="material-symbols-outlined">dashboard</span> Tổng Quan
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="curriculum-tab" data-bs-toggle="tab" data-bs-target="#curriculum-content" type="button" role="tab" aria-controls="curriculum-content" aria-selected="false">
+                        <span class="material-symbols-outlined">route</span> Lộ Trình Học
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-content" type="button" role="tab" aria-controls="students-content" aria-selected="false">
+                        <span class="material-symbols-outlined">group</span> Học Viên (@(Model.Class.ClassMembers?.Count ?? 0))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-content" type="button" role="tab" aria-controls="assignments-content" aria-selected="false">
+                        <span class="material-symbols-outlined">assignment</span> Bài Tập
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qa-tab" data-bs-toggle="tab" data-bs-target="#qa-content" type="button" role="tab" aria-controls="qa-content" aria-selected="false">
+                        <span class="material-symbols-outlined">forum</span> Hỏi & Đáp (@(Model.QaThreads?.Count ?? 0))
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
+                        <span class="material-symbols-outlined">calendar_month</span> Lịch Học
+                    </button>
+                </li>
+            </ul>
 
             <!-- Tab Content -->
             <div class="tab-content" id="classroomTabContent">
-                <!-- Dashboard (Tổng Quan) Tab -->
+                
+                <!-- Overview (Tổng Quan) Tab -->
                 <div class="tab-pane fade show active" id="dashboard-content" role="tabpanel" aria-labelledby="dashboard-tab">
                     <div class="row g-4 mb-4">
-                        <!-- KPI 1: Sĩ số -->
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-3 p-4" style="background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-secondary small fw-medium">Sĩ số lớp</div>
-                                        <h3 class="fw-bold text-primary mb-0 mt-1">@Model.TotalStudents</h3>
-                                    </div>
-                                    <div class="rounded-circle bg-white text-primary p-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                        <i class="bi bi-people-fill fs-4"></i>
-                                    </div>
+                            <div class="stat-bento-card stat-bg-blue">
+                                <div>
+                                    <div class="small fw-semibold opacity-75">Sĩ số lớp</div>
+                                    <h3 class="fw-bold mb-0 mt-1">@Model.TotalStudents</h3>
+                                </div>
+                                <div class="stat-icon">
+                                    <span class="material-symbols-outlined text-primary">group</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- KPI 2: Bài học -->
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-3 p-4" style="background: linear-gradient(135deg, #e6f4ea 0%, #ceead6 100%);">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-secondary small fw-medium">Tổng bài học</div>
-                                        <h3 class="fw-bold text-success mb-0 mt-1">@Model.TotalLessonsCount</h3>
-                                    </div>
-                                    <div class="rounded-circle bg-white text-success p-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                        <i class="bi bi-journal-text fs-4"></i>
-                                    </div>
+                            <div class="stat-bento-card stat-bg-green">
+                                <div>
+                                    <div class="small fw-semibold opacity-75">Tổng bài học</div>
+                                    <h3 class="fw-bold mb-0 mt-1">@Model.TotalLessonsCount</h3>
+                                </div>
+                                <div class="stat-icon">
+                                    <span class="material-symbols-outlined text-success">menu_book</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- KPI 3: Tiến độ lớp -->
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-3 p-4" style="background: linear-gradient(135deg, #fef7e0 0%, #feefc3 100%);">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-secondary small fw-medium">Tiến độ trung bình</div>
-                                        <h3 class="fw-bold text-warning mb-0 mt-1 text-dark">@Model.AvgClassProgress%</h3>
-                                    </div>
-                                    <div class="rounded-circle bg-white text-warning p-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                        <i class="bi bi-graph-up-arrow fs-4"></i>
-                                    </div>
+                            <div class="stat-bento-card stat-bg-yellow">
+                                <div>
+                                    <div class="small fw-semibold opacity-75">Tiến độ trung bình</div>
+                                    <h3 class="fw-bold mb-0 mt-1">@Model.AvgClassProgress%</h3>
+                                </div>
+                                <div class="stat-icon">
+                                    <span class="material-symbols-outlined" style="color: #f2a600;">trending_up</span>
                                 </div>
                             </div>
                         </div>
-                        <!-- KPI 4: Tỷ lệ nộp bài -->
                         <div class="col-md-3">
-                            <div class="card border-0 shadow-sm h-100 rounded-3 p-4" style="background: linear-gradient(135deg, #fce8e6 0%, #fad2cf 100%);">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-secondary small fw-medium">Tỷ lệ nộp bài tập</div>
-                                        <h3 class="fw-bold text-danger mb-0 mt-1">@Model.AvgSubmissionRate%</h3>
-                                    </div>
-                                    <div class="rounded-circle bg-white text-danger p-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                        <i class="bi bi-file-earmark-check-fill fs-4"></i>
-                                    </div>
+                            <div class="stat-bento-card stat-bg-red">
+                                <div>
+                                    <div class="small fw-semibold opacity-75">Tỷ lệ nộp bài</div>
+                                    <h3 class="fw-bold mb-0 mt-1">@Model.AvgSubmissionRate%</h3>
+                                </div>
+                                <div class="stat-icon">
+                                    <span class="material-symbols-outlined text-danger">assignment_turned_in</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row g-4 mb-4">
+                    <div class="row g-4">
                         <!-- Left Panel: Tiến độ chi tiết Lộ trình -->
                         <div class="col-lg-6">
-                            <div class="card border-0 shadow-sm rounded-3 h-100">
-                                <div class="card-header bg-white border-0 py-3">
-                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bezier2 text-primary me-2"></i> Tiến Độ Lộ Trình Học Của Lớp</h5>
+                            <div class="card card-premium h-100">
+                                <div class="card-premium-header">
+                                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary">route</span>
+                                        Tiến Độ Lộ Trình Học Của Lớp
+                                    </h5>
                                 </div>
-                                <div class="card-body py-2">
+                                <div class="card-body p-4">
                                     @if (Model.Class.Curriculum == null)
                                     {
                                         <p class="text-muted text-center py-4">Lớp chưa có khung chương trình.</p>
@@ -229,16 +206,17 @@
                                                 {
                                                     var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
                                                     <div>
-                                                        <h6 class="fw-bold text-secondary mb-2 small text-uppercase" style="letter-spacing: 0.5px;">
-                                                            <i class="bi bi-folder-fill text-warning me-1"></i> @chapter.Title
+                                                        <h6 class="fw-bold text-secondary mb-2 small text-uppercase d-flex align-items-center gap-1">
+                                                            <span class="material-symbols-outlined text-warning" style="font-size:18px;">folder</span>
+                                                            @chapter.Title
                                                         </h6>
                                                         @if (!lessons.Any())
                                                         {
-                                                            <div class="text-muted small ps-3 mb-2">Chưa có bài học.</div>
+                                                            <div class="text-muted small ps-4 mb-2">Chưa có bài học.</div>
                                                         }
                                                         else
                                                         {
-                                                            <div class="d-flex flex-column gap-2 ps-3">
+                                                            <div class="d-flex flex-column gap-2 ps-4">
                                                                 @foreach (var lesson in lessons)
                                                                 {
                                                                     var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var count) ? count : 0;
@@ -249,27 +227,27 @@
                                                                         .Select(cm => cm.User?.Username)
                                                                         .ToList();
 
-                                                                    <div class="bg-light p-3 rounded shadow-sm border border-light">
-                                                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                                                            <span class="fw-semibold text-dark small">@lesson.Title</span>
-                                                                            <span class="badge bg-light text-primary border border-primary rounded-pill">
+                                                                    <div class="bg-light p-3 rounded border border-light">
+                                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                            <span class="fw-bold text-dark small">@lesson.Title</span>
+                                                                            <span class="badge bg-white text-primary border rounded-pill px-2">
                                                                                 @completedCount/@Model.TotalStudents HS hoàn thành
                                                                             </span>
                                                                         </div>
-                                                                        <div class="progress mb-2" style="height: 6px;">
-                                                                            <div class="progress-bar bg-success rounded" role="progressbar" style="width: @completionPercent%;" aria-valuenow="@completionPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                        <div class="progress-track-custom mb-2">
+                                                                            <div class="progress-fill-success" style="width: @completionPercent%;"></div>
                                                                         </div>
                                                                         <div class="small">
                                                                             @if (pendingStudents.Any())
                                                                             {
-                                                                                <span class="text-danger-emphasis" style="font-size: 0.8rem;">
+                                                                                <span class="text-danger" style="font-size: 0.8rem; font-weight: 500;">
                                                                                     <strong>Chưa xong:</strong> @(string.Join(", ", pendingStudents))
                                                                                 </span>
                                                                             }
                                                                             else
                                                                             {
-                                                                                <span class="text-success" style="font-size: 0.8rem;">
-                                                                                    <i class="bi bi-check-all me-1"></i> 100% Học viên đã hoàn thành
+                                                                                <span class="text-success" style="font-size: 0.8rem; font-weight: 500;">
+                                                                                    <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> 100% Học viên đã hoàn thành
                                                                                 </span>
                                                                             }
                                                                         </div>
@@ -288,11 +266,14 @@
 
                         <!-- Right Panel: Tình trạng nộp Bài tập -->
                         <div class="col-lg-6">
-                            <div class="card border-0 shadow-sm rounded-3 h-100">
-                                <div class="card-header bg-white border-0 py-3">
-                                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-check text-success me-2"></i> Tình Trạng Nộp Bài Tập</h5>
+                            <div class="card card-premium h-100">
+                                <div class="card-premium-header">
+                                    <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                                        <span class="material-symbols-outlined text-success">assignment_turned_in</span>
+                                        Tình Trạng Nộp Bài Tập
+                                    </h5>
                                 </div>
-                                <div class="card-body py-2">
+                                <div class="card-body p-4">
                                     @if (Model.Assignments == null || !Model.Assignments.Any())
                                     {
                                         <p class="text-muted text-center py-4">Lớp chưa có bài tập nào được tạo.</p>
@@ -317,37 +298,38 @@
 
                                                 var submissionPercent = Model.TotalStudents > 0 ? (assignSubs.Count * 100 / Model.TotalStudents) : 0;
 
-                                                <div class="bg-light p-3 rounded shadow-sm border border-light">
+                                                <div class="bg-light p-3 rounded border border-light">
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                                         <span class="fw-bold text-dark small">@assign.Title</span>
-                                                        <span class="badge bg-light text-success border border-success rounded-pill">
+                                                        <span class="badge bg-white text-success border rounded-pill px-2">
                                                             @assignSubs.Count/@Model.TotalStudents Đã nộp
                                                         </span>
                                                     </div>
-                                                    <div class="text-muted mb-2" style="font-size: 0.75rem;">
-                                                        <i class="bi bi-calendar-event me-1"></i> Hạn: @(assign.DueDate.HasValue ? assign.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không giới hạn")
+                                                    <div class="text-muted mb-2 small d-flex align-items-center gap-1">
+                                                        <span class="material-symbols-outlined" style="font-size:14px;">calendar_month</span> 
+                                                        Hạn: @(assign.DueDate.HasValue ? assign.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không giới hạn")
                                                     </div>
-                                                    <div class="progress mb-2" style="height: 6px;">
-                                                        <div class="progress-bar bg-primary rounded" role="progressbar" style="width: @submissionPercent%;" aria-valuenow="@submissionPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    <div class="progress-track-custom mb-2">
+                                                        <div class="progress-fill-primary" style="width: @submissionPercent%;"></div>
                                                     </div>
                                                     
                                                     <div class="d-flex flex-column gap-1 small mt-2">
                                                         @if (unsubmittedStudents.Any())
                                                         {
-                                                            <span class="text-danger-emphasis" style="font-size: 0.8rem;">
+                                                            <span class="text-danger" style="font-size: 0.8rem; font-weight: 500;">
                                                                 <strong>Chưa nộp:</strong> @(string.Join(", ", unsubmittedStudents))
                                                             </span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-success" style="font-size: 0.8rem;">
-                                                                <i class="bi bi-check-all me-1"></i> 100% Học viên đã nộp bài
+                                                            <span class="text-success" style="font-size: 0.8rem; font-weight: 500;">
+                                                                <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> 100% Học viên đã nộp bài
                                                             </span>
                                                         }
 
                                                         @if (ungradedStudents.Any())
                                                         {
-                                                            <span class="text-warning-emphasis" style="font-size: 0.8rem;">
+                                                            <span class="text-warning" style="font-size: 0.8rem; font-weight: 500; color: #b07000 !important;">
                                                                 <strong>Chờ chấm điểm:</strong> @(string.Join(", ", ungradedStudents))
                                                             </span>
                                                         }
@@ -362,21 +344,23 @@
                     </div>
                 </div>
 
-                <!-- Curriculum (Lộ Trình Học) Tab -->
+                <!-- Learning Path (Lộ Trình Học) Tab -->
                 <div class="tab-pane fade" id="curriculum-content" role="tabpanel" aria-labelledby="curriculum-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lộ Trình Học</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">route</span> Lộ Trình Học
+                            </h4>
                             @if (Model.Class.Curriculum != null)
                             {
-                                <span class="badge bg-light text-primary rounded-pill px-3 py-2">@Model.Class.Curriculum.CurriculumName</span>
+                                <span class="badge bg-light text-primary border rounded-pill px-3 py-2 fw-bold">@Model.Class.Curriculum.CurriculumName</span>
                             }
                         </div>
                         <div class="card-body p-4">
                             @if (Model.Class.Curriculum == null)
                             {
-                                <div class="text-center text-muted py-4">
-                                    <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
+                                <div class="text-center text-muted py-5">
+                                    <span class="material-symbols-outlined opacity-50 mb-2" style="font-size: 48px;">folder_off</span>
                                     <h6 class="text-muted">Lớp này chưa có khung chương trình.</h6>
                                 </div>
                             }
@@ -387,8 +371,8 @@
 
                                 if (!chapters.Any())
                                 {
-                                    <div class="text-center text-muted py-4">
-                                        <i class="bi bi-journal display-6 d-block mb-2 opacity-50"></i>
+                                    <div class="text-center text-muted py-5">
+                                        <span class="material-symbols-outlined opacity-50 mb-2" style="font-size: 48px;">menu_book</span>
                                         <h6 class="text-muted">Khung chương trình chưa có bài học nào.</h6>
                                     </div>
                                 }
@@ -405,38 +389,40 @@
                                             var headingId = $"tc-heading-{chapter.Id}";
 
                                             var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
-                                            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                                                <h2 class="accordion-header d-flex align-items-center" id="@headingId">
-                                                    <button class="accordion-button @(i == 0 ? "" : "collapsed") fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
-                                                        <i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title
-                                                        <span class="badge bg-light text-muted rounded-pill ms-2 small">@lessons.Count bài</span>
+                                            <div class="accordion-item border-0 mb-3 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                                <h2 class="accordion-header d-flex align-items-center bg-white" id="@headingId" style="border-radius: 10px;">
+                                                    <button class="accordion-button accordion-premium-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="@(i == 0 ? "true" : "false")" aria-controls="@collapseId">
+                                                        <span class="material-symbols-outlined text-warning me-2">folder</span> 
+                                                        @chapter.Title
+                                                        <span class="badge bg-light text-muted border rounded-pill ms-2 small font-monospace">@lessons.Count bài</span>
                                                         <span class="node-lock-badge badge rounded-pill ms-2 @(chapterUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary")" data-node-id="@chapter.Id">
                                                             @if (chapterUnlocked)
                                                             {
-                                                                <i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>
+                                                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 14px;">lock_open</span>Đã mở</span>
                                                             }
                                                             else
                                                             {
-                                                                <i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>
+                                                                <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size: 14px;">lock</span>Đang khóa</span>
                                                             }
                                                         </span>
                                                     </button>
                                                     <button type="button"
-                                                            class="node-lock-toggle btn btn-sm rounded-pill px-3 me-3 flex-shrink-0 @(chapterUnlocked ? "btn-outline-warning" : "btn-outline-success")"
+                                                            class="node-lock-toggle btn btn-premium-outline btn-sm ms-3 me-3 flex-shrink-0 @(chapterUnlocked ? "btn-outline-warning" : "btn-outline-success")"
                                                             data-node-id="@chapter.Id"
                                                             data-unlocked="@(chapterUnlocked ? "true" : "false")"
-                                                            title="@(chapterUnlocked ? "Khóa chương này (khóa toàn bộ bài học bên trong)" : "Mở chương này cho học sinh (mở toàn bộ bài học bên trong)")">
+                                                            title="@(chapterUnlocked ? "Khóa chương này" : "Mở chương này cho học sinh")"
+                                                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                                                         @if (chapterUnlocked)
                                                         {
-                                                            <i class="bi bi-lock"></i> <span class="label">Khóa</span>
+                                                            <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">lock</span>Khóa</span>
                                                         }
                                                         else
                                                         {
-                                                            <i class="bi bi-unlock"></i> <span class="label">Mở</span>
+                                                            <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">lock_open</span>Mở</span>
                                                         }
                                                     </button>
                                                 </h2>
-                                                <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
+                                                <div id="@collapseId" class="accordion-collapse collapse accordion-premium-collapse @(i == 0 ? "show" : "")" aria-labelledby="@headingId" data-bs-parent="#teacherLearningPathAccordion">
                                                     <div class="accordion-body p-0">
                                                         @{
                                                             var chapterQuizzes = chapter.Quizzes.Where(q => q.ClassId == Model.Class.Id && !q.IsAlwaysOpen).ToList();
@@ -470,41 +456,43 @@
                                                         }
                                                         else if (lessons.Any())
                                                         {
-                                                            <ul class="list-group list-group-flush">
+                                                            <ul class="list-group list-group-flush mb-0">
                                                                 @foreach (var lesson in lessons)
                                                                 {
                                                                     var completedCount = Model.NodeCompletionCounts.TryGetValue(lesson.Id, out var c) ? c : 0;
                                                                     var lessonQuizzes = lesson.Quizzes.Where(q => q.ClassId == Model.Class.Id && !q.IsAlwaysOpen).ToList();
                                                                     
-                                                                    <li class="list-group-item d-flex flex-column py-3 px-4">
+                                                                    <li class="list-group-item d-flex flex-column py-3 px-4 bg-transparent border-bottom">
                                                                         <div class="d-flex justify-content-between align-items-center w-100">
                                                                             <div class="d-flex align-items-center gap-2">
-                                                                                <i class="bi bi-file-earmark-text text-primary"></i>
-                                                                                <span class="fw-medium">@lesson.Title</span>
+                                                                                <span class="material-symbols-outlined text-primary">article</span>
+                                                                                <span class="fw-bold text-dark">@lesson.Title</span>
                                                                                 @if (lesson.Materials.Any())
                                                                                 {
-                                                                                    <span class="badge bg-light text-muted rounded-pill">@lesson.Materials.Count tài liệu</span>
+                                                                                    <span class="badge bg-light text-muted border rounded-pill small">@lesson.Materials.Count tài liệu</span>
                                                                                 }
-                                                                                <span class="badge bg-light text-muted rounded-pill"><i class="bi bi-check2-circle me-1"></i>@completedCount/@Model.TotalStudents HS hoàn thành</span>
+                                                                                <span class="badge bg-light text-muted border rounded-pill small">
+                                                                                    <span class="material-symbols-outlined" style="font-size:14px; margin-right:2px;">check</span>@completedCount/@Model.TotalStudents HS hoàn thành
+                                                                                </span>
                                                                             </div>
                                                                             <div class="d-flex align-items-center gap-2">
                                                                                 <a asp-page="/StudentClasses/Lesson" asp-route-classId="@Model.Class.Id" asp-route-nodeId="@lesson.Id"
-                                                                                   class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                                                    Xem bài <i class="bi bi-eye ms-1"></i>
+                                                                                   class="btn btn-premium-outline btn-sm py-1 px-3" style="font-size: 0.8rem;">
+                                                                                    Xem bài <span class="material-symbols-outlined" style="font-size:14px; margin-left: 2px;">visibility</span>
                                                                                 </a>
                                                                             </div>
                                                                         </div>
 
                                                                         @if (lessonQuizzes.Any())
                                                                         {
-                                                                            <div class="mt-2 ps-4 d-flex flex-column gap-2">
+                                                                            <div class="mt-3 ps-4 d-flex flex-column gap-2 border-top pt-2">
                                                                                 @foreach (var quiz in lessonQuizzes)
                                                                                 {
-                                                                                    <div class="d-flex align-items-center justify-content-between py-2 border-top border-light">
+                                                                                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-light">
                                                                                         <div class="d-flex align-items-center gap-2">
-                                                                                            <i class="bi bi-file-earmark-check text-warning fs-5"></i>
+                                                                                            <span class="material-symbols-outlined text-warning" style="font-size: 20px;">assignment_turned_in</span>
                                                                                             <div>
-                                                                                                <span class="fw-semibold text-dark fs-7">@quiz.Title</span>
+                                                                                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">@quiz.Title</span>
                                                                                                 <span class="text-muted small d-block">@quiz.DurationMinutes phút | @quiz.QuizQuestions.Count câu</span>
                                                                                             </div>
                                                                                             <span class="badge @(quiz.Status == "Published" ? "bg-success bg-opacity-10 text-success" : "bg-secondary bg-opacity-10 text-secondary") ms-2">@quiz.Status</span>
@@ -528,20 +516,233 @@
                     </div>
                 </div>
 
+                <!-- Student Roster (Học Viên) Tab -->
+                <div class="tab-pane fade" id="students-content" role="tabpanel" aria-labelledby="students-tab">
+                    <div class="card card-premium">
+                        <div class="card-premium-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">group</span> Danh Sách Học Viên
+                            </h4>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-premium-outline px-3 send-email-btn shadow-sm text-nowrap" data-class-id="@Model.Class.Id" data-class-name="@Model.Class.ClassName">
+                                    <span class="material-symbols-outlined">mail</span> Gửi Email
+                                </button>
+                                <button type="button" class="btn btn-premium-outline px-3 shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                                    <span class="material-symbols-outlined">groups</span> Chia Nhóm (@(Model.Class.Groups?.Count ?? 0))
+                                </button>
+                                <button type="button" class="btn btn-premium-primary px-3 shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                                    <span class="material-symbols-outlined">person_add</span> Thêm Học Viên
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr class="table-light text-muted">
+                                            <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Học Viên</th>
+                                            <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Email</th>
+                                            <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Nhóm</th>
+                                            <th class="px-4 py-3 border-0 fw-semibold text-center text-uppercase small">Support Team</th>
+                                            <th class="px-4 py-3 border-0 fw-semibold text-center text-uppercase small">Lộ Trình</th>
+                                            <th class="px-4 py-3 border-0 fw-semibold text-end text-uppercase small" style="width: 120px;">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
+                                        {
+                                            var colorIndices = new[] { "blue", "pink", "purple" };
+                                            var index = 0;
+                                            foreach (var member in Model.Class.ClassMembers)
+                                            {
+                                                var colorClass = "avatar-bg-" + colorIndices[index % 3];
+                                                index++;
+                                                <tr class="border-bottom">
+                                                    <td class="px-4 py-3">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar-initials-circle @colorClass me-3">
+                                                                @(member.User?.Username?.FirstOrDefault() ?? '?')
+                                                            </div>
+                                                            <div class="fw-bold text-dark">@(member.User?.Username ?? "Unknown")</div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-secondary">@(member.User?.Email ?? "-")</td>
+                                                    <td class="px-4 py-3">
+                                                        @{
+                                                            var assignedGroup = Model.Class.Groups?.FirstOrDefault(g => g.GroupMembers.Any(gm => gm.StudentId == member.UserId));
+                                                        }
+                                                        <form method="post" asp-page-handler="AssignGroup" asp-route-id="@Model.Class.Id">
+                                                            <input type="hidden" name="studentId" value="@member.UserId" />
+                                                            <select name="groupId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px; max-width: 150px;" onchange="this.form.submit()">
+                                                                <option value="">Chưa có nhóm</option>
+                                                                @if (Model.Class.Groups != null)
+                                                                {
+                                                                    foreach (var group in Model.Class.Groups)
+                                                                    {
+                                                                        <option value="@group.Id" selected="@(assignedGroup?.Id == group.Id)">@group.GroupName</option>
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        </form>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        @if (member.IsSupportTeam == true)
+                                                        {
+                                                            <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill fw-bold">Có</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill fw-semibold">Không</span>
+                                                        }
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        <button type="button" class="btn btn-premium-outline btn-sm py-1.5 px-3" data-bs-toggle="modal" data-bs-target="#progressModal-@member.UserId">
+                                                            <span class="material-symbols-outlined" style="font-size:16px; margin-right:4px;">monitoring</span> Tiến độ
+                                                        </button>
+                                                        
+                                                        <!-- Modal Tiến độ học tập -->
+                                                        <div class="modal fade text-start" id="progressModal-@member.UserId" tabindex="-1" aria-labelledby="progressModalLabel-@member.UserId" aria-hidden="true">
+                                                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                                                <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                                                                    <div class="modal-header bg-light border-0 py-3">
+                                                                        <h5 class="modal-title fw-bold text-primary" id="progressModalLabel-@member.UserId">
+                                                                            <span class="material-symbols-outlined me-2">monitoring</span> Tiến độ: @(member.User?.Username ?? "Học viên")
+                                                                        </h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body p-4 bg-light">
+                                                                        @if (Model.Class.Curriculum == null)
+                                                                        {
+                                                                            <div class="text-center text-muted py-4">
+                                                                                <span class="material-symbols-outlined opacity-50 mb-2" style="font-size: 36px;">folder_off</span>
+                                                                                <h6>Lớp này chưa có khung chương trình.</h6>
+                                                                            </div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            var allNodes = Model.Class.Curriculum.Nodes;
+                                                                            var chapters = allNodes.Where(n => n.ParentNodeId == null).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+
+                                                                            if (!chapters.Any())
+                                                                            {
+                                                                                <div class="text-center text-muted py-4">
+                                                                                    <span class="material-symbols-outlined opacity-50 mb-2" style="font-size: 36px;">menu_book</span>
+                                                                                    <h6>Chưa có bài học nào trong chương trình.</h6>
+                                                                                </div>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <div class="d-flex flex-column gap-3">
+                                                                                    @foreach (var chapter in chapters)
+                                                                                    {
+                                                                                        var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
+                                                                                        var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
+                                                                                        
+                                                                                        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                                                                                            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                                                                                                <span class="fw-bold text-dark d-flex align-items-center gap-1"><span class="material-symbols-outlined text-warning" style="font-size: 18px;">folder</span> @chapter.Title</span>
+                                                                                                <span class="badge @(chapterUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") rounded-pill">
+                                                                                                    @(chapterUnlocked ? "Đang mở" : "Đang khóa")
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div class="card-body p-0 bg-white">
+                                                                                                @if (!lessons.Any())
+                                                                                                {
+                                                                                                    <div class="p-3 text-muted small italic">Chương này chưa có bài học.</div>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <ul class="list-group list-group-flush mb-0">
+                                                                                                        @foreach (var lesson in lessons)
+                                                                                                        {
+                                                                                                            var isCompleted = Model.StudentProgressMap.TryGetValue(member.UserId, out var dict) && dict.ContainsKey(lesson.Id);
+                                                                                                            var completedAt = isCompleted ? dict[lesson.Id] : null;
+                                                                                                            
+                                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2.5 px-3 border-0 border-top bg-transparent">
+                                                                                                                <div class="d-flex align-items-center gap-2">
+                                                                                                                    @if (isCompleted)
+                                                                                                                    {
+                                                                                                                        <span class="material-symbols-outlined text-success" style="font-size: 20px; font-variation-settings: 'FILL' 1;">check_circle</span>
+                                                                                                                    }
+                                                                                                                    else
+                                                                                                                    {
+                                                                                                                        <span class="material-symbols-outlined text-muted" style="font-size: 20px;">circle</span>
+                                                                                                                    }
+                                                                                                                    <span class="@(isCompleted ? "text-dark fw-bold" : "text-muted") small">@lesson.Title</span>
+                                                                                                                </div>
+                                                                                                                <div>
+                                                                                                                    @if (isCompleted)
+                                                                                                                    {
+                                                                                                                        <span class="badge bg-success-subtle text-success rounded-pill px-2" style="font-size: 0.75rem;">
+                                                                                                                            Hoàn thành @(completedAt.HasValue ? completedAt.Value.ToString("dd/MM/yyyy HH:mm") : "")
+                                                                                                                        </span>
+                                                                                                                    }
+                                                                                                                    else
+                                                                                                                    {
+                                                                                                                        <span class="badge bg-light text-secondary rounded-pill px-2" style="font-size: 0.75rem;">Chưa hoàn thành</span>
+                                                                                                                    }
+                                                                                                                </div>
+                                                                                                            </li>
+                                                                                                        }
+                                                                                                    </ul>
+                                                                                                }
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    }
+                                                                                </div>
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                    <div class="modal-footer border-0 bg-light py-2">
+                                                                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Đóng</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-end">
+                                                        <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
+                                                            <input type="hidden" name="memberUserId" value="@member.UserId" />
+                                                            <button type="submit" class="btn btn-premium-danger-outline btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">
+                                                                <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Xóa
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center py-5 text-muted">
+                                                    <span class="material-symbols-outlined opacity-50 mb-3" style="font-size: 48px;">group_off</span>
+                                                    <h6 class="text-muted">Chưa có học viên nào trong lớp</h6>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Assignments Tab -->
                 <div class="tab-pane fade" id="assignments-content" role="tabpanel" aria-labelledby="assignments-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Bài Tập</h4>
-                            <button type="button" class="btn btn-primary px-4 shadow-sm text-nowrap" style="background-color: #1a73e8; border: none; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
-                                + Tạo Bài Tập
+                    <div class="card card-premium">
+                        <div class="card-premium-header bg-white border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">assignment</span> Danh Sách Bài Tập
+                            </h4>
+                            <button type="button" class="btn btn-premium-primary px-3 shadow-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
+                                <span class="material-symbols-outlined">add_task</span> Tạo Bài Tập
                             </button>
                         </div>
                         <div class="card-body p-4">
                             @if (TempData["SuccessMessage"] != null)
                             {
                                 <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-                                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                                    <span class="material-symbols-outlined me-2 text-success">check_circle</span> @TempData["SuccessMessage"]
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
                             }
@@ -564,25 +765,24 @@
                                             : new List<Submission>();
                                         
                                         <div class="col-12">
-                                            <div class="card border shadow-sm rounded-3">
-                                                <div class="card-header bg-light p-3 d-flex justify-content-between align-items-center">
+                                            <div class="card border shadow-sm rounded-3 overflow-hidden">
+                                                <div class="card-header bg-light p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                                                     <div>
                                                         <h5 class="fw-bold text-dark mb-1">@assign.Title</h5>
-                                                        <span class="text-muted small me-3">
-                                                            <i class="bi bi-clock me-1"></i> Hạn: 
-                                                            @(assign.DueDate.HasValue ? assign.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không giới hạn")
-                                                        </span>
-                                                        @if (assign.Node != null)
-                                                        {
-                                                            <span class="badge bg-secondary">
-                                                                <i class="bi bi-journal-bookmark"></i> Bài học: @assign.Node.Title
-                                                            </span>
-                                                        }
+                                                        <div class="d-flex flex-wrap gap-3 align-items-center mt-1 text-muted small">
+                                                            <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:14px;">calendar_today</span> Hạn: @(assign.DueDate.HasValue ? assign.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không giới hạn")</span>
+                                                            @if (assign.Node != null)
+                                                            {
+                                                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2">
+                                                                    <span class="material-symbols-outlined" style="font-size: 12px; margin-right: 2px;">menu_book</span> Bài học: @assign.Node.Title
+                                                                </span>
+                                                            }
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <form method="post" asp-page-handler="DeleteAssignment" asp-route-id="@Model.Class.Id" asp-route-assignmentId="@assign.Id" class="d-inline">
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa bài tập này cùng toàn bộ bài nộp của học sinh?');">
-                                                                <i class="bi bi-trash"></i> Xóa
+                                                            <button type="submit" class="btn btn-premium-danger-outline btn-sm px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa bài tập này cùng toàn bộ bài nộp của học sinh?');">
+                                                                <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Xóa
                                                             </button>
                                                         </form>
                                                     </div>
@@ -590,13 +790,13 @@
                                                 <div class="card-body p-3">
                                                     @if (!string.IsNullOrEmpty(assign.RequirementText))
                                                     {
-                                                        <div class="mb-3 text-secondary p-2 bg-light rounded text-start" style="font-size: 0.9rem;">
+                                                        <div class="mb-3 text-secondary p-3 bg-light rounded text-start" style="font-size: 0.9rem; border-left: 3px solid var(--color-primary);">
                                                             <strong>Yêu cầu:</strong> @assign.RequirementText
                                                         </div>
                                                     }
 
-                                                    <h6 class="fw-bold text-primary mb-3">
-                                                        <i class="bi bi-people"></i> Tiến độ nộp bài của học viên (@submissions.Count / @(Model.Class.ClassMembers?.Count ?? 0) đã nộp)
+                                                    <h6 class="fw-bold text-primary mb-3 d-flex align-items-center gap-1">
+                                                        <span class="material-symbols-outlined">people</span> Tiến độ nộp bài của học viên (@submissions.Count / @(Model.Class.ClassMembers?.Count ?? 0) đã nộp)
                                                     </h6>
 
                                                     @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
@@ -605,26 +805,26 @@
                                                             <table class="table table-hover table-sm align-middle mb-0">
                                                                 <thead>
                                                                     <tr class="text-muted small">
-                                                                        <th>Học Viên</th>
-                                                                        <th>Trạng Thái</th>
-                                                                        <th>Ngày Nộp</th>
-                                                                        <th>Bài Làm (File)</th>
-                                                                        <th>Ghi chú</th>
-                                                                        <th>Điểm Số</th>
-                                                                        <th class="text-end">Thao Tác</th>
+                                                                        <th class="border-0">Học Viên</th>
+                                                                        <th class="border-0">Trạng Thái</th>
+                                                                        <th class="border-0">Ngày Nộp</th>
+                                                                        <th class="border-0">Bài Làm (File)</th>
+                                                                        <th class="border-0">Ghi chú</th>
+                                                                        <th class="border-0">Điểm Số</th>
+                                                                        <th class="border-0 text-end" style="width: 120px;">Thao Tác</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
                                                                     @foreach (var member in Model.Class.ClassMembers)
                                                                     {
                                                                         var sub = submissions.FirstOrDefault(s => s.StudentId == member.UserId);
-                                                                        <tr>
+                                                                        <tr class="border-bottom">
                                                                             <td>
-                                                                                <div class="d-flex align-items-center">
-                                                                                    <div class="rounded-circle bg-primary text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 28px; height: 28px; font-size: 12px;">
+                                                                                <div class="d-flex align-items-center py-1">
+                                                                                    <div class="rounded-circle bg-primary-container text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 28px; height: 28px; font-size: 12px; font-weight: 700; background-color: var(--color-primary-container);">
                                                                                         @(member.User?.Username?.FirstOrDefault() ?? '?')
                                                                                     </div>
-                                                                                    <span class="fw-medium">@member.User?.Username</span>
+                                                                                    <span class="fw-bold text-dark" style="font-size: 0.9rem;">@member.User?.Username</span>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
@@ -632,24 +832,24 @@
                                                                                 {
                                                                                     if (sub.Status == "Graded")
                                                                                     {
-                                                                                        <span class="badge bg-success-subtle text-success border border-success rounded-pill px-2">Đã chấm điểm</span>
+                                                                                        <span class="badge bg-success-subtle text-success border border-success px-2 rounded-pill">Đã chấm điểm</span>
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-2">Đã nộp</span>
+                                                                                        <span class="badge bg-primary-subtle text-primary border border-primary px-2 rounded-pill">Đã nộp</span>
                                                                                     }
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    <span class="badge bg-danger-subtle text-danger border border-danger rounded-pill px-2">Chưa nộp</span>
+                                                                                    <span class="badge bg-danger-subtle text-danger border border-danger px-2 rounded-pill">Chưa nộp</span>
                                                                                 }
                                                                             </td>
-                                                                            <td class="small text-muted">@(sub?.SubmitAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                                                            <td class="small text-secondary">@(sub?.SubmitAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
                                                                             <td>
                                                                                 @if (sub != null && !string.IsNullOrEmpty(sub.MediaUrl))
                                                                                 {
-                                                                                    <a href="@sub.MediaUrl" target="_blank" class="btn btn-outline-primary btn-xs px-2 py-1 rounded" style="font-size: 0.8rem;">
-                                                                                        <i class="bi bi-download"></i> Tải file
+                                                                                    <a href="@sub.MediaUrl" target="_blank" class="btn btn-premium-outline btn-sm py-1 px-2.5" style="font-size: 0.8rem;">
+                                                                                        <span class="material-symbols-outlined" style="font-size: 14px;">download</span> Tải file
                                                                                     </a>
                                                                                 }
                                                                                 else
@@ -657,7 +857,7 @@
                                                                                     <span class="text-muted">-</span>
                                                                                 }
                                                                             </td>
-                                                                            <td class="small text-truncate" style="max-width: 150px;" title="@sub?.ContentText">
+                                                                            <td class="small text-truncate text-secondary" style="max-width: 150px;" title="@sub?.ContentText">
                                                                                 @(sub?.ContentText ?? "-")
                                                                             </td>
                                                                             <td>
@@ -665,11 +865,11 @@
                                                                                 {
                                                                                     if (sub.Status == "Graded")
                                                                                     {
-                                                                                        <span class="badge bg-success">@sub.Score?.ToString("0.0") / 10</span>
+                                                                                        <span class="badge bg-success fw-bold" style="font-size: 0.85rem; padding: 0.35rem 0.6rem;">@sub.Score?.ToString("0.0") / 10</span>
                                                                                     }
                                                                                     else
                                                                                     {
-                                                                                        <span class="badge bg-warning text-dark">Chưa chấm</span>
+                                                                                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.85rem; padding: 0.35rem 0.6rem;">Chưa chấm</span>
                                                                                     }
                                                                                 }
                                                                                 else
@@ -680,13 +880,13 @@
                                                                             <td class="text-end">
                                                                                 @if (sub != null)
                                                                                 {
-                                                                                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="openGradeModal(@sub.Id, @(sub.Score?.ToString() ?? "null"), '@Html.Raw(sub.Feedback?.Replace("'", "\\'"))')">
+                                                                                    <button type="button" class="btn btn-premium-primary btn-sm px-3 py-1" style="font-size:0.8rem;" onclick="openGradeModal(@sub.Id, @(sub.Score?.ToString() ?? "null"), '@Html.Raw(sub.Feedback?.Replace("'", "\\'"))')">
                                                                                         Chấm điểm
                                                                                     </button>
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" disabled>
+                                                                                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-1" style="font-size:0.8rem; border-radius:var(--border-radius-button);" disabled>
                                                                                         Chấm điểm
                                                                                     </button>
                                                                                 }
@@ -707,237 +907,41 @@
                                             </div>
                                         </div>
                                     }
-                            </div>
-                        }
-                </div>
-            </div>
-        </div>
-
-                <!-- Students Tab -->
-                <div class="tab-pane fade" id="students-content" role="tabpanel" aria-labelledby="students-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Danh Sách Học Viên</h4>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary px-4 shadow-sm text-nowrap" style="border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#createGroupModal">
-                                    <i class="bi bi-people-fill"></i> Chia Nhóm (@(Model.Class.Groups?.Count ?? 0))
-                                </button>
-                                <button type="button" class="btn btn-primary px-4 shadow-sm text-nowrap" style="background-color: #1a73e8; border: none; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                                    + Thêm Học Viên
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="bg-light text-muted">
-                                        <tr>
-                                            <th class="px-4 py-3 border-0 fw-semibold">Học Viên</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold">Email</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold">Nhóm</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold text-center">Support Team</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold text-center">Lộ Trình</th>
-                                            <th class="px-4 py-3 border-0 fw-semibold text-end">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
-                                        {
-                                            foreach (var member in Model.Class.ClassMembers)
-                                            {
-                                                <tr class="align-middle">
-                                                    <td class="px-4 py-3">
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 35px; height: 35px; font-size: 14px; background-color: #4285f4;">
-                                                                @(member.User?.Username?.FirstOrDefault() ?? '?')
-                                                            </div>
-                                                            <div class="fw-medium text-dark">@(member.User?.Username ?? "Unknown")</div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-secondary">@(member.User?.Email ?? "-")</td>
-                                                    <td class="px-4 py-3">
-                                                        @{
-                                                            var assignedGroup = Model.Class.Groups?.FirstOrDefault(g => g.GroupMembers.Any(gm => gm.StudentId == member.UserId));
-                                                        }
-                                                        <form method="post" asp-page-handler="AssignGroup" asp-route-id="@Model.Class.Id">
-                                                            <input type="hidden" name="studentId" value="@member.UserId" />
-                                                            <select name="groupId" class="form-select form-select-sm shadow-sm" style="border-radius: 6px;" onchange="this.form.submit()">
-                                                                <option value="">Chưa có nhóm</option>
-                                                                @if (Model.Class.Groups != null)
-                                                                {
-                                                                    foreach (var group in Model.Class.Groups)
-                                                                    {
-                                                                        if (assignedGroup?.Id == group.Id)
-                                                                        {
-                                                                            <option value="@group.Id" selected>@group.GroupName</option>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            <option value="@group.Id">@group.GroupName</option>
-                                                                        }
-                                                                    }
-                                                                }
-                                                            </select>
-                                                        </form>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center">
-                                                        @if (member.IsSupportTeam == true)
-                                                        {
-                                                            <span class="badge bg-success rounded-pill px-3">Có</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-secondary rounded-pill px-3">Không</span>
-                                                        }
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center">
-                                                        <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#progressModal-@member.UserId">
-                                                            <i class="bi bi-journal-bookmark-fill me-1"></i> Xem tiến độ
-                                                        </button>
-                                                        
-                                                        <!-- Modal Tiến độ học tập -->
-                                                        <div class="modal fade text-start" id="progressModal-@member.UserId" tabindex="-1" aria-labelledby="progressModalLabel-@member.UserId" aria-hidden="true">
-                                                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                                                                <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                                                                    <div class="modal-header bg-light border-0 py-3">
-                                                                        <h5 class="modal-title fw-bold text-primary" id="progressModalLabel-@member.UserId">
-                                                                            <i class="bi bi-journal-bookmark-fill me-2"></i> Lộ trình học: @(member.User?.Username ?? "Học viên")
-                                                                        </h5>
-                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                    </div>
-                                                                    <div class="modal-body p-4" style="background-color: #fcfdfe;">
-                                                                        @if (Model.Class.Curriculum == null)
-                                                                        {
-                                                                            <div class="text-center text-muted py-4">
-                                                                                <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
-                                                                                <h6>Lớp này chưa có khung chương trình.</h6>
-                                                                            </div>
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            var allNodes = Model.Class.Curriculum.Nodes;
-                                                                            var chapters = allNodes.Where(n => n.ParentNodeId == null).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
-
-                                                                            if (!chapters.Any())
-                                                                            {
-                                                                                <div class="text-center text-muted py-4">
-                                                                                    <i class="bi bi-journal-x display-6 d-block mb-2 opacity-50"></i>
-                                                                                    <h6>Chưa có bài học nào trong chương trình.</h6>
-                                                                                </div>
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                <div class="d-flex flex-column gap-3">
-                                                                                    @foreach (var chapter in chapters)
-                                                                                    {
-                                                                                        var lessons = allNodes.Where(n => n.ParentNodeId == chapter.Id).OrderBy(n => n.NodeOrder).ThenBy(n => n.Id).ToList();
-                                                                                        var chapterUnlocked = Model.NodeUnlockStatus.TryGetValue(chapter.Id, out var cu) && cu;
-                                                                                        
-                                                                                        <div class="card border border-light shadow-sm rounded-3">
-                                                                                            <div class="card-header bg-white py-2 border-0 fw-bold d-flex justify-content-between align-items-center">
-                                                                                                <span style="color: #3c4043;"><i class="bi bi-folder-fill text-warning me-2"></i> @chapter.Title</span>
-                                                                                                <span class="badge @(chapterUnlocked ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary") rounded-pill">
-                                                                                                    @(chapterUnlocked ? "Đang mở" : "Đang khóa")
-                                                                                                </span>
-                                                                                            </div>
-                                                                                            <div class="card-body p-0">
-                                                                                                @if (!lessons.Any())
-                                                                                                {
-                                                                                                    <div class="p-3 text-muted small italic">Chương này chưa có bài học.</div>
-                                                                                                }
-                                                                                                else
-                                                                                                {
-                                                                                                    <ul class="list-group list-group-flush rounded-bottom">
-                                                                                                        @foreach (var lesson in lessons)
-                                                                                                        {
-                                                                                                            var isCompleted = Model.StudentProgressMap.TryGetValue(member.UserId, out var dict) && dict.ContainsKey(lesson.Id);
-                                                                                                            var completedAt = isCompleted ? dict[lesson.Id] : null;
-                                                                                                            
-                                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 border-0 border-top bg-transparent">
-                                                                                                                <div class="d-flex align-items-center gap-2">
-                                                                                                                    @if (isCompleted)
-                                                                                                                    {
-                                                                                                                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                                                                                                    }
-                                                                                                                    else
-                                                                                                                    {
-                                                                                                                        <i class="bi bi-circle text-muted fs-5"></i>
-                                                                                                                    }
-                                                                                                                    <span class="@(isCompleted ? "text-dark fw-medium" : "text-muted")">@lesson.Title</span>
-                                                                                                                </div>
-                                                                                                                <div>
-                                                                                                                    @if (isCompleted)
-                                                                                                                    {
-                                                                                                                        <span class="badge bg-success-subtle text-success rounded-pill" style="font-size: 0.8rem;">
-                                                                                                                            Hoàn thành @(completedAt.HasValue ? completedAt.Value.ToString("dd/MM/yyyy HH:mm") : "")
-                                                                                                                        </span>
-                                                                                                                    }
-                                                                                                                    else
-                                                                                                                    {
-                                                                                                                        <span class="badge bg-light text-secondary rounded-pill" style="font-size: 0.8rem;">Chưa hoàn thành</span>
-                                                                                                                    }
-                                                                                                                </div>
-                                                                                                            </li>
-                                                                                                        }
-                                                                                                    </ul>
-                                                                                                }
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    }
-                                                                                </div>
-                                                                            }
-                                                                        }
-                                                                    </div>
-                                                                    <div class="modal-footer border-0 bg-light py-2">
-                                                                        <button type="button" class="btn btn-secondary px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Đóng</button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-end">
-                                                        <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
-                                                            <input type="hidden" name="memberUserId" value="@member.UserId" />
-                                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">Xóa</button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <tr>
-                                                <td colspan="6" class="text-center py-5 text-muted">
-                                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                                    <h6 class="text-muted">Chưa có học viên nào trong lớp</h6>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5 text-muted">
+                                    <span class="material-symbols-outlined opacity-50 mb-2" style="font-size:48px;">assignment_late</span>
+                                    <h6 class="text-muted">Lớp chưa có bài tập nào được tạo.</h6>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
 
-                <!-- Q&A Tab -->
+                <!-- Q&A (Hỏi & Đáp) Tab -->
                 <div class="tab-pane fade" id="qa-content" role="tabpanel" aria-labelledby="qa-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Hỏi & Đáp Lớp Học</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header bg-white border-bottom">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">forum</span> Hỏi & Đáp Lớp Học
+                            </h4>
                         </div>
                         <div class="card-body p-4">
                             <!-- Question Submission Form -->
-                            <div class="card border mb-4 shadow-sm" style="border-radius: 10px;">
+                            <div class="card border-0 shadow-sm mb-4 bg-light" style="border-radius: 10px;">
                                 <div class="card-body p-3">
-                                    <h6 class="fw-bold mb-3"><i class="bi bi-question-circle text-primary"></i> Đặt câu hỏi mới</h6>
+                                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                                        <span class="material-symbols-outlined text-primary">contact_support</span> Đặt câu hỏi mới
+                                    </h6>
                                     <form id="createThreadForm" method="post">
                                         @Html.AntiForgeryToken()
                                         <div class="mb-3">
-                                            <textarea id="questionTextInput" class="form-control" rows="3" placeholder="Nhập câu hỏi của bạn ở đây..." required style="border-radius: 8px;"></textarea>
+                                            <textarea id="questionTextInput" class="form-control bg-white" rows="3" placeholder="Nhập câu hỏi thảo luận hoặc thắc mắc của bạn ở đây..." required style="border-radius: 8px;"></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #1a73e8; border: none;">
-                                            Đăng câu hỏi <i class="bi bi-send ms-1"></i>
+                                        <button type="submit" class="btn btn-premium-primary px-4">
+                                            Đăng câu hỏi <span class="material-symbols-outlined" style="font-size:16px; margin-left:4px;">send</span>
                                         </button>
                                     </form>
                                 </div>
@@ -949,59 +953,57 @@
                                 {
                                     foreach (var thread in Model.QaThreads)
                                     {
-                                        <div class="card border shadow-sm qa-thread-card" data-thread-id="@thread.Id" style="border-radius: 10px; overflow: hidden;">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px; font-size: 13px;">
-                                                            @(thread.Student?.Username?.FirstOrDefault() ?? '?')
-                                                        </div>
-                                                        <div>
-                                                            <strong class="text-dark">@(thread.Student?.Username ?? "Học viên")</strong>
-                                                            <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
-                                                        </div>
+                                        <div class="qa-thread-box p-4 qa-thread-card" data-thread-id="@thread.Id">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle bg-primary-container text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px; font-size: 13px; font-weight: 700; background-color: var(--color-primary-container);">
+                                                        @(thread.Student?.Username?.FirstOrDefault() ?? '?')
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-dark">@(thread.Student?.Username ?? "Học viên")</strong>
+                                                        <span class="text-muted small ms-2">@thread.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
                                                     </div>
                                                 </div>
-                                                <p class="text-dark mb-3 fs-5" style="white-space: pre-wrap;">@thread.QuestionText</p>
-                                                
-                                                <!-- Replies Section -->
-                                                <div class="bg-light p-3 rounded" style="border-radius: 8px;">
-                                                    <h6 class="fw-bold text-muted mb-2 small"><i class="bi bi-chat-left-text"></i> Câu trả lời</h6>
-                                                    <div class="replies-list d-flex flex-column gap-2 mb-3" data-thread-id="@thread.Id">
-                                                        @if (thread.QaReplies != null && thread.QaReplies.Any())
+                                            </div>
+                                            <p class="text-dark mb-3 fw-bold" style="white-space: pre-wrap; font-size: 1.05rem;">@thread.QuestionText</p>
+                                            
+                                            <!-- Replies Section -->
+                                            <div class="qa-replies-container">
+                                                <h6 class="fw-bold text-secondary mb-3 small d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">forum</span> Câu trả lời</h6>
+                                                <div class="replies-list d-flex flex-column gap-2 mb-3" data-thread-id="@thread.Id">
+                                                    @if (thread.QaReplies != null && thread.QaReplies.Any())
+                                                    {
+                                                        foreach (var reply in thread.QaReplies)
                                                         {
-                                                            foreach (var reply in thread.QaReplies)
-                                                            {
-                                                                var isTeacherReply = reply.User?.Role == "Teacher" || reply.User?.Role == "Manager" || reply.User?.Role == "Admin";
-                                                                <div class="border-bottom pb-2">
-                                                                    <div class="d-flex align-items-center mb-1">
-                                                                        <strong class="@(isTeacherReply ? "text-primary" : "text-dark") small">
-                                                                            @(reply.User?.Username ?? "User")
-                                                                            @if (isTeacherReply)
-                                                                            {
-                                                                                <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>
-                                                                            }
-                                                                        </strong>
-                                                                        <span class="text-muted small ms-2" style="font-size: 0.75rem;">@reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
-                                                                    </div>
-                                                                    <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">@reply.ReplyText</p>
+                                                            var isTeacherReply = reply.User?.Role == "Teacher" || reply.User?.Role == "Manager" || reply.User?.Role == "Admin";
+                                                            <div class="qa-reply-bubble">
+                                                                <div class="d-flex align-items-center mb-1">
+                                                                    <strong class="@(isTeacherReply ? "text-primary" : "text-dark") small font-weight-bold">
+                                                                        @(reply.User?.Username ?? "User")
+                                                                        @if (isTeacherReply)
+                                                                        {
+                                                                            <span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem; font-weight:700;">Giáo viên</span>
+                                                                        }
+                                                                    </strong>
+                                                                    <span class="text-muted small ms-2" style="font-size: 0.7rem;">@reply.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
                                                                 </div>
-                                                            }
+                                                                <p class="mb-0 text-dark small" style="white-space: pre-wrap;">@reply.ReplyText</p>
+                                                            </div>
                                                         }
-                                                        else
-                                                        {
-                                                            <p class="text-muted small mb-0 no-replies-text">Chưa có câu trả lời nào. Hãy là người đầu tiên giúp đỡ!</p>
-                                                        }
-                                                    </div>
-                                                    
-                                                    <!-- Reply Form -->
-                                                    <form class="create-reply-form d-flex gap-2" data-thread-id="@thread.Id">
-                                                        <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết phản hồi..." required style="border-radius: 20px;" />
-                                                        <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #1a73e8; border: none;">
-                                                            <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>
-                                                        </button>
-                                                    </form>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="text-muted small mb-0 no-replies-text">Chưa có câu trả lời nào. Hãy phản hồi để hỗ trợ học viên!</p>
+                                                    }
                                                 </div>
+                                                
+                                                <!-- Reply Form -->
+                                                <form class="create-reply-form d-flex gap-2 align-items-center mt-3" data-thread-id="@thread.Id">
+                                                    <input type="text" class="form-control form-control-sm reply-input bg-white px-3 py-2" placeholder="Viết phản hồi hoặc trả lời..." required style="border-radius: 20px;" />
+                                                    <button type="submit" class="btn btn-premium-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; padding: 0;">
+                                                        <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
                                     }
@@ -1009,8 +1011,8 @@
                                 else
                                 {
                                     <div id="noThreadsMessage" class="text-center py-5 text-muted bg-light rounded border">
-                                        <i class="bi bi-chat-square-text display-6 d-block mb-2 opacity-50"></i>
-                                        <h6 class="text-muted">Chưa có chủ đề thảo luận nào. Đặt câu hỏi đầu tiên!</h6>
+                                        <span class="material-symbols-outlined opacity-50 mb-2" style="font-size:48px;">chat_bubble_outline</span>
+                                        <h6 class="text-muted font-bold">Chưa có chủ đề thảo luận nào. Đặt câu hỏi đầu tiên!</h6>
                                     </div>
                                 }
                             </div>
@@ -1020,22 +1022,24 @@
 
                 <!-- Schedule Tab -->
                 <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-                        <div class="card-header bg-white p-4 border-bottom">
-                            <h4 class="fw-bold mb-0" style="color: #1a73e8;">Lịch Học Của Lớp</h4>
+                    <div class="card card-premium">
+                        <div class="card-premium-header bg-white border-bottom">
+                            <h4 class="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined">calendar_month</span> Lịch Học Của Lớp
+                            </h4>
                         </div>
                         <div class="card-body p-4">
                             @if (Model.Class.ClassSchedules != null && Model.Class.ClassSchedules.Any())
                             {
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle mb-0">
-                                        <thead class="bg-light text-muted">
-                                            <tr>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Buổi</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Ngày học</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Thời gian</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Phòng học</th>
-                                                <th class="px-4 py-3 border-0 fw-semibold">Trạng thái</th>
+                                        <thead>
+                                            <tr class="table-light text-muted">
+                                                <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Buổi</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Ngày học</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Thời gian</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Phòng học</th>
+                                                <th class="px-4 py-3 border-0 fw-semibold text-uppercase small">Trạng thái</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1049,38 +1053,38 @@
                                                 var isToday = schedule.StudyDate == DateOnly.FromDateTime(DateTime.Now);
                                                 var dayName = Flipped_Classroom.Services.ScheduleSlotHelper.GetVietnameseDayName(schedule.StudyDate.DayOfWeek);
                                                 
-                                                <tr class="align-middle @(isPast ? "opacity-50" : "")">
-                                                    <td class="px-4 py-3 fw-semibold">Buổi @sessionNum</td>
+                                                <tr class="align-middle border-bottom @(isPast ? "opacity-50" : "")">
+                                                    <td class="px-4 py-3 fw-bold text-dark">Buổi @sessionNum</td>
                                                     <td class="px-4 py-3">
-                                                        <div class="fw-semibold">@schedule.StudyDate.ToString("dd/MM/yyyy")</div>
-                                                        <small class="text-muted">@dayName</small>
+                                                        <div class="fw-bold">@schedule.StudyDate.ToString("dd/MM/yyyy")</div>
+                                                        <small class="text-secondary font-weight-medium">@dayName</small>
                                                     </td>
-                                                    <td class="px-4 py-3 text-primary">
-                                                        <i class="bi bi-clock me-1"></i>
+                                                    <td class="px-4 py-3 text-primary font-weight-bold">
+                                                        <span class="material-symbols-outlined" style="font-size:16px; margin-right:4px;">schedule</span>
                                                         @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
                                                     </td>
-                                                    <td class="px-4 py-3">
+                                                    <td class="px-4 py-3 text-dark font-weight-medium">
                                                         @if (!string.IsNullOrEmpty(schedule.Room))
                                                         {
-                                                            <span><i class="bi bi-geo-alt me-1 text-muted"></i>@schedule.Room</span>
+                                                            <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined text-secondary" style="font-size:16px;">location_on</span>@schedule.Room</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="text-muted fst-italic">Trực tuyến</span>
+                                                            <span class="text-muted fst-italic d-flex align-items-center gap-1"><span class="material-symbols-outlined text-secondary" style="font-size:16px;">laptop_mac</span>Trực tuyến</span>
                                                         }
                                                     </td>
                                                     <td class="px-4 py-3">
                                                         @if (isToday)
                                                         {
-                                                            <span class="badge bg-danger rounded-pill px-3">Hôm nay</span>
+                                                            <span class="badge bg-danger text-white rounded-pill px-3 py-1.5 fw-bold shadow-sm">Hôm nay</span>
                                                         }
                                                         else if (isPast)
                                                         {
-                                                            <span class="badge bg-secondary rounded-pill px-3">Đã qua</span>
+                                                            <span class="badge bg-secondary text-white rounded-pill px-3 py-1.5 fw-medium">Đã qua</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge bg-success rounded-pill px-3">Sắp tới</span>
+                                                            <span class="badge bg-success text-white rounded-pill px-3 py-1.5 fw-bold shadow-sm">Sắp tới</span>
                                                         }
                                                     </td>
                                                 </tr>
@@ -1092,7 +1096,7 @@
                             else
                             {
                                 <div class="text-center py-5 text-muted">
-                                    <i class="bi bi-calendar-x display-6 d-block mb-2 opacity-50"></i>
+                                    <span class="material-symbols-outlined opacity-50 mb-2" style="font-size: 48px;">calendar_today</span>
                                     <h6 class="text-muted">Lớp học này chưa được xếp lịch học.</h6>
                                 </div>
                             }
@@ -1110,7 +1114,9 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="AddStudents" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="addStudentModalLabel">Thêm Học Viên Mới</h5>
+                    <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="addStudentModalLabel">
+                        <span class="material-symbols-outlined">person_add</span> Thêm Học Viên Mới
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -1118,19 +1124,19 @@
                     @if (Model.AvailableUsers != null && Model.AvailableUsers.Any())
                     {
                         <div class="mb-3 position-relative">
-                            <input type="text" class="form-control" id="studentSearchInput" placeholder="Tìm kiếm học viên..." autocomplete="off" style="border-radius: 8px; border-color: #ced4da; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22none%22 stroke=%22%23343a40%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 stroke-width=%222%22 d=%22M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z%22/></svg>'); background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 16px; padding-right: 2.5rem;" />
+                            <input type="text" class="form-control" id="studentSearchInput" placeholder="Tìm kiếm học viên..." autocomplete="off" style="border-radius: 8px; border-color: #ced4da; padding-right: 2.5rem;" />
                         </div>
-                        <div class="list-group list-group-flush border rounded" id="studentListGroup" style="max-height: 350px; overflow-y: auto;">
+                        <div class="list-group list-group-flush border rounded-3" id="studentListGroup" style="max-height: 350px; overflow-y: auto;">
                             @foreach (var user in Model.AvailableUsers)
                             {
-                                <label class="list-group-item d-flex gap-3 align-items-center p-3 list-group-item-action student-option" style="cursor: pointer;">
-                                    <input class="form-check-input flex-shrink-0" type="checkbox" name="SelectedStudentIds" value="@user.Id" style="font-size: 1.2em;">
+                                <label class="list-group-item d-flex gap-3 align-items-center p-3 list-group-item-action student-option" style="cursor: pointer; border-bottom: 1px solid var(--color-surface-container);">
+                                    <input class="form-check-input flex-shrink-0" type="checkbox" name="SelectedStudentIds" value="@user.Id" style="font-size: 1.2em; border-radius: 4px;">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 32px; height: 32px; font-size: 14px; background-color: #5f6368;">
+                                        <div class="avatar-initials-circle bg-primary me-3 text-white">
                                             @(user.Username?.FirstOrDefault() ?? '?')
                                         </div>
                                         <div>
-                                            <h6 class="mb-0 fw-medium">@user.Username</h6>
+                                            <h6 class="mb-0 fw-bold text-dark">@user.Username</h6>
                                             @if (!string.IsNullOrEmpty(user.Email))
                                             {
                                                 <small class="text-muted">@user.Email</small>
@@ -1143,14 +1149,14 @@
                     }
                     else
                     {
-                        <div class="text-center py-4 bg-light rounded">
-                            <p class="text-muted mb-0">Không có học viên nào khả dụng ?? thêm.</p>
+                        <div class="text-center py-4 bg-light rounded-3">
+                            <p class="text-muted mb-0">Không có học viên nào khả dụng để thêm.</p>
                         </div>
                     }
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
                     <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Thêm</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4 shadow-sm">Xác Nhận Thêm</button>
                 </div>
             </form>
         </div>
@@ -1163,23 +1169,25 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="createGroupModalLabel">Tạo Nhóm Mới</h5>
+                    <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="createGroupModalLabel">
+                        <span class="material-symbols-outlined">groups</span> Tạo Nhóm Mới
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-4">
                         <label class="form-label fw-bold text-dark">Danh Sách Học Viên Hiện Tại (@(Model.Class.ClassMembers?.Count ?? 0))</label>
-                        <div class="list-group list-group-flush border rounded" style="max-height: 200px; overflow-y: auto;">
+                        <div class="list-group list-group-flush border rounded-3" style="max-height: 200px; overflow-y: auto;">
                             @if (Model.Class.ClassMembers != null && Model.Class.ClassMembers.Any())
                             {
                                 foreach (var member in Model.Class.ClassMembers)
                                 {
-                                    <div class="list-group-item d-flex align-items-center gap-3 px-3 py-2 bg-light">
-                                        <div class="rounded-circle d-flex justify-content-center align-items-center text-white" style="width: 30px; height: 30px; font-size: 13px; background-color: #4285f4;">
+                                    <div class="list-group-item d-flex align-items-center gap-3 px-3 py-2 bg-light border-bottom">
+                                        <div class="avatar-initials-circle bg-primary text-white" style="width: 28px; height: 28px; font-size:12px;">
                                             @(member.User?.Username?.FirstOrDefault() ?? '?')
                                         </div>
                                         <div class="d-flex flex-column">
-                                            <span class="fw-medium small text-dark mb-0" style="line-height:1.2;">@member.User?.Username</span>
+                                            <span class="fw-bold small text-dark mb-0" style="line-height:1.2;">@member.User?.Username</span>
                                             @if (!string.IsNullOrEmpty(member.User?.Email))
                                             {
                                                 <span class="text-muted" style="font-size: 0.75rem; line-height:1.2;">@member.User.Email</span>
@@ -1190,20 +1198,20 @@
                             }
                             else
                             {
-                                <div class="p-3 text-center text-muted small">Chưa có học viên nào đã chia nhóm.</div>
+                                <div class="p-3 text-center text-muted small">Chưa có học viên nào để chia nhóm.</div>
                             }
                         </div>
                     </div>
 
                     <p class="text-muted small mb-3">Nhập số lượng nhóm bạn muốn tạo cho lớp học này:</p>
                     <div class="mb-3">
-                        <label for="NumberOfGroupsToCreate" class="form-label fw-medium">Số lượng nhóm</label>
+                        <label for="NumberOfGroupsToCreate" class="form-label fw-bold">Số lượng nhóm</label>
                         <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="6" required style="border-radius: 8px; border-color: #ced4da;" />
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
                     <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Tạo</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4 shadow-sm">Xác Nhận Tạo</button>
                 </div>
             </form>
         </div>
@@ -1216,7 +1224,9 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="CreateAssignment" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="createAssignmentModalLabel">Tạo Chủ Đề Bài Tập Mới</h5>
+                    <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="createAssignmentModalLabel">
+                        <span class="material-symbols-outlined">add_task</span> Tạo Chủ Đề Bài Tập Mới
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -1227,7 +1237,7 @@
 
                     <div class="mb-3">
                         <label for="NewAssignment_RequirementText" class="form-label fw-bold">Yêu cầu & Hướng dẫn</label>
-                        <textarea name="NewAssignment.RequirementText" id="NewAssignment_RequirementText" class="form-control" rows="3" placeholder="Yêu cầu học viên nói về gia đình bằng tiếng Nhật..." style="border-radius: 8px;"></textarea>
+                        <textarea name="NewAssignment.RequirementText" id="NewAssignment_RequirementText" class="form-control" rows="3" placeholder="Ví dụ: Nêu suy nghĩ của bạn bằng tiếng Nhật..." style="border-radius: 8px;"></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -1256,7 +1266,7 @@
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
                     <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Xác Nhận Tạo</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4 shadow-sm">Xác Nhận Tạo</button>
                 </div>
             </form>
         </div>
@@ -1269,7 +1279,9 @@
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
             <form method="post" asp-page-handler="GradeSubmission" asp-route-id="@Model.Class.Id">
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold text-primary" id="gradeSubmissionModalLabel">Chấm Điểm Bài Nộp</h5>
+                    <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="gradeSubmissionModalLabel">
+                        <span class="material-symbols-outlined">edit_square</span> Chấm Điểm Bài Nộp
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -1287,7 +1299,7 @@
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
                     <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">Lưu Kết Quả</button>
+                    <button type="submit" class="btn btn-premium-primary rounded-pill px-4 shadow-sm">Lưu Kết Quả</button>
                 </div>
             </form>
         </div>
@@ -1381,34 +1393,32 @@
                             }
 
                             const threadHtml = `
-                                <div class="card border shadow-sm qa-thread-card" data-thread-id="${result.thread.id}" style="border-radius: 10px; overflow: hidden;">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-secondary text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px; font-size: 13px;">
-                                                    ${result.thread.studentName.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <strong class="text-dark">${result.thread.studentName}</strong>
-                                                    <span class="text-muted small ms-2">${result.thread.createdAtFormatted}</span>
-                                                </div>
+                                <div class="qa-thread-box p-4 qa-thread-card mb-3" data-thread-id="${result.thread.id}">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-primary-container text-white text-center me-2 d-flex justify-content-center align-items-center" style="width: 32px; height: 32px; font-size: 13px; font-weight: 700; background-color: var(--color-primary-container);">
+                                                ${result.thread.studentName.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark">${result.thread.studentName}</strong>
+                                                <span class="text-muted small ms-2">${result.thread.createdAtFormatted}</span>
                                             </div>
                                         </div>
-                                        <p class="text-dark mb-3 fs-5" style="white-space: pre-wrap;">${result.thread.questionText}</p>
+                                    </div>
+                                    <p class="text-dark mb-3 fw-bold" style="white-space: pre-wrap; font-size: 1.05rem;">${result.thread.questionText}</p>
+                                    
+                                    <div class="qa-replies-container">
+                                        <h6 class="fw-bold text-secondary mb-3 small d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">forum</span> Câu trả lời</h6>
+                                        <div class="replies-list d-flex flex-column gap-2 mb-3" data-thread-id="${result.thread.id}">
+                                            <p class="text-muted small mb-0 no-replies-text">Chưa có câu trả lời nào. Hãy phản hồi để hỗ trợ học viên!</p>
+                                        </div>
                                         
-                                        <div class="bg-light p-3 rounded" style="border-radius: 8px;">
-                                            <h6 class="fw-bold text-muted mb-2 small"><i class="bi bi-chat-left-text"></i> Câu trả lời</h6>
-                                            <div class="replies-list d-flex flex-column gap-2 mb-3" data-thread-id="${result.thread.id}">
-                                                <p class="text-muted small mb-0 no-replies-text">Chưa có câu trả lời nào. Hãy là người đầu tiên giúp đỡ!</p>
-                                            </div>
-                                            
-                                            <form class="create-reply-form d-flex gap-2" data-thread-id="${result.thread.id}">
-                                                <input type="text" class="form-control form-control-sm reply-input" placeholder="Viết phản hồi..." required style="border-radius: 20px;" />
-                                                <button type="submit" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background-color: #1a73e8; border: none;">
-                                                    <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <form class="create-reply-form d-flex gap-2 align-items-center mt-3" data-thread-id="${result.thread.id}">
+                                            <input type="text" class="form-control form-control-sm reply-input bg-white px-3 py-2" placeholder="Viết phản hồi hoặc trả lời..." required style="border-radius: 20px;" />
+                                            <button type="submit" class="btn btn-premium-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; padding:0;">
+                                                <span class="material-symbols-outlined" style="font-size: 18px;">send</span>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             `;
@@ -1473,15 +1483,15 @@
 
                                 const isTeacher = result.reply.userRole === 'Teacher' || result.reply.userRole === 'Manager' || result.reply.userRole === 'Admin';
                                 const replyHtml = `
-                                    <div class="border-bottom pb-2">
+                                    <div class="qa-reply-bubble">
                                         <div class="d-flex align-items-center mb-1">
-                                            <strong class="${isTeacher ? 'text-primary' : 'text-dark'} small">
+                                            <strong class="${isTeacher ? 'text-primary' : 'text-dark'} small font-weight-bold">
                                                 ${result.reply.userName}
-                                                ${isTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.75rem;">Giáo viên</span>' : ''}
+                                                ${isTeacher ? '<span class="badge bg-primary-subtle text-primary ms-1" style="font-size: 0.7rem; font-weight:700;">Giáo viên</span>' : ''}
                                             </strong>
-                                            <span class="text-muted small ms-2" style="font-size: 0.75rem;">${result.reply.createdAtFormatted}</span>
+                                            <span class="text-muted small ms-2" style="font-size: 0.7rem;">${result.reply.createdAtFormatted}</span>
                                         </div>
-                                        <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
+                                        <p class="mb-0 text-dark small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
                                     </div>
                                 `;
                                 repliesList.insertAdjacentHTML('beforeend', replyHtml);
@@ -1538,12 +1548,10 @@
 
                         // Cập nhật nút
                         btn.dataset.unlocked = unlocked ? 'true' : 'false';
-                        btn.classList.toggle('btn-outline-warning', unlocked);
-                        btn.classList.toggle('btn-outline-success', !unlocked);
                         btn.title = unlocked ? 'Khóa bài học này' : 'Mở bài học này cho học sinh';
                         btn.innerHTML = unlocked
-                            ? '<i class="bi bi-lock"></i> <span class="label">Khóa</span>'
-                            : '<i class="bi bi-unlock"></i> <span class="label">Mở</span>';
+                            ? '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">lock</span>Khóa</span>'
+                            : '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">lock_open</span>Mở</span>';
 
                         // Cập nhật badge tương ứng
                         const badge = accordion.querySelector('.node-lock-badge[data-node-id="' + nodeId + '"]');
@@ -1553,8 +1561,8 @@
                             badge.classList.toggle('bg-secondary-subtle', !unlocked);
                             badge.classList.toggle('text-secondary', !unlocked);
                             badge.innerHTML = unlocked
-                                ? '<i class="bi bi-unlock-fill me-1"></i><span>Đã mở</span>'
-                                : '<i class="bi bi-lock-fill me-1"></i><span>Đang khóa</span>';
+                                ? '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:14px;">lock_open</span>Đã mở</span>'
+                                : '<span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:14px;">lock</span>Đang khóa</span>';
                         }
                     } catch (err) {
                         btn.innerHTML = originalHtml;
@@ -1564,6 +1572,229 @@
                     }
                 });
             }
+        });
+    </script>
+
+    <!-- Email Notification Modal -->
+    <div class="modal fade" id="emailNotificationModal" tabindex="-1" aria-labelledby="emailNotificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; background: var(--color-surface-container);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="emailNotificationModalLabel" style="color: var(--color-on-background);">
+                        <span class="material-symbols-outlined text-primary">mail</span>
+                        Gửi Email Thông Báo - <span id="modalClassName" class="text-primary"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <form id="emailNotificationForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="emailClassId" name="classId" />
+
+                        <!-- Recipient Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase tracking-wider text-muted">Người nhận</label>
+                            <div class="d-flex gap-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="recipientType" id="recipientAll" value="all" checked>
+                                    <label class="form-check-label fw-medium" for="recipientAll">
+                                        Tất cả học viên
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="recipientType" id="recipientSelect" value="select">
+                                    <label class="form-check-label fw-medium" for="recipientSelect">
+                                        Chọn học viên cụ thể
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Student List (Hidden by default, shown when recipientSelect is active) -->
+                            <div id="studentSelectionContainer" class="border rounded p-3 bg-light" style="display: none; max-height: 200px; overflow-y: auto;">
+                                <div class="form-check mb-2 pb-2 border-bottom">
+                                    <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                                    <label class="form-check-label fw-bold text-dark" for="selectAllStudents">
+                                        Chọn tất cả
+                                    </label>
+                                </div>
+                                <div id="studentListContainer">
+                                    <!-- Populated via AJAX -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="mb-3">
+                            <label for="emailSubject" class="form-label fw-bold small text-uppercase tracking-wider text-muted">Tiêu đề (Subject)</label>
+                            <input type="text" class="form-control rounded-3" id="emailSubject" name="subject" placeholder="Nhập tiêu đề thông báo..." required>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="mb-3">
+                            <label for="emailBody" class="form-label fw-bold small text-uppercase tracking-wider text-muted">Nội dung thông báo (Body)</label>
+                            <textarea class="form-control rounded-3" id="emailBody" name="body" rows="6" placeholder="Nhập nội dung chi tiết..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-premium-outline" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-premium-primary" id="btnSendEmail">
+                        <span class="d-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">send</span> Gửi Email
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modal = new bootstrap.Modal(document.getElementById('emailNotificationModal'));
+            const modalClassName = document.getElementById('modalClassName');
+            const emailClassId = document.getElementById('emailClassId');
+            const studentSelectionContainer = document.getElementById('studentSelectionContainer');
+            const studentListContainer = document.getElementById('studentListContainer');
+            const selectAllStudents = document.getElementById('selectAllStudents');
+            const btnSendEmail = document.getElementById('btnSendEmail');
+            const form = document.getElementById('emailNotificationForm');
+
+            // Toggle recipient selector list
+            document.querySelectorAll('input[name="recipientType"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'select') {
+                        studentSelectionContainer.style.display = 'block';
+                    } else {
+                        studentSelectionContainer.style.display = 'none';
+                    }
+                });
+            });
+
+            // Select/Deselect all students checkbox
+            selectAllStudents.addEventListener('change', function () {
+                document.querySelectorAll('.student-checkbox').forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+
+            // Click "Gửi Email" button
+            document.querySelectorAll('.send-email-btn').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const classId = this.dataset.classId;
+                    const className = this.dataset.className;
+
+                    modalClassName.textContent = className;
+                    emailClassId.value = classId;
+                    studentListContainer.innerHTML = '<div class="text-center py-2"><span class="spinner-border spinner-border-sm text-primary"></span> Đang tải...</div>';
+                    
+                    // Reset form fields
+                    document.getElementById('emailSubject').value = '';
+                    document.getElementById('emailBody').value = '';
+                    document.getElementById('recipientAll').checked = true;
+                    studentSelectionContainer.style.display = 'none';
+                    selectAllStudents.checked = false;
+
+                    modal.show();
+
+                    try {
+                        const res = await fetch(`?handler=ClassMembers&classId=${classId}`);
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const students = await res.json();
+                        
+                        studentListContainer.innerHTML = '';
+                        if (!students || students.length === 0) {
+                            studentListContainer.innerHTML = '<p class="text-muted small mb-0">Không có học viên nào trong lớp.</p>';
+                        } else {
+                            students.forEach(student => {
+                                const div = document.createElement('div');
+                                div.className = 'form-check py-1';
+                                div.innerHTML = `
+                                    <input class="form-check-input student-checkbox" type="checkbox" value="${student.id}" id="student-${student.id}">
+                                    <label class="form-check-label text-dark" for="student-${student.id}">
+                                        ${student.username} (${student.email || 'N/A'})
+                                    </label>
+                                `;
+                                studentListContainer.appendChild(div);
+                            });
+                            
+                            // Bind change events to student checkboxes to sync "Select All" status
+                            document.querySelectorAll('.student-checkbox').forEach(cb => {
+                                cb.addEventListener('change', function () {
+                                    const allCbs = document.querySelectorAll('.student-checkbox');
+                                    const checkedCbs = document.querySelectorAll('.student-checkbox:checked');
+                                    selectAllStudents.checked = allCbs.length === checkedCbs.length;
+                                });
+                            });
+                        }
+                    } catch (err) {
+                        studentListContainer.innerHTML = '<p class="text-danger small mb-0">Lỗi khi tải danh sách học viên.</p>';
+                    }
+                });
+            });
+
+            // Click "Gửi" button inside modal
+            btnSendEmail.addEventListener('click', async function () {
+                const classId = emailClassId.value;
+                const subject = document.getElementById('emailSubject').value.trim();
+                const body = document.getElementById('emailBody').value.trim();
+                const isSelect = document.getElementById('recipientSelect').checked;
+
+                if (!subject || !body) {
+                    alert('Vui lòng điền đầy đủ tiêu đề và nội dung.');
+                    return;
+                }
+
+                const selectedStudentIds = [];
+                if (isSelect) {
+                    document.querySelectorAll('.student-checkbox:checked').forEach(cb => {
+                        selectedStudentIds.push(parseInt(cb.value));
+                    });
+                    if (selectedStudentIds.length === 0) {
+                        alert('Vui lòng chọn ít nhất một học viên.');
+                        return;
+                    }
+                }
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                const originalHtml = btnSendEmail.innerHTML;
+                btnSendEmail.disabled = true;
+                btnSendEmail.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('classId', classId);
+                    formData.append('subject', subject);
+                    formData.append('body', body);
+                    selectedStudentIds.forEach(id => {
+                        formData.append('selectedStudentIds', id);
+                    });
+                    formData.append('__RequestVerificationToken', token);
+
+                    const res = await fetch('?handler=SendNotification', {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        body: formData
+                    });
+
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        alert(data.message || 'Gửi email thành công!');
+                        modal.hide();
+                    } else {
+                        alert('Gửi email thất bại: ' + (data.message || 'Lỗi không xác định'));
+                    }
+                } catch (err) {
+                    alert('Có lỗi xảy ra: ' + err.message);
+                } finally {
+                    btnSendEmail.disabled = false;
+                    btnSendEmail.innerHTML = originalHtml;
+                }
+            });
         });
     </script>
 }

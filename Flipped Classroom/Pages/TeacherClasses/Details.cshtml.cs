@@ -24,13 +24,15 @@ namespace Flipped_Classroom.Pages.TeacherClasses
         private readonly ISubmissionService _submissionService;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILessonService _lessonService;
+        private readonly IAuthService _authService;
 
         public DetailsModel(
             Flipped_Classroom.Data.Swp391NihongoContext context,
             IAssignmentService assignmentService,
             ISubmissionService submissionService,
             IWebHostEnvironment webHostEnvironment,
-            ILessonService lessonService
+            ILessonService lessonService,
+            IAuthService authService
         )
         {
             _context = context;
@@ -38,6 +40,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             _submissionService = submissionService;
             _webHostEnvironment = webHostEnvironment;
             _lessonService = lessonService;
+            _authService = authService;
         }
 
         public Class Class { get; set; } = default!;
@@ -114,23 +117,26 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .ToDictionaryAsync(x => x.NodeId, x => x.Count);
 
             // Tiến độ chi tiết từng học sinh trong lớp
-            var progressList = await _context.StudentProgresses.AsNoTracking()
+            var progressList = await _context
+                .StudentProgresses.AsNoTracking()
                 .Where(p => p.ClassId == Class.Id && p.IsCompleted == true)
-                .Select(p => new { p.StudentId, p.NodeId, p.CompletedAt })
+                .Select(p => new
+                {
+                    p.StudentId,
+                    p.NodeId,
+                    p.CompletedAt,
+                })
                 .ToListAsync();
 
             StudentProgressMap = progressList
                 .GroupBy(p => p.StudentId)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.ToDictionary(x => x.NodeId, x => x.CompletedAt)
-                );
+                .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.NodeId, x => x.CompletedAt));
 
             // Tính toán thống kê cho dashboard
             if (Class.Curriculum != null && Class.Curriculum.Nodes != null)
             {
-                var lessonNodes = Class.Curriculum.Nodes
-                    .Where(n => n.ParentNodeId != null)
+                var lessonNodes = Class
+                    .Curriculum.Nodes.Where(n => n.ParentNodeId != null)
                     .ToList();
                 TotalLessonsCount = lessonNodes.Count;
 
@@ -138,9 +144,13 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 {
                     var totalPossibleCompletions = TotalStudents * TotalLessonsCount;
                     var completedLessonNodeIds = lessonNodes.Select(n => n.Id).ToList();
-                    var actualCompletions = progressList
-                        .Count(p => completedLessonNodeIds.Contains(p.NodeId));
-                    AvgClassProgress = Math.Round((double)actualCompletions * 100 / totalPossibleCompletions, 1);
+                    var actualCompletions = progressList.Count(p =>
+                        completedLessonNodeIds.Contains(p.NodeId)
+                    );
+                    AvgClassProgress = Math.Round(
+                        (double)actualCompletions * 100 / totalPossibleCompletions,
+                        1
+                    );
                 }
             }
 
@@ -148,7 +158,10 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             {
                 var totalPossibleSubmissions = Assignments.Count * TotalStudents;
                 var totalActualSubmissions = AssignmentSubmissions.Values.Sum(list => list.Count);
-                AvgSubmissionRate = Math.Round((double)totalActualSubmissions * 100 / totalPossibleSubmissions, 1);
+                AvgSubmissionRate = Math.Round(
+                    (double)totalActualSubmissions * 100 / totalPossibleSubmissions,
+                    1
+                );
             }
 
             return Page();
@@ -367,6 +380,66 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             await _assignmentService.CreateAssignmentAsync(assignment);
             TempData["SuccessMessage"] = "Tạo bài tập thành công!";
+
+            // Send notification emails to all students in the class
+            try
+            {
+                var students = await _context
+                    .ClassMembers.Include(cm => cm.User)
+                    .Where(cm =>
+                        cm.ClassId == id
+                        && cm.User != null
+                        && cm.User.Role == "Student"
+                        && !string.IsNullOrEmpty(cm.User.Email)
+                    )
+                    .Select(cm => new { cm.User.Email, cm.User.Username })
+                    .ToListAsync();
+
+                if (students.Any())
+                {
+                    var classroom = await _context.Classes.FindAsync(id);
+                    var className = classroom?.ClassName ?? "Lớp học";
+
+                    foreach (var student in students)
+                    {
+                        var subject = $"[NihongoPortal] Bài tập mới - {assignment.Title}";
+                        var bodyHtml =
+                            $@"
+<h2>Thông báo bài tập mới</h2>
+<p>Chào <strong>{student.Username}</strong>,</p>
+<p>Giáo viên đã đăng một bài tập mới trong lớp học <strong>{className}</strong>.</p>
+<p><strong>Thông tin bài tập:</strong></p>
+<ul>
+    <li><strong>Tiêu đề:</strong> {assignment.Title}</li>
+    <li><strong>Loại bài tập:</strong> {assignment.Type}</li>
+    <li><strong>Hạn nộp:</strong> {(assignment.DueDate.HasValue ? assignment.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không có hạn chót")}</li>
+</ul>
+<p>Vui lòng đăng nhập vào Nihongo Portal để xem chi tiết yêu cầu và nộp bài đúng hạn.</p>
+<p>Trân trọng,<br/>Zenith Education</p>";
+
+                        // Send asynchronously in a background task to prevent blocking the UI thread
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _authService.SendEmailAsync(
+                                    student.Email!,
+                                    subject,
+                                    bodyHtml
+                                );
+                            }
+                            catch (Exception)
+                            {
+                                // Fail silently inside background tasks
+                            }
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Gracefully fail database queries so page does not crash on email failure
+            }
 
             return RedirectToPage(new { id = id });
         }
@@ -715,6 +788,146 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                             ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"),
                     },
                 }
+            );
+        }
+
+        public async Task<IActionResult> OnGetClassMembersAsync(int classId)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(new { success = false, message = "Unauthorized" })
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var cls = await _context
+                .Classes.Include(c => c.ClassMembers)
+                    .ThenInclude(cm => cm.User)
+                .FirstOrDefaultAsync(c => c.Id == classId);
+
+            if (cls == null)
+            {
+                return new JsonResult(new { success = false, message = "Class not found" })
+                {
+                    StatusCode = 404,
+                };
+            }
+
+            if (cls.ManagerId != userId)
+            {
+                return new JsonResult(new { success = false, message = "Forbidden" })
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            var members = cls
+                .ClassMembers.Where(cm => cm.User != null)
+                .Select(cm => new
+                {
+                    id = cm.User.Id,
+                    username = cm.User.Username,
+                    email = cm.User.Email,
+                })
+                .ToList();
+
+            return new JsonResult(members);
+        }
+
+        public async Task<IActionResult> OnPostSendNotificationAsync(
+            int classId,
+            List<int> selectedStudentIds,
+            string subject,
+            string body
+        )
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(new { success = false, message = "Unauthorized" })
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var cls = await _context
+                .Classes.Include(c => c.ClassMembers)
+                    .ThenInclude(cm => cm.User)
+                .FirstOrDefaultAsync(c => c.Id == classId);
+
+            if (cls == null)
+            {
+                return new JsonResult(new { success = false, message = "Class not found" })
+                {
+                    StatusCode = 404,
+                };
+            }
+
+            if (cls.ManagerId != userId)
+            {
+                return new JsonResult(new { success = false, message = "Forbidden" })
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(body))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Subject and body cannot be empty" }
+                )
+                {
+                    StatusCode = 400,
+                };
+            }
+
+            var students = cls
+                .ClassMembers.Where(cm => cm.User != null)
+                .Select(cm => cm.User)
+                .ToList();
+
+            if (selectedStudentIds != null && selectedStudentIds.Any())
+            {
+                students = students.Where(s => selectedStudentIds.Contains(s.Id)).ToList();
+            }
+
+            if (!students.Any())
+            {
+                return new JsonResult(
+                    new
+                    {
+                        success = false,
+                        message = "No students selected or found in this class.",
+                    }
+                )
+                {
+                    StatusCode = 400,
+                };
+            }
+
+            foreach (var student in students)
+            {
+                if (!string.IsNullOrWhiteSpace(student.Email))
+                {
+                    var email = student.Email;
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _authService.SendEmailAsync(email, subject, body);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error sending email to {email}: {ex.Message}");
+                        }
+                    });
+                }
+            }
+
+            return new JsonResult(
+                new { success = true, message = "Thông báo email đã được đưa vào hàng đợi gửi đi." }
             );
         }
     }

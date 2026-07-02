@@ -1,15 +1,15 @@
+using System.Security.Cryptography;
+using System.Text;
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Gmail.v1.Data;
 using Google.Apis.Services;
-using Google.Apis.Auth.OAuth2.Flows;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flipped_Classroom.Services.Implementations
 {
@@ -19,7 +19,11 @@ namespace Flipped_Classroom.Services.Implementations
         private readonly IConfiguration _config;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(Swp391NihongoContext db, IConfiguration config, ILogger<AuthService> logger)
+        public AuthService(
+            Swp391NihongoContext db,
+            IConfiguration config,
+            ILogger<AuthService> logger
+        )
         {
             _db = db;
             _config = config;
@@ -144,7 +148,8 @@ namespace Flipped_Classroom.Services.Implementations
             string lastName,
             string email,
             string username,
-            string password)
+            string password
+        )
         {
             try
             {
@@ -162,7 +167,7 @@ namespace Flipped_Classroom.Services.Implementations
                     Username = username,
                     PasswordHash = HashPassword(password),
                     Role = "Student",
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
                 };
 
                 _db.Users.Add(user);
@@ -177,8 +182,11 @@ namespace Flipped_Classroom.Services.Implementations
             }
         }
 
-        public async Task<(User? User, string? ErrorMessage)> AuthenticateAsync(string username, string password)
-        { 
+        public async Task<(User? User, string? ErrorMessage)> AuthenticateAsync(
+            string username,
+            string password
+        )
+        {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
             {
@@ -187,7 +195,10 @@ namespace Flipped_Classroom.Services.Implementations
 
             if (user.PasswordHash == null)
             {
-                return (null, "This account uses Google Sign-In. Please use the \"Continue with Google\" button.");
+                return (
+                    null,
+                    "This account uses Google Sign-In. Please use the \"Continue with Google\" button."
+                );
             }
 
             if (HashPassword(password) != user.PasswordHash)
@@ -196,20 +207,39 @@ namespace Flipped_Classroom.Services.Implementations
             }
             if (user.IsActive == false)
             {
-                return (null, "Your account has been deactivated. Please contact the administrator.");
+                return (
+                    null,
+                    "Your account has been deactivated. Please contact the administrator."
+                );
             }
 
             // Kiểm tra tài khoản có bị vô hiệu hóa không
             if (user.IsActive == false)
             {
-                return (null, "Your account has been deactivated. Please contact the administrator.");
+                return (
+                    null,
+                    "Your account has been deactivated. Please contact the administrator."
+                );
             }
 
             return (user, null);
         }
 
-    
         public async Task<bool> SendResetEmailAsync(string email, string resetLink)
+        {
+            var subject = "NihongoFlipedClassroom";
+            var bodyHtml =
+                $@"
+<h2>Đặt lại mật khẩu</h2>
+<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
+<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
+<p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
+<p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>";
+
+            return await SendEmailAsync(email, subject, bodyHtml);
+        }
+
+        public async Task<bool> SendEmailAsync(string email, string subject, string bodyHtml)
         {
             try
             {
@@ -221,20 +251,12 @@ namespace Flipped_Classroom.Services.Implementations
                     return false;
                 }
 
-                var subject = "NihongoFlipedClassroom";
-                var bodyHtml = $@"
-<h2>Đặt lại mật khẩu</h2>
-<p>Bạn đã yêu cầu đặt lại mật khẩu. Nhấp vào liên kết bên dưới để tiếp tục:</p>
-<p><a href='{resetLink}'>Đặt lại mật khẩu</a></p>
-<p>Liên kết này sẽ hết hạn trong 1 giờ.</p>
-<p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>";
-
                 var gmailService = await CreateGmailServiceAsync(fromEmail);
                 var raw = BuildRawMimeMessage(fromEmail, email, subject, bodyHtml);
                 var message = new Message { Raw = raw };
 
                 await gmailService.Users.Messages.Send(message, "me").ExecuteAsync();
-                _logger.LogInformation("Gửi email reset password cho: {Email}", email);
+                _logger.LogInformation("Gửi email thành công cho: {Email}", email);
                 return true;
             }
             catch (Exception ex)
@@ -250,35 +272,48 @@ namespace Flipped_Classroom.Services.Implementations
             var clientSecret = _config["EmailSettings:GmailApi:ClientSecret"];
             var refreshToken = _config["EmailSettings:GmailApi:RefreshToken"];
 
-            if (string.IsNullOrWhiteSpace(clientId) ||
-                string.IsNullOrWhiteSpace(clientSecret) ||
-                string.IsNullOrWhiteSpace(refreshToken))
+            if (
+                string.IsNullOrWhiteSpace(clientId)
+                || string.IsNullOrWhiteSpace(clientSecret)
+                || string.IsNullOrWhiteSpace(refreshToken)
+            )
             {
-                throw new InvalidOperationException("Thiếu cấu hình Gmail API (ClientId/ClientSecret/RefreshToken).");
+                throw new InvalidOperationException(
+                    "Thiếu cấu hình Gmail API (ClientId/ClientSecret/RefreshToken)."
+                );
             }
 
             var token = new TokenResponse { RefreshToken = refreshToken };
-            var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
-            {
-                ClientSecrets = new ClientSecrets
+            var flow = new GoogleAuthorizationCodeFlow(
+                new GoogleAuthorizationCodeFlow.Initializer
                 {
-                    ClientId = clientId,
-                    ClientSecret = clientSecret
-                },
-                Scopes = new[] { GmailService.Scope.GmailSend }
-            });
+                    ClientSecrets = new ClientSecrets
+                    {
+                        ClientId = clientId,
+                        ClientSecret = clientSecret,
+                    },
+                    Scopes = new[] { GmailService.Scope.GmailSend },
+                }
+            );
 
             var credential = new UserCredential(flow, userEmail, token);
             await credential.RefreshTokenAsync(CancellationToken.None);
 
-            return new GmailService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "FlippedClassroom"
-            });
+            return new GmailService(
+                new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = "FlippedClassroom",
+                }
+            );
         }
 
-        private static string BuildRawMimeMessage(string from, string to, string subject, string htmlBody)
+        private static string BuildRawMimeMessage(
+            string from,
+            string to,
+            string subject,
+            string htmlBody
+        )
         {
             var mime = new StringBuilder()
                 .AppendLine($"From: {from}")
@@ -296,7 +331,8 @@ namespace Flipped_Classroom.Services.Implementations
 
         private static string Base64UrlEncode(byte[] input)
         {
-            return Convert.ToBase64String(input)
+            return Convert
+                .ToBase64String(input)
                 .Replace("+", "-")
                 .Replace("/", "_")
                 .Replace("=", "");

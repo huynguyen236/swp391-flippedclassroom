@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -16,10 +17,12 @@ namespace Flipped_Classroom.Pages.TeacherClasses
     public class IndexModel : PageModel
     {
         private readonly Swp391NihongoContext _context;
+        private readonly IAuthService _authService;
 
-        public IndexModel(Swp391NihongoContext context)
+        public IndexModel(Swp391NihongoContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         public IList<Class> Class { get; set; } = default!;
@@ -59,8 +62,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
 
             // Load classes with related data
-            Class = await _context.Classes
-                .Include(c => c.Manager)
+            Class = await _context
+                .Classes.Include(c => c.Manager)
                 .Include(c => c.ClassMembers)
                     .ThenInclude(cm => cm.User)
                 .Include(c => c.Curriculum)
@@ -75,10 +78,15 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             // Load all student progress records for these classes in one query
             var classIds = Class.Select(c => c.Id).ToList();
-            var allProgress = await _context.StudentProgresses
-                .AsNoTracking()
+            var allProgress = await _context
+                .StudentProgresses.AsNoTracking()
                 .Where(p => classIds.Contains(p.ClassId) && p.IsCompleted == true)
-                .Select(p => new { p.ClassId, p.StudentId, p.NodeId })
+                .Select(p => new
+                {
+                    p.ClassId,
+                    p.StudentId,
+                    p.NodeId,
+                })
                 .ToListAsync();
 
             var progressByClass = allProgress
@@ -92,9 +100,9 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 TotalStudentsAll += studentCount;
 
                 // Lesson count (nodes with a parent = leaf lessons)
-                var lessonNodes = cls.Curriculum?.Nodes?
-                    .Where(n => n.ParentNodeId != null)
-                    .ToList() ?? new List<Node>();
+                var lessonNodes =
+                    cls.Curriculum?.Nodes?.Where(n => n.ParentNodeId != null).ToList()
+                    ?? new List<Node>();
                 var lessonCount = lessonNodes.Count;
                 ClassLessonCount[cls.Id] = lessonCount;
 
@@ -108,7 +116,10 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                     {
                         completedCount = classProgress.Count(p => lessonNodeIds.Contains(p.NodeId));
                     }
-                    ClassProgressMap[cls.Id] = Math.Round((double)completedCount * 100 / totalPossible, 1);
+                    ClassProgressMap[cls.Id] = Math.Round(
+                        (double)completedCount * 100 / totalPossible,
+                        1
+                    );
                 }
                 else
                 {
@@ -139,7 +150,9 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                             .Select(s => s.AssignmentId)
                             .ToHashSet();
 
-                        var hasUnsubmitted = assignments.Any(a => !studentSubmittedAssignmentIds.Contains(a.Id));
+                        var hasUnsubmitted = assignments.Any(a =>
+                            !studentSubmittedAssignmentIds.Contains(a.Id)
+                        );
                         if (hasUnsubmitted)
                         {
                             pendingNames.Add(member.User?.Username ?? "Unknown");
@@ -150,6 +163,146 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnGetClassMembersAsync(int classId)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(new { success = false, message = "Unauthorized" })
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var cls = await _context
+                .Classes.Include(c => c.ClassMembers)
+                    .ThenInclude(cm => cm.User)
+                .FirstOrDefaultAsync(c => c.Id == classId);
+
+            if (cls == null)
+            {
+                return new JsonResult(new { success = false, message = "Class not found" })
+                {
+                    StatusCode = 404,
+                };
+            }
+
+            if (cls.ManagerId != userId)
+            {
+                return new JsonResult(new { success = false, message = "Forbidden" })
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            var members = cls
+                .ClassMembers.Where(cm => cm.User != null)
+                .Select(cm => new
+                {
+                    id = cm.User.Id,
+                    username = cm.User.Username,
+                    email = cm.User.Email,
+                })
+                .ToList();
+
+            return new JsonResult(members);
+        }
+
+        public async Task<IActionResult> OnPostSendNotificationAsync(
+            int classId,
+            List<int> selectedStudentIds,
+            string subject,
+            string body
+        )
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return new JsonResult(new { success = false, message = "Unauthorized" })
+                {
+                    StatusCode = 401,
+                };
+            }
+
+            var cls = await _context
+                .Classes.Include(c => c.ClassMembers)
+                    .ThenInclude(cm => cm.User)
+                .FirstOrDefaultAsync(c => c.Id == classId);
+
+            if (cls == null)
+            {
+                return new JsonResult(new { success = false, message = "Class not found" })
+                {
+                    StatusCode = 404,
+                };
+            }
+
+            if (cls.ManagerId != userId)
+            {
+                return new JsonResult(new { success = false, message = "Forbidden" })
+                {
+                    StatusCode = 403,
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(body))
+            {
+                return new JsonResult(
+                    new { success = false, message = "Subject and body cannot be empty" }
+                )
+                {
+                    StatusCode = 400,
+                };
+            }
+
+            var students = cls
+                .ClassMembers.Where(cm => cm.User != null)
+                .Select(cm => cm.User)
+                .ToList();
+
+            if (selectedStudentIds != null && selectedStudentIds.Any())
+            {
+                students = students.Where(s => selectedStudentIds.Contains(s.Id)).ToList();
+            }
+
+            if (!students.Any())
+            {
+                return new JsonResult(
+                    new
+                    {
+                        success = false,
+                        message = "No students selected or found in this class.",
+                    }
+                )
+                {
+                    StatusCode = 400,
+                };
+            }
+
+            foreach (var student in students)
+            {
+                if (!string.IsNullOrWhiteSpace(student.Email))
+                {
+                    var email = student.Email;
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _authService.SendEmailAsync(email, subject, body);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error sending email to {email}: {ex.Message}");
+                        }
+                    });
+                }
+            }
+
+            return new JsonResult(
+                new { success = true, message = "Thông báo email đã được đưa vào hàng đợi gửi đi." }
+            );
         }
     }
 }

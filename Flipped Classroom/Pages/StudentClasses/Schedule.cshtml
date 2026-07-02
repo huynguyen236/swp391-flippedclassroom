@@ -17,37 +17,37 @@
         "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12" };
 
     var classColors = new[] {
-        "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);",
-        "background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);",
-        "background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);",
-        "background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);",
-        "background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"
+        "background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);",
+        "background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-container) 100%);",
+        "background: linear-gradient(135deg, var(--color-tertiary) 0%, var(--color-tertiary-container) 100%);",
+        "background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);",
+        "background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%);"
     };
 }
 
-<div class="container py-5">
+<div class="container py-5 student-schedule-container">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1" style="color: #1a73e8;">
-                <i class="bi bi-calendar-event-fill me-2"></i>Lịch học của tôi
+            <h2 class="fw-bold d-flex align-items-center gap-2 mb-1" style="color: var(--color-on-background);">
+                <span class="material-symbols-outlined text-primary fs-3">calendar_month</span> Lịch học của tôi
             </h2>
-            <p class="text-muted mb-0">Xem lịch học các lớp bạn đang tham gia</p>
+            <p class="text-muted mb-0 small">Xem lịch học các lớp bạn đang tham gia</p>
         </div>
-        <a asp-page="./Index" class="btn btn-outline-primary btn-sm rounded-pill px-4">
-            <i class="bi bi-arrow-left me-1"></i> Lớp của tôi
+        <a asp-page="./Index" class="btn btn-outline-secondary px-4 py-2 d-inline-flex align-items-center gap-1">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span> Lớp của tôi
         </a>
     </div>
 
     @if (!Model.EnrolledClasses.Any())
     {
-        <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ccc;"></i>
-                <h5 class="text-muted mt-3">Bạn chưa tham gia lớp học nào</h5>
-                <p class="text-muted">Hãy tham gia lớp học để xem lịch học tại đây.</p>
-                <a asp-page="./Index" class="btn btn-primary rounded-pill px-4 mt-2" style="background-color: #1a73e8; border: none;">
-                    <i class="bi bi-mortarboard me-1"></i> Xem lớp học
+        <div class="card card-premium text-center py-5">
+            <div class="card-body">
+                <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">calendar_today</span>
+                <h5 class="text-muted fw-bold">Bạn chưa tham gia lớp học nào</h5>
+                <p class="text-muted small">Hãy tham gia lớp học để xem lịch học tại đây.</p>
+                <a asp-page="./Index" class="btn btn-primary px-4 py-2 mt-2 d-inline-flex align-items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">search</span> Xem lớp học
                 </a>
             </div>
         </div>
@@ -55,9 +55,9 @@
     else
     {
         <!-- Class Legend -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card card-premium mb-4">
             <div class="card-body p-4">
-                <h6 class="fw-bold text-muted mb-3"><i class="bi bi-bookmark-fill me-1"></i> Lớp của tôi</h6>
+                <h6 class="fw-bold text-muted mb-3 d-flex align-items-center gap-1"><span class="material-symbols-outlined text-muted" style="font-size: 18px;">bookmark</span> Lớp của tôi</h6>
                 <div class="d-flex flex-wrap gap-2">
                     @for (int ci = 0; ci < Model.EnrolledClasses.Count; ci++)
                     {
@@ -78,11 +78,11 @@
 
         @if (!Model.ScheduleItems.Any())
         {
-            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                <div class="card-body text-center py-5">
-                    <i class="bi bi-calendar2-x" style="font-size: 3rem; color: #ccc;"></i>
-                    <h5 class="text-muted mt-3">Chưa có lịch học</h5>
-                    <p class="text-muted">Manager chưa xếp lịch cho lớp của bạn.</p>
+            <div class="card card-premium text-center py-5">
+                <div class="card-body">
+                    <span class="material-symbols-outlined text-muted fs-1 mb-2 opacity-50">calendar_today</span>
+                    <h5 class="text-muted fw-bold">Chưa có lịch học</h5>
+                    <p class="text-muted small">Quản lý chưa xếp lịch cho lớp của bạn.</p>
                 </div>
             </div>
         }
@@ -91,24 +91,24 @@
             <div class="row g-4">
                 <!-- Calendar View -->
                 <div class="col-lg-7">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                    <div class="card card-premium">
                         <div class="card-body p-4">
                             <!-- Month Navigation -->
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <a asp-page="./Schedule"
                                    asp-route-month="@prevMonth.Month" asp-route-year="@prevMonth.Year"
                                    class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center"
-                                   style="width: 36px; height: 36px;">
-                                    <i class="bi bi-chevron-left"></i>
+                                   style="width: 36px; height: 36px; padding: 0;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_left</span>
                                 </a>
-                                <h5 class="fw-bold mb-0" style="color: #1a73e8;">
+                                <h5 class="fw-bold mb-0 text-primary">
                                     @monthNames[Model.DisplayMonth] @Model.DisplayYear
                                 </h5>
                                 <a asp-page="./Schedule"
                                    asp-route-month="@nextMonth.Month" asp-route-year="@nextMonth.Year"
                                    class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center"
-                                   style="width: 36px; height: 36px;">
-                                    <i class="bi bi-chevron-right"></i>
+                                   style="width: 36px; height: 36px; padding: 0;">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
                                 </a>
                             </div>
 
@@ -121,7 +121,7 @@
                                     <div class="cal-cell text-muted fw-semibold">T5</div>
                                     <div class="cal-cell text-muted fw-semibold">T6</div>
                                     <div class="cal-cell text-muted fw-semibold">T7</div>
-                                    <div class="cal-cell text-muted fw-semibold" style="color: #dc3545 !important;">CN</div>
+                                    <div class="cal-cell text-muted fw-semibold text-danger">CN</div>
                                 </div>
                                 <div class="calendar-body">
                                     @for (int i = 0; i < startOffset; i++)
@@ -163,11 +163,11 @@
                             <!-- Legend -->
                             <div class="d-flex gap-4 mt-3 justify-content-center">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #4285f4);"></div>
+                                    <div style="width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));"></div>
                                     <small class="text-muted">Ngày có lịch</small>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid #ff6b6b;"></div>
+                                    <div style="width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-secondary);"></div>
                                     <small class="text-muted">Hôm nay</small>
                                 </div>
                             </div>
@@ -177,10 +177,10 @@
 
                 <!-- Schedule List -->
                 <div class="col-lg-5">
-                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
-                        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
-                            <h6 class="fw-bold text-muted mb-0">
-                                <i class="bi bi-list-ul me-1"></i> Lịch học — @monthNames[Model.DisplayMonth]
+                    <div class="card card-premium">
+                        <div class="card-premium-header bg-white border-0 px-4 pt-4 pb-0">
+                            <h6 class="fw-bold text-muted mb-0 d-flex align-items-center gap-1">
+                                <span class="material-symbols-outlined text-muted" style="font-size: 20px;">list</span> Lịch học — @monthNames[Model.DisplayMonth]
                             </h6>
                         </div>
                         <div class="card-body px-4 pb-4" style="max-height: 520px; overflow-y: auto;">
@@ -191,9 +191,9 @@
                             }
                             @if (!monthSchedules.Any())
                             {
-                                <div class="text-center py-4 text-muted">
-                                    <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                                    <p class="mt-2 mb-0">Không có buổi học trong tháng này.</p>
+                                <div class="text-center py-5 text-muted">
+                                    <span class="material-symbols-outlined text-muted fs-2 mb-1 opacity-50">event_busy</span>
+                                    <p class="small mb-0">Không có buổi học trong tháng này.</p>
                                 </div>
                             }
                             else
@@ -208,24 +208,24 @@
                                     <div class="schedule-day-group mb-3 @(isPast ? "opacity-50" : "")">
                                         <div class="d-flex align-items-center gap-2 mb-2">
                                             <div class="text-center" style="min-width: 48px;">
-                                                <div class="fw-bold" style="font-size: 1.4rem; color: @(isToday ? "#ff6b6b" : "#1a73e8"); line-height: 1;">
+                                                <div class="fw-bold" style="font-size: 1.4rem; color: @(isToday ? "var(--color-secondary)" : "var(--color-primary)"); line-height: 1;">
                                                     @dateGroup.Key.Day
                                                 </div>
                                                 <small class="text-muted" style="font-size: 0.7rem;">@dayName</small>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <span class="fw-semibold small">@dateGroup.Key.ToString("dd/MM/yyyy")</span>
+                                                <span class="fw-bold small text-dark">@dateGroup.Key.ToString("dd/MM/yyyy")</span>
                                                 @if (isToday)
                                                 {
-                                                    <span class="badge bg-danger rounded-pill ms-2 small">Hôm nay</span>
+                                                    <span class="badge bg-danger text-white rounded-pill ms-2 small">Hôm nay</span>
                                                 }
                                                 else if (isPast)
                                                 {
-                                                    <span class="badge bg-secondary rounded-pill ms-2 small">Đã qua</span>
+                                                    <span class="badge bg-secondary text-white rounded-pill ms-2 small">Đã qua</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-success rounded-pill ms-2 small">Sắp tới</span>
+                                                    <span class="badge bg-success text-white rounded-pill ms-2 small">Sắp tới</span>
                                                 }
                                             </div>
                                         </div>
@@ -235,27 +235,29 @@
                                             var itemColor = cIndex >= 0 ? classColors[cIndex % classColors.Length] : "background: #6c757d;";
                                             var detectedSlot = ScheduleSlotHelper.DetectSlot(schedule.Class?.ClassSchedules ?? new List<ClassSchedule>());
 
-                                            <div class="schedule-item d-flex align-items-center gap-3 p-3 mb-1 rounded-3"
-                                                 style="background: #f8f9fa; transition: all 0.2s; border-left: 4px solid transparent;">
+                                            <div class="schedule-item d-flex align-items-center gap-3 p-3 mb-2 rounded-3 bg-light border-start"
+                                                 style="transition: all 0.2s; border-left: 4px solid var(--color-primary) !important;">
                                                 <div class="flex-grow-1">
                                                     <div class="d-flex align-items-center gap-2 mb-1">
                                                         <span class="badge text-white px-2 py-1 fw-normal" style="border-radius: 6px; font-size: 0.75rem; @itemColor">
                                                             @schedule.Class?.ClassName
+                                                        <span class="badge text-white px-2.5 py-1 fw-normal" style="border-radius: 6px; font-size: 0.75rem; @itemColor">
+                                                            @schedule.ClassName
                                                         </span>
                                                         @if (!string.IsNullOrEmpty(detectedSlot))
                                                         {
-                                                            <span class="text-muted" style="font-size: 0.7rem;">@detectedSlot</span>
+                                                            <span class="text-muted fw-semibold" style="font-size: 0.75rem;">@schedule.DetectedSlot</span>
                                                         }
                                                     </div>
-                                                    <small class="text-primary">
-                                                        <i class="bi bi-clock me-1"></i>
+                                                    <div class="text-primary fw-semibold small d-flex align-items-center gap-1">
+                                                        <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
                                                         @schedule.StartTime.ToString("HH:mm") – @schedule.EndTime.ToString("HH:mm")
-                                                    </small>
+                                                    </div>
                                                     @if (!string.IsNullOrEmpty(schedule.Room))
                                                     {
-                                                        <small class="text-muted ms-2">
-                                                            <i class="bi bi-geo-alt me-1"></i>@schedule.Room
-                                                        </small>
+                                                        <div class="text-muted small mt-1 d-flex align-items-center gap-1">
+                                                            <span class="material-symbols-outlined" style="font-size: 16px;">meeting_room</span> @schedule.Room
+                                                        </div>
                                                     }
                                                 </div>
                                             </div>
@@ -294,22 +296,23 @@
         .cal-day {
             cursor: default;
             transition: all 0.2s;
-            color: #495057;
+            color: var(--color-on-background);
+            font-weight: 500;
         }
         .cal-day:hover {
-            background-color: #f0f4ff;
+            background-color: var(--color-surface-container-low);
         }
         .cal-empty {
             visibility: hidden;
         }
         .cal-active {
-            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%) !important;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%) !important;
             color: white !important;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+            box-shadow: 0 4px 10px rgba(var(--bs-primary-rgb), 0.15);
         }
         .cal-today {
-            border: 2px solid #ff6b6b;
+            border: 2px solid var(--color-secondary);
         }
         .cal-active.cal-today {
             border: 2px solid #ffdd59;
@@ -327,7 +330,7 @@
             background: white;
         }
         .schedule-item:hover {
-            background: #e8f0fe !important;
+            background: var(--color-surface-container-high) !important;
             transform: translateX(4px);
         }
     </style>

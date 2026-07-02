@@ -34,6 +34,11 @@ namespace Flipped_Classroom.Services.Interfaces
         Task<bool> SendResetEmailAsync(string email, string resetLink);
 
         /// <summary>
+        /// Gửi email với nội dung HTML tùy chọn thông qua Gmail API
+        /// </summary>
+        Task<bool> SendEmailAsync(string email, string subject, string bodyHtml);
+
+        /// <summary>
         /// Đăng ký người dùng mới
         /// </summary>
         Task<(bool Success, string? ErrorMessage)> RegisterAsync(

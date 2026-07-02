@@ -7,68 +7,119 @@
 <div class="container py-5">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px;">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center gap-2" role="alert" style="background-color: rgba(40, 167, 69, 0.08); border: 1px solid rgba(40, 167, 69, 0.15);">
+            <span class="material-symbols-outlined text-success">check_circle</span>
+            <div class="text-success-emphasis fw-medium">@TempData["SuccessMessage"]</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px;">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4 d-flex align-items-center gap-2" role="alert" style="background-color: rgba(186, 26, 26, 0.08); border: 1px solid rgba(186, 26, 26, 0.15);">
+            <span class="material-symbols-outlined text-danger">warning</span>
+            <div class="text-danger-emphasis fw-medium">@TempData["ErrorMessage"]</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-5">
-        <h2 class="fw-bold mb-0" style="color: #1a73e8;">Lớp học của tôi</h2>
-        <form method="post" asp-page-handler="JoinClass" class="d-flex gap-2 align-items-center">
+    <!-- Title and Join Form Area -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-5 pb-3 border-bottom">
+        <h2 class="fw-bold d-flex align-items-center gap-2 mb-0 text-nowrap justify-content-start" style="color: var(--color-on-background); white-space: nowrap;">
+            <span class="material-symbols-outlined text-primary fs-3">school</span>
+            Lớp học của tôi
+        </h2>
+        <form method="post" asp-page-handler="JoinClass" class="d-flex flex-sm-row flex-column gap-2 align-items-stretch align-items-sm-center w-100 w-sm-auto justify-content-end">
             @Html.AntiForgeryToken()
-            <div class="input-group" style="max-width: 320px;">
-                <span class="input-group-text bg-white border-end-0" style="border-radius: 20px 0 0 20px; border-color: #dee2e6;">
-                    <i class="bi bi-key text-muted"></i>
+            <div class="input-group" style="max-width: 320px; height: 45px;">
+                <span class="input-group-text bg-white border-end-0" style="border-radius: 0.5rem 0 0 0.5rem; border-color: var(--color-outline-variant); height: 45px;">
+                    <span class="material-symbols-outlined text-muted" style="font-size: 20px;">key</span>
                 </span>
-                <input type="text" asp-for="InviteCode" class="form-control border-start-0 ps-1" placeholder="Nhập mã lớp để tham gia..." required style="border-radius: 0 20px 20px 0; border-color: #dee2e6;" />
+                <input type="text" asp-for="InviteCode" class="form-control border-start-0 ps-1" placeholder="Nhập mã lớp để tham gia..." required style="border-radius: 0 0.5rem 0.5rem 0; border-color: var(--color-outline-variant); height: 45px;" />
             </div>
-            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" style="background-color: #1a73e8; border: none;">
-                <i class="bi bi-plus-lg me-1"></i> Tham gia
+            <button type="submit" class="btn btn-premium-primary px-4 d-flex align-items-center justify-content-center gap-1 border-0" style="height: 45px;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">group_add</span> Tham gia
             </button>
         </form>
     </div>
 
+    @if (Model.Class != null && Model.Class.Any())
+    {
+        <!-- Bento KPI Cards Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <div class="bento-kpi-card bg-primary-fixed h-100">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <span class="fw-semibold text-muted" style="font-size: 0.9rem;">Số lớp đang tham gia</span>
+                        <div class="kpi-icon-container">
+                            <span class="material-symbols-outlined text-primary">school</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 class="fw-bold mb-0">@Model.Class.Count</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="bento-kpi-card bg-tertiary-fixed h-100">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <span class="fw-semibold text-muted" style="font-size: 0.9rem;">Học viên</span>
+                        <div class="kpi-icon-container">
+                            <span class="material-symbols-outlined text-purple" style="color: var(--color-tertiary);">person</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h2 class="fw-bold mb-0 text-truncate" style="font-size: 1.75rem; max-width: 100%;">@(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Học viên")</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Classes Grid -->
     <div class="row g-4">
         @if (Model.Class != null && Model.Class.Any())
         {
             @foreach (var item in Model.Class) {
-                <div class="col-md-4 col-sm-6">
-                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 15px; overflow: hidden; transition: 0.3s;">
-                        <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%); border-bottom: none;">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h4 class="mb-0 text-truncate" title="@item.ClassName">@item.ClassName</h4>
-                                <span class="badge bg-light text-primary rounded-pill px-3">@item.Status</span>
-                            </div>
-                        </div>
-
-                        <div class="card-body p-4">
-                            <p class="card-text text-muted mb-4" style="min-height: 48px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                @(string.IsNullOrEmpty(item.Description) ? "Chưa có mô tả..." : item.Description)
-                            </p>
-
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-2" style="width: 32px; height: 32px; font-size: 14px; background-color: #5f6368;">
-                                    @(item.Manager?.Username?.FirstOrDefault() ?? '?')
+                var isActive = string.Equals(item.Status, "Active", StringComparison.OrdinalIgnoreCase);
+                <div class="col-lg-4 col-md-6">
+                    <div class="class-premium-card h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- Card Header -->
+                            <div class="class-card-header @(isActive ? "bg-active" : "bg-completed")" style="border-radius: var(--border-radius-card) var(--border-radius-card) 0 0;">
+                                <div class="header-decor-blur"></div>
+                                <div class="d-flex justify-content-between align-items-start mb-2 relative z-1">
+                                    <h4 class="mb-0 fw-bold text-truncate me-2 text-white" title="@item.ClassName" style="font-size: 1.25rem; max-width: 75%;">@item.ClassName</h4>
+                                    <span class="badge bg-white text-dark rounded-pill px-3 py-1.5 shadow-sm small fw-bold">@item.Status</span>
                                 </div>
-                                <span class="text-muted small"><strong>@item.Manager?.Username</strong></span>
+                                <div class="d-flex gap-3 mt-3 text-white-50 small relative z-1">
+                                    <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> @item.StartDate?.ToString("dd/MM/yyyy")</span>
+                                    <span class="d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">event_available</span> @item.EndDate?.ToString("dd/MM/yyyy")</span>
+                                </div>
                             </div>
 
-                            <div class="d-flex text-muted small mt-2 justify-content-between">
-                                <span><i class="bi bi-calendar3"></i> @item.StartDate?.ToString("dd/MM/yyyy")</span>
-                                <span><i class="bi bi-calendar-check"></i> @item.EndDate?.ToString("dd/MM/yyyy")</span>
-                            </div>  
+                            <!-- Card Body -->
+                            <div class="card-body p-4 d-flex flex-column gap-3">
+                                <p class="text-secondary mb-3" style="min-height: 48px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.9rem; line-height: 1.5;">
+                                    @(string.IsNullOrEmpty(item.Description) ? "Chưa có mô tả cho lớp học này." : item.Description)
+                                </p>
+
+                                <div class="d-flex align-items-center border-top pt-3">
+                                    <div class="avatar-initials-circle bg-primary me-2 text-white" style="width: 36px; height: 36px; font-size: 14px;">
+                                        @(item.Manager?.Username?.FirstOrDefault() ?? '?')
+                                    </div>
+                                    <div>
+                                        <div class="text-muted small" style="font-size: 0.75rem;">Giảng viên</div>
+                                        <span class="text-dark fw-semibold" style="font-size: 0.85rem;">@item.Manager?.Username</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="card-footer bg-white border-0 px-4 pb-4 pt-0 d-flex gap-2">
-                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-primary w-100 rounded-pill shadow-sm" style="background-color: #1a73e8; border: none;">Vào lớp</a>
+                        <!-- Card Footer -->
+                        <div class="px-4 pb-4 pt-0">
+                            <a asp-page="./Details" asp-route-id="@item.Id" class="btn btn-premium-primary w-100 py-2 border-0">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">login</span> Vào lớp học
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -78,12 +129,10 @@
         {
             <div class="col-12 text-center py-5">
                 <div class="mb-3 text-muted">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="9" y1="3" x2="9" y2="21"></line>
-                    </svg>
+                    <span class="material-symbols-outlined" style="font-size: 64px; opacity: 0.3;">folder_off</span>
                 </div>
-                <h5 class="text-muted">Bạn chưa tham gia lớp học nào</h5>
+                <h5 class="text-muted fw-bold">Bạn chưa tham gia lớp học nào</h5>
+                <p class="text-muted small">Hãy nhập mã lớp ở góc trên bên phải để tham gia học tập.</p>
             </div>
         }
     </div>

@@ -1,5 +1,5 @@
 @page
-@model Flipped_Classroom.Pages.Quizzes.RandomizeModel
+@model Flipped_Classroom.Pages.Quizzes.RandomizeModel;
 @{
     ViewData["Title"] = "Tạo bài test ngẫu nhiên";
 }
@@ -7,82 +7,96 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
     <div>
         <h2 class="fw-bold mb-0 text-dark">Tạo Bài Test</h2>
+        <h2 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-primary fs-3">shuffle</span>
+            Tạo Bài Test Ngẫu Nhiên
+        </h2>
         <p class="text-muted mb-0">Chọn bài học, phân loại kiến thức và số câu để hệ thống tự trộn đề từ ngân hàng câu hỏi.</p>
     </div>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
-        <i class="bi bi-check-circle-fill text-success fs-5"></i>
-        <div>@TempData["SuccessMessage"]</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert" style="background-color: rgba(40, 167, 69, 0.08); border: 1px solid rgba(40, 167, 69, 0.15);">
+        <span class="material-symbols-outlined text-success">check_circle</span>
+        <div class="text-success-emphasis fw-medium">@TempData["SuccessMessage"]</div>
     </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
-        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-        <div>@TempData["ErrorMessage"]</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2" role="alert" style="background-color: rgba(186, 26, 26, 0.08); border: 1px solid rgba(186, 26, 26, 0.15);">
+        <span class="material-symbols-outlined text-danger">warning</span>
+        <div class="text-danger-emphasis fw-medium">@TempData["ErrorMessage"]</div>
     </div>
 }
 
 <div class="row g-4">
     <div class="col-lg-5">
-        <div class="card card-flat rounded-4 p-4">
+        <div class="card card-premium card-flat p-4">
+            <h5 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary">settings</span>
+                Cấu hình đề thi
+            </h5>
+            
             <form method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small"></div>
 
                 <div class="d-flex flex-wrap gap-2 mb-4">
                     @if (Model.IsStrictMode)
                     {
                         <span class="badge bg-danger bg-opacity-10 text-danger fw-semibold px-2.5 py-1.5 border border-danger border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                            <i class="bi bi-shield-lock-fill"></i> Strict Mode (Bị khóa)
+                            <span class="material-symbols-outlined fs-6">shield_lock</span> Strict Mode (Bị khóa)
                         </span>
                     }
                     else
                     {
                         <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2.5 py-1.5 border border-success border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                            <i class="bi bi-unlock-fill"></i> Free Mode (Tự do)
+                            <span class="material-symbols-outlined fs-6">lock_open</span> Free Mode (Tự do)
                         </span>
                     }
 
                     <span id="targetModeBadge" class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2.5 py-1.5 border border-secondary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.8rem;">
-                        <i class="bi bi-tag-fill"></i> Đang tải...
+                        <span class="material-symbols-outlined fs-6">label</span> Đang tải...
                     </span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Input.Title" class="form-label fw-semibold">Tên bài test <span class="text-danger">*</span></label>
-                    <input asp-for="Input.Title" class="form-control bg-light" maxlength="200" placeholder="VD: Grammar N5 - Mini test 01" />
+                    <label asp-for="Input.Title" class="form-label fw-semibold text-dark mb-1">Tên bài test <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <span class="material-symbols-outlined text-muted fs-5">title</span>
+                        </span>
+                        <input asp-for="Input.Title" class="form-control border-start-0 ps-0" maxlength="200" placeholder="VD: Grammar N5 - Mini test 01" required />
+                    </div>
                     <span asp-validation-for="Input.Title" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
                     @if (User.IsInRole("Teacher"))
                     {
-                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-danger">*</span></label>
-                        <select asp-for="Input.ClassId" class="form-select bg-light" id="classSelect" required
-                                oninvalid="this.setCustomValidity('Giảng viên bắt buộc phải chọn lớp học.')"
-                                onchange="this.setCustomValidity('')">
-                            <option value="">Chọn lớp học</option>
-                            @foreach (var c in Model.ClassesList)
-                            {
-                                <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
-                            }
-                        </select>
+                        <label asp-for="Input.ClassId" class="form-label fw-semibold text-dark mb-1">Lớp học <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <span class="material-symbols-outlined text-muted fs-5">school</span>
+                            </span>
+                            <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select border-start-0 ps-0" required
+                                    oninvalid="this.setCustomValidity('Giảng viên bắt buộc phải chọn lớp học.')"
+                                    onchange="this.setCustomValidity('')">
+                                <option value="">Chọn lớp học</option>
+                            </select>
+                        </div>
                     }
                     else
                     {
-                        <label asp-for="Input.ClassId" class="form-label fw-semibold">Lớp học <span class="text-muted fw-normal" style="font-size: 0.85rem;">(để trống nếu tạo Template)</span></label>
-                        <select asp-for="Input.ClassId" class="form-select bg-light" id="classSelect">
-                            <option value="">Chọn lớp học (Template)</option>
-                            @foreach (var c in Model.ClassesList)
-                            {
-                                <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
-                            }
-                        </select>
+                        <label asp-for="Input.ClassId" class="form-label fw-semibold text-dark mb-1">Lớp học <span class="text-muted fw-normal" style="font-size: 0.85rem;">(để trống nếu tạo Template)</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <span class="material-symbols-outlined text-muted fs-5">school</span>
+                            </span>
+                            <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select border-start-0 ps-0">
+                                <option value="">Chọn lớp học (Template)</option>
+                            </select>
+                        </div>
                     }
                     <span asp-validation-for="Input.ClassId" class="text-danger small"></span>
                 </div>
@@ -122,63 +136,96 @@
                             }
                         </select>
                     }
+                    <label asp-for="Input.NodeId" class="form-label fw-semibold text-dark mb-1">Bài học <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <span class="material-symbols-outlined text-muted fs-5">menu_book</span>
+                        </span>
+                        <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select border-start-0 ps-0" id="nodeSelect" required>
+                            <option value="">Chọn bài học</option>
+                        </select>
+                    </div>
                     <span asp-validation-for="Input.NodeId" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Input.Category" class="form-label fw-semibold">Phân loại kiến thức <span class="text-danger">*</span></label>
-                    <select asp-for="Input.Category" class="form-select bg-light" id="categorySelect">
-                        <option value="">Chọn phân loại</option>
-                        <option value="All">Tất cả (All)</option>
-                        <option value="Vocabulary">Từ vựng (Vocabulary)</option>
-                        <option value="Grammar">Ngữ pháp (Grammar)</option>
-                        <option value="Kanji">Chữ Hán (Kanji)</option>
-                        <option value="Keigo">Kính ngữ (Keigo)</option>
-                    </select>
+                    <label asp-for="Input.Category" class="form-label fw-semibold text-dark mb-1">Phân loại kiến thức <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <span class="material-symbols-outlined text-muted fs-5">category</span>
+                        </span>
+                        <select asp-for="Input.Category" class="form-select border-start-0 ps-0" id="categorySelect" required>
+                            <option value="">Chọn phân loại</option>
+                            <option value="All">Tất cả (All)</option>
+                            <option value="Vocabulary">Từ vựng (Vocabulary)</option>
+                            <option value="Grammar">Ngữ pháp (Grammar)</option>
+                            <option value="Kanji">Chữ Hán (Kanji)</option>
+                            <option value="Keigo">Kính ngữ (Keigo)</option>
+                        </select>
+                    </div>
                     <span asp-validation-for="Input.Category" class="text-danger small"></span>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-md-6">
-                        <label asp-for="Input.QuestionCount" class="form-label fw-semibold">Số lượng câu <span class="text-danger">*</span></label>
-                        <input asp-for="Input.QuestionCount" class="form-control bg-light" type="number" />
+                        <label asp-for="Input.QuestionCount" class="form-label fw-semibold text-dark mb-1">Số lượng câu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <span class="material-symbols-outlined text-muted fs-5">tag</span>
+                            </span>
+                            <input asp-for="Input.QuestionCount" class="form-control border-start-0 ps-0" type="number" min="1" max="100" required />
+                        </div>
                         <span asp-validation-for="Input.QuestionCount" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Input.DurationMinutes" class="form-label fw-semibold">Thời gian (phút) <span class="text-danger">*</span></label>
-                        <input asp-for="Input.DurationMinutes" class="form-control bg-light" type="number" />
+                        <label asp-for="Input.DurationMinutes" class="form-label fw-semibold text-dark mb-1">Thời gian (phút) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <span class="material-symbols-outlined text-muted fs-5">timer</span>
+                            </span>
+                            <input asp-for="Input.DurationMinutes" class="form-control border-start-0 ps-0" type="number" min="1" max="300" required />
+                        </div>
                         <span asp-validation-for="Input.DurationMinutes" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <div class="alert alert-info border-0 rounded-3 mt-3 mb-3 py-2 d-flex align-items-center gap-2">
-                    <i class="bi bi-database-check"></i>
-                    <span>Hiện có <strong id="availableCount">@(Model.AvailableQuestionCount?.ToString() ?? "-")</strong> câu phù hợp.</span>
+                <div class="p-3 mb-4 rounded-3 d-flex align-items-center gap-2" style="background-color: var(--color-surface-container-low); border: 1px solid var(--color-outline-variant);">
+                    <span class="material-symbols-outlined text-primary fs-5">database</span>
+                    <span class="text-dark small">Hiện có <strong class="text-primary" id="availableCount">@(Model.AvailableQuestionCount?.ToString() ?? "-")</strong> câu hỏi phù hợp.</span>
                 </div>
 
+                <div class="form-check form-switch mb-4">
+                    <input asp-for="Input.PublishNow" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="Input.PublishNow" class="form-check-label fw-semibold text-dark" style="margin-left: 0.5rem;">Phát hành ngay cho học viên</label>
+                </div>
                 <input type="hidden" asp-for="IsStrictMode" />
 
-                <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                    <i class="bi bi-shuffle"></i>
-                    Tạo bài test
+                <button type="submit" class="btn-premium-primary w-100 py-2.5 d-flex align-items-center justify-content-center gap-2 border-0">
+                    <span class="material-symbols-outlined fs-5">shuffle</span>
+                    Tạo đề ngẫu nhiên
                 </button>
             </form>
         </div>
     </div>
 
     <div class="col-lg-7">
-        <div class="card card-flat rounded-4 overflow-hidden">
-            <div class="p-4 border-bottom">
-                <h5 class="fw-bold mb-0">Bài test gần đây</h5>
+        <div class="card card-premium card-flat overflow-hidden">
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between" style="background-color: var(--color-surface-container-low);">
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">history</span>
+                    Các bài test gần đây
+                </h5>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2.5 py-1">Lịch sử</span>
             </div>
+            
             <div class="table-responsive">
                 <table class="table align-middle table-hover mb-0">
                     <thead class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
                         <tr>
-                            <th class="ps-4">Tên bài test</th>
-                            <th>Bài học</th>
-                            <th class="text-center">Câu</th>
-                            <th>Trạng thái</th>
+                            <th class="ps-4 py-3">Tên bài test</th>
+                            <th class="py-3">Bài học</th>
+                            <th class="text-center py-3">Số câu</th>
+                            <th class="py-3 pe-4">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,23 +234,29 @@
                             foreach (var quiz in Model.RecentQuizzes)
                             {
                                 <tr>
-                                    <td class="ps-4">
+                                    <td class="ps-4 py-3">
                                         <div class="fw-semibold text-dark">@quiz.Title</div>
-                                        <div class="text-muted small">@quiz.DurationMinutes phút</div>
+                                        <div class="text-muted small d-flex align-items-center gap-1">
+                                            <span class="material-symbols-outlined fs-6">timer</span> @quiz.DurationMinutes phút
+                                        </div>
                                     </td>
-                                    <td>
-                                        <div class="text-dark">@quiz.Node?.Title</div>
+                                    <td class="py-3">
+                                        <div class="text-dark fw-medium">@quiz.Node?.Title</div>
                                         <div class="text-muted small">@quiz.Node?.Class?.ClassName</div>
                                     </td>
-                                    <td class="text-center fw-semibold">@quiz.QuizQuestions.Count</td>
-                                    <td>
+                                    <td class="text-center fw-semibold py-3">@quiz.QuizQuestions.Count</td>
+                                    <td class="py-3 pe-4">
                                         @if (quiz.Status == "Published")
                                         {
-                                            <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1">Published</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-semibold px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1">
+                                                <span class="material-symbols-outlined fs-6">check</span> Published
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2 py-1">Draft</span>
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 fw-semibold px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1">
+                                                <span class="material-symbols-outlined fs-6">edit</span> Draft
+                                            </span>
                                         }
                                     </td>
                                 </tr>
@@ -213,8 +266,8 @@
                         {
                             <tr>
                                 <td colspan="4" class="text-center py-5 text-muted">
-                                    <i class="bi bi-journal-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                    Chưa có bài test nào.
+                                    <span class="material-symbols-outlined fs-1 text-muted opacity-25 mb-2 d-block">folder_off</span>
+                                    Chưa có bài test nào được tạo gần đây.
                                 </td>
                             </tr>
                         }
@@ -259,17 +312,17 @@
 
             if (!classSelect) {
                 targetModeBadge.className = "badge bg-primary bg-opacity-10 text-primary fw-semibold px-2.5 py-1.5 border border-primary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
-                targetModeBadge.innerHTML = '<i class="bi bi-journal-bookmark-fill"></i> Bài test cho lớp học';
+                targetModeBadge.innerHTML = '<span class="material-symbols-outlined fs-6">school</span> Bài test cho lớp học';
                 return;
             }
 
             if (classSelect.value === "") {
                 targetModeBadge.className = "badge bg-info bg-opacity-10 text-info fw-semibold px-2.5 py-1.5 border border-info border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
-                targetModeBadge.innerHTML = '<i class="bi bi-file-earmark-medical-fill"></i> Bài test mẫu (Template)';
+                targetModeBadge.innerHTML = '<span class="material-symbols-outlined fs-6">description</span> Bài test mẫu (Template)';
             } else {
                 const selectedText = classSelect.options[classSelect.selectedIndex].text;
                 targetModeBadge.className = "badge bg-primary bg-opacity-10 text-primary fw-semibold px-2.5 py-1.5 border border-primary border-opacity-25 rounded-pill d-inline-flex align-items-center gap-1";
-                targetModeBadge.innerHTML = `<i class="bi bi-journal-bookmark-fill"></i> Lớp: ${selectedText}`;
+                targetModeBadge.innerHTML = `<span class="material-symbols-outlined fs-6">school</span> Lớp: ${selectedText}`;
             }
         }
 
@@ -399,4 +452,3 @@
         updateTargetBadge();
     </script>
 }
-

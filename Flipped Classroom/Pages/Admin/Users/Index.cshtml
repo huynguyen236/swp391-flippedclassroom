@@ -59,12 +59,12 @@
             </div>
 
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-outline-primary w-100">
+                <button type="submit" class="btn btn-outline-primary w-100" style="padding: .65rem .9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;">
                     <i class="bi bi-filter"></i> Lọc
                 </button>
                 @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.RoleFilter != "All" || Model.ActiveFilter != "All")
                 {
-                    <a href="/Admin/Users" class="btn btn-outline-secondary" title="Xóa bộ lọc">
+                    <a href="/Admin/Users" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Xóa bộ lọc" style="padding: .65rem .9rem;">
                         <i class="bi bi-x-circle"></i>
                     </a>
                 }

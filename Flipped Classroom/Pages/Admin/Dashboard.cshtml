@@ -4,216 +4,360 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="row mb-4 align-items-center">
-    <div class="col-md-8">
-        <h2 class="fw-bold mb-0 text-dark">Dashboard Thống Kê</h2>
-        <p class="text-muted">Tổng quan số liệu người dùng và lớp học trên hệ thống.</p>
-    </div>
-    <div class="col-md-4 text-md-end">
-        <div class="badge bg-light text-dark p-2 border border-secondary border-opacity-10 shadow-sm">
-            <i class="bi bi-clock-history me-1"></i> Cập nhật mới nhất: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+@section Styles {
+    <style>
+        .stat-card-custom {
+            background-color: #ffffff;
+            border: 1px solid var(--color-outline-variant);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            height: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        .border-left-primary { border-left: 4px solid var(--color-primary) !important; }
+        .border-left-emerald { border-left: 4px solid #10b981 !important; }
+        .border-left-cyan { border-left: 4px solid #06b6d4 !important; }
+
+        .stat-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card-icon-primary {
+            background-color: var(--color-primary-fixed);
+            color: var(--color-primary);
+        }
+
+        .stat-card-icon-emerald {
+            background-color: #e6f4ea;
+            color: #10b981;
+        }
+
+        .stat-card-icon-cyan {
+            background-color: #e0f7fa;
+            color: #00acc1;
+        }
+
+        .role-indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* FAB CSS */
+        .fab-btn {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 74, 198, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            z-index: 999;
+            text-decoration: none;
+        }
+        .fab-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--color-primary-hover);
+            color: #ffffff;
+        }
+        .fab-tooltip {
+            position: absolute;
+            right: 70px;
+            background-color: var(--color-on-background);
+            color: var(--color-surface-container-lowest);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .fab-btn:hover .fab-tooltip {
+            opacity: 1;
+        }
+    </style>
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4 align-items-end">
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-1 text-dark" style="font-family: var(--font-heading);">Dashboard Thống Kê</h1>
+            <p class="text-muted mb-0">Tổng quan số liệu người dùng và lớp học trên hệ thống.</p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="badge bg-white text-muted p-2.5 border rounded-pill shadow-sm d-inline-flex align-items-center gap-1.5" style="font-size: 0.8rem; font-weight: 500;">
+                <span class="material-symbols-outlined text-[18px]">history</span>
+                Cập nhật mới nhất: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Statistics Cards -->
-<div class="row g-4 mb-4">
-    <!-- Total Users -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card card-flat rounded-4 p-4 h-100 position-relative overflow-hidden border-start border-4 border-primary">
-            <div class="d-flex align-items-center justify-content-between">
+    <!-- Statistics Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Stat Card 1 -->
+        <div class="col-md-4">
+            <div class="stat-card-custom border-left-primary">
                 <div>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Tổng thành viên</h6>
-                    <h2 class="fw-bold mb-0 text-dark">@Model.TotalUsers</h2>
+                    <p class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Tổng thành viên</p>
+                    <h3 class="fw-extrabold mb-0 text-dark" style="font-size: 2.25rem;">@Model.TotalUsers</h3>
+                    <p class="mt-3 mb-0 text-muted small d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        <span class="font-bold text-primary">Hoạt động</span> trong hệ thống Flipped
+                    </p>
                 </div>
-                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
-                    <i class="bi bi-people-fill fs-3"></i>
+                <div class="stat-card-icon stat-card-icon-primary">
+                    <span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">groups</span>
                 </div>
-            </div>
-            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
-                <span class="text-success fw-medium"><i class="bi bi-person-fill-check"></i> Hoạt động</span> trong hệ thống Flipped
             </div>
         </div>
-    </div>
 
-    <!-- Active Classes -->
-    <div class="col-md-6 col-lg-4">
-        <div class="card card-flat rounded-4 p-4 h-100 position-relative overflow-hidden border-start border-4 border-success">
-            <div class="d-flex align-items-center justify-content-between">
+        <!-- Stat Card 2 -->
+        <div class="col-md-4">
+            <div class="stat-card-custom border-left-emerald">
                 <div>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Lớp học đang hoạt động</h6>
-                    <h2 class="fw-bold mb-0 text-dark">@Model.ActiveClassesCount</h2>
+                    <p class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Lớp học hoạt động</p>
+                    <h3 class="fw-extrabold mb-0 text-dark" style="font-size: 2.25rem;">@Model.ActiveClassesCount</h3>
+                    <p class="mt-3 mb-0 text-muted small d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined text-success text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        <span class="font-bold text-success">Active</span> trạng thái lớp học khả dụng
+                    </p>
                 </div>
-                <div class="bg-success bg-opacity-10 text-success rounded-3 p-3">
-                    <i class="bi bi-book-half fs-3"></i>
+                <div class="stat-card-icon stat-card-icon-emerald">
+                    <span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">menu_book</span>
                 </div>
-            </div>
-            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
-                <span class="text-success fw-medium"><i class="bi bi-check-circle-fill"></i> Active</span> trạng thái lớp học khả dụng
             </div>
         </div>
-    </div>
 
-    <!-- Admin/Manager Ratio card or general info -->
-    <div class="col-md-12 col-lg-4">
-        <div class="card card-flat rounded-4 p-4 h-100 position-relative overflow-hidden border-start border-4 border-info">
-            <div class="d-flex align-items-center justify-content-between">
+        <!-- Stat Card 3 -->
+        <div class="col-md-4">
+            <div class="stat-card-custom border-left-cyan">
                 <div>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">Ban điều hành & hỗ trợ</h6>
-                    <h2 class="fw-bold mb-0 text-dark">@(Model.AdminCount + Model.ManagerCount + Model.SupportCount)</h2>
+                    <p class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Ban điều hành & Hỗ trợ</p>
+                    <h3 class="fw-extrabold mb-0 text-dark" style="font-size: 2.25rem;">@(Model.AdminCount + Model.ManagerCount + Model.SupportCount)</h3>
+                    <p class="mt-3 mb-0 text-muted small">Gồm Admin, Manager và Support Team</p>
                 </div>
-                <div class="bg-info bg-opacity-10 text-info rounded-3 p-3">
-                    <i class="bi bi-shield-lock-fill fs-3"></i>
-                </div>
-            </div>
-            <div class="mt-3 text-muted" style="font-size: 0.85rem;">
-                Gồm Admin, Manager và Support Team
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mb-4">
-    <!-- Roles Breakdown -->
-    <div class="col-lg-4">
-        <div class="card card-flat rounded-4 p-4 h-100">
-            <h5 class="fw-bold text-dark mb-4"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Phân bố vai trò</h5>
-            
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
-                    <span class="fw-medium text-dark"><i class="bi bi-person-workspace text-primary me-1"></i> Admin</span>
-                    <span class="fw-semibold">@Model.AdminCount (@(Model.TotalUsers > 0 ? (Model.AdminCount * 100 / Model.TotalUsers) : 0)%)</span>
-                </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.AdminCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.AdminCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
-                    <span class="fw-medium text-dark"><i class="bi bi-briefcase text-success me-1"></i> Manager</span>
-                    <span class="fw-semibold">@Model.ManagerCount (@(Model.TotalUsers > 0 ? (Model.ManagerCount * 100 / Model.TotalUsers) : 0)%)</span>
-                </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.ManagerCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.ManagerCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
-                    <span class="fw-medium text-dark"><i class="bi bi-mortarboard text-warning me-1"></i> Teacher</span>
-                    <span class="fw-semibold">@Model.TeacherCount (@(Model.TotalUsers > 0 ? (Model.TeacherCount * 100 / Model.TotalUsers) : 0)%)</span>
-                </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.TeacherCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.TeacherCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
-                    <span class="fw-medium text-dark"><i class="bi bi-person-check text-info me-1"></i> Student</span>
-                    <span class="fw-semibold">@Model.StudentCount (@(Model.TotalUsers > 0 ? (Model.StudentCount * 100 / Model.TotalUsers) : 0)%)</span>
-                </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-info" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.StudentCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.StudentCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
-                </div>
-            </div>
-
-            <div class="mb-2">
-                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.9rem;">
-                    <span class="fw-medium text-dark"><i class="bi bi-headset text-secondary me-1"></i> Support</span>
-                    <span class="fw-semibold">@Model.SupportCount (@(Model.TotalUsers > 0 ? (Model.SupportCount * 100 / Model.TotalUsers) : 0)%)</span>
-                </div>
-                <div class="progress" style="height: 8px;">
-                    <div class="progress-bar bg-secondary" role="progressbar" style="width: @(Model.TotalUsers > 0 ? (Model.SupportCount * 100 / Model.TotalUsers) : 0)%" aria-valuenow="@Model.SupportCount" aria-valuemin="0" aria-valuemax="@Model.TotalUsers"></div>
+                <div class="stat-card-icon stat-card-icon-cyan">
+                    <span class="material-symbols-outlined text-headline-sm" style="font-variation-settings: 'FILL' 1;">support_agent</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Newest Users Table -->
-    <div class="col-lg-8">
-        <div class="card card-flat rounded-4 p-4 h-100">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h5 class="fw-bold text-dark mb-0"><i class="bi bi-person-plus-fill text-primary me-2"></i>Thành viên mới nhất</h5>
-                <a href="/Admin/Users" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem tất cả</a>
+    <!-- Details Breakdown Grid -->
+    <div class="row g-4">
+        <!-- Role Distribution Panel -->
+        <div class="col-lg-4">
+            <div class="card card-premium shadow-sm p-4 h-100 d-flex flex-column">
+                <h4 class="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">pie_chart</span>
+                    Phân bổ vai trò
+                </h4>
+                
+                <div class="d-flex flex-column justify-content-between flex-grow-1 py-2">
+                    @{
+                        int total = Model.TotalUsers > 0 ? Model.TotalUsers : 1;
+                        int adminPct = Model.AdminCount * 100 / total;
+                        int managerPct = Model.ManagerCount * 100 / total;
+                        int teacherPct = Model.TeacherCount * 100 / total;
+                        int studentPct = Model.StudentCount * 100 / total;
+                        int supportPct = Model.SupportCount * 100 / total;
+                    }
+
+                    <!-- Admin -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1.5" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="role-indicator-dot" style="background-color: var(--color-primary);"></span> Admin
+                            </div>
+                            <span class="fw-bold">@Model.AdminCount (@adminPct%)</span>
+                        </div>
+                        <div class="progress-track-custom" style="height: 6px;">
+                            <div class="progress-fill-primary" style="width: @adminPct%; height: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Manager -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1.5" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="role-indicator-dot" style="background-color: #10b981;"></span> Manager
+                            </div>
+                            <span class="fw-bold">@Model.ManagerCount (@managerPct%)</span>
+                        </div>
+                        <div class="progress-track-custom" style="height: 6px;">
+                            <div class="progress-fill-success" style="width: @managerPct%; height: 100%; background: #10b981;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Teacher -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1.5" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="role-indicator-dot" style="background-color: #f59e0b;"></span> Teacher
+                            </div>
+                            <span class="fw-bold">@Model.TeacherCount (@teacherPct%)</span>
+                        </div>
+                        <div class="progress-track-custom" style="height: 6px;">
+                            <div class="progress-fill-success" style="width: @teacherPct%; height: 100%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Student -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1.5" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="role-indicator-dot" style="background-color: #06b6d4;"></span> Student
+                            </div>
+                            <span class="fw-bold">@Model.StudentCount (@studentPct%)</span>
+                        </div>
+                        <div class="progress-track-custom" style="height: 6px;">
+                            <div class="progress-fill-success" style="width: @studentPct%; height: 100%; background: #06b6d4;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Support -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-1.5" style="font-size: 0.85rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="role-indicator-dot" style="background-color: var(--color-outline);"></span> Support
+                            </div>
+                            <span class="fw-bold">@Model.SupportCount (@supportPct%)</span>
+                        </div>
+                        <div class="progress-track-custom" style="height: 6px;">
+                            <div class="progress-fill-success" style="width: @supportPct%; height: 100%; background: var(--color-outline);"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="table-responsive">
-                <table class="table align-middle table-hover mb-0">
-                    <thead class="table-light text-muted fw-semibold" style="font-size: 0.85rem;">
-                        <tr>
-                            <th>ID</th>
-                            <th>Tài khoản</th>
-                            <th>Họ và Tên</th>
-                            <th>Vai trò</th>
-                            <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.NewestUsers != null && Model.NewestUsers.Any())
-                        {
-                            foreach (var user in Model.NewestUsers)
+        </div>
+
+        <!-- Latest Members Table -->
+        <div class="col-lg-8">
+            <div class="card card-premium shadow-sm overflow-hidden h-100">
+                <div class="p-4 d-flex justify-content-between align-items-center border-bottom border-outline-variant">
+                    <h4 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">person_add</span>
+                        Thành viên mới nhất
+                    </h4>
+                    <a href="/Admin/Users" class="btn btn-premium-outline btn-sm rounded-pill px-3">Xem tất cả</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="bg-light text-muted uppercase">
+                            <tr>
+                                <th class="ps-4" style="width: 70px;">ID</th>
+                                <th>Tài khoản</th>
+                                <th>Họ và tên</th>
+                                <th class="text-center">Vai trò</th>
+                                <th class="text-center">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            @if (Model.NewestUsers != null && Model.NewestUsers.Any())
+                            {
+                                foreach (var user in Model.NewestUsers)
+                                {
+                                    string userInitials = !string.IsNullOrWhiteSpace(user.Username) 
+                                        ? user.Username.Substring(0, 1).ToUpper() 
+                                        : "?";
+
+                                    string initialsBg = user.Role switch
+                                    {
+                                        "Admin" => "avatar-bg-pink",
+                                        "Manager" => "avatar-bg-blue",
+                                        "Teacher" => "avatar-bg-purple",
+                                        _ => "bg-secondary"
+                                    };
+
+                                    string badgeClass = user.Role switch
+                                    {
+                                        "Admin" => "bg-danger bg-opacity-10 text-danger",
+                                        "Manager" => "bg-success bg-opacity-10 text-success",
+                                        "Teacher" => "bg-warning bg-opacity-10 text-dark",
+                                        "Student" => "bg-info bg-opacity-10 text-info",
+                                        _ => "bg-secondary bg-opacity-10 text-secondary"
+                                    };
+
+                                    <tr>
+                                        <td class="ps-4 fw-bold text-dark">#@user.Id</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="avatar-initials-circle @initialsBg" style="width: 32px; height: 32px; font-size: 0.8rem; font-weight: 700;">
+                                                    @userInitials
+                                                </div>
+                                                <div>
+                                                    <p class="fw-bold mb-0 text-dark" style="line-height: 1.2;">@user.Username</p>
+                                                    <p class="text-muted small mb-0">@user.Email</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-dark">@user.FirstName @user.LastName</td>
+                                        <td class="text-center">
+                                            <span class="badge @badgeClass fw-semibold px-2 py-1" style="font-size: 11px;">
+                                                @user.Role
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (user.IsActive == true)
+                                            {
+                                                <span class="inline-flex align-items-center gap-1 px-2.5 py-1 rounded-pill bg-success-subtle text-success" style="font-size: 11px; font-weight: 700;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #10b981; display: inline-block;"></span> Active
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="inline-flex align-items-center gap-1 px-2.5 py-1 rounded-pill bg-danger-subtle text-danger" style="font-size: 11px; font-weight: 700;">
+                                                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: var(--color-error); display: inline-block;"></span> Inactive
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
                             {
                                 <tr>
-                                    <td class="fw-semibold text-dark">#@user.Id</td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-light rounded-circle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                                @user.Username.Substring(0, 1).ToUpper()
-                                            </div>
-                                            <div>
-                                                <div class="fw-medium text-dark">@user.Username</div>
-                                                <div class="text-muted small">@user.Email</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>@user.FirstName @user.LastName</td>
-                                    <td>
-                                        @{
-                                            var badgeClass = user.Role switch
-                                            {
-                                                "Admin" => "bg-danger bg-opacity-10 text-danger",
-                                                "Manager" => "bg-success bg-opacity-10 text-success",
-                                                "Teacher" => "bg-warning bg-opacity-10 text-dark",
-                                                "Student" => "bg-info bg-opacity-10 text-info",
-                                                _ => "bg-secondary bg-opacity-10 text-secondary"
-                                            };
-                                        }
-                                        <span class="badge @badgeClass fw-semibold px-2 py-1" style="font-size: 0.75rem;">
-                                            @user.Role
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if (user.IsActive == true)
-                                        {
-                                            <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
-                                                <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i> Active
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-2 py-1" style="font-size: 0.75rem;">
-                                                <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i> Inactive
-                                            </span>
-                                        }
-                                    </td>
-                                    <td style="font-size: 0.9rem;" class="text-muted">
-                                        @(user.CreatedAt?.ToString("dd/MM/yyyy") ?? "-")
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <span class="material-symbols-outlined text-outline" style="font-size: 2.5rem;">groups</span>
+                                        <p class="mt-2 mb-0">Không có thành viên mới nào trên hệ thống.</p>
                                     </td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Không có người dùng mới nào.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Floating Action Button (FAB) -->
+<a href="/Admin/Users/Create" class="fab-btn" title="Thêm tài khoản mới">
+    <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+    <span class="fab-tooltip">Thêm tài khoản mới</span>
+</a>

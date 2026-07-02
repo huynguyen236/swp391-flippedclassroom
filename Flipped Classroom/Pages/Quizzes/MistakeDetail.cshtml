@@ -9,11 +9,19 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
     <div>
         <a asp-page="/Quizzes/MistakeStats" asp-route-classId="@Model.ReturnClassId"
-           class="text-decoration-none text-muted d-inline-flex align-items-center gap-1 small fw-medium">
-            <i class="bi bi-arrow-left"></i> Quay lại thống kê
+           class="btn-premium-outline py-1.5 px-3 mb-2 text-decoration-none">
+            <span class="material-symbols-outlined fs-6 align-middle me-1">arrow_back</span>
+            Quay lại thống kê
         </a>
-        <h2 class="fw-bold mt-2 text-dark">Chi Tiết Câu Hỏi #@detail.QuestionId</h2>
-        <p class="text-muted mb-0">@detail.ClassName — @detail.NodeTitle</p>
+        <h2 class="fw-bold mt-2 text-dark d-flex align-items-center gap-2">
+            <span class="material-symbols-outlined text-primary fs-3">assignment_late</span>
+            Chi Tiết Câu Hỏi #@detail.QuestionId
+        </h2>
+        <p class="text-muted mb-0 d-flex align-items-center gap-1">
+            <span class="material-symbols-outlined fs-6">school</span> @detail.ClassName 
+            <span class="mx-1">•</span> 
+            <span class="material-symbols-outlined fs-6">folder_open</span> @detail.NodeTitle
+        </p>
     </div>
     <div>
         @if (Model.ReturnClassId.HasValue)
@@ -22,14 +30,16 @@
                 <input type="hidden" name="ReturnClassId" value="@Model.ReturnClassId" />
                 <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2 px-4 shadow-sm fw-medium">
                     <i class="bi bi-check2-circle fs-5"></i>
+                <button type="submit" class="btn-premium-primary bg-success border-0 px-4 shadow-sm text-white">
+                    <span class="material-symbols-outlined fs-5 align-middle me-1">check_circle</span>
                     Đánh dấu đã chữa câu này
                 </button>
             </form>
         }
         else
         {
-            <div class="alert alert-warning border-0 shadow-sm rounded-3 py-2 px-3 mb-0 small text-dark d-flex align-items-center gap-2">
-                <i class="bi bi-info-circle-fill text-warning fs-6"></i>
+            <div class="alert alert-warning border-0 shadow-sm rounded-3 py-2 px-3 mb-0 small text-dark d-flex align-items-center gap-2" style="background-color: var(--color-surface-container);">
+                <span class="material-symbols-outlined text-warning fs-5">info</span>
                 <span>Lọc lớp học cụ thể để đánh dấu đã chữa câu này.</span>
             </div>
         }
@@ -38,39 +48,56 @@
 
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card card-flat rounded-4 p-4 mb-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-                <div>
-                    <span class="badge bg-info bg-opacity-10 text-info me-1">@detail.Category</span>
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary">@detail.QuestionType</span>
+        <div class="card card-premium card-flat p-4 mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-3 border-bottom">
+                <div class="d-flex gap-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill">
+                        @detail.Category
+                    </span>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-1.5 rounded-pill">
+                        @detail.QuestionType
+                    </span>
                 </div>
-                <span class="badge bg-danger bg-opacity-10 text-danger">
+                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-1.5 rounded-pill fw-bold">
                     @detail.WrongStudentCount/@detail.ClassStudentCount học viên sai (@detail.WrongStudentPercent%)
                 </span>
             </div>
 
-            <h5 class="fw-bold text-dark mb-3">Nội dung câu hỏi</h5>
-            <p class="fs-5 mb-4">@detail.QuestionContent</p>
+            <div class="p-3 mb-4 rounded-3 border-start border-4 border-primary bg-light">
+                <span class="text-muted d-block small mb-1 uppercase fw-semibold tracking-wider">Nội dung câu hỏi</span>
+                <div class="fs-5 fw-medium text-dark">@detail.QuestionContent</div>
+            </div>
 
             @if (isMcq && detail.Options.Any())
             {
-                <h6 class="fw-semibold text-dark mb-3">Các đáp án</h6>
-                <div class="d-flex flex-column gap-2">
+                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-muted fs-5">list</span>
+                    Các đáp án lựa chọn
+                </h6>
+                <div class="d-flex flex-column gap-3">
                     @{
                         var optionIndex = 0;
                     }
                     @foreach (var option in detail.Options)
                     {
                         var label = char.ConvertFromUtf32(65 + optionIndex);
-                        <div class="d-flex align-items-start gap-2 border rounded-3 p-3 @(option.IsCorrect ? "border-success bg-success bg-opacity-10" : "bg-light")">
-                            <span class="fw-bold text-muted">@label.</span>
-                            <div class="flex-grow-1">
-                                <span>@option.OptionContent</span>
-                                @if (option.IsCorrect)
-                                {
-                                    <span class="badge bg-success ms-2">Đáp án đúng</span>
-                                }
+                        <div class="d-flex align-items-center gap-3 border rounded-3 p-3 transition-all @(option.IsCorrect ? "border-success-subtle text-success-emphasis" : "bg-light text-secondary")" 
+                             style="@(option.IsCorrect ? "background-color: rgba(40, 167, 69, 0.08); border: 1px solid rgba(40, 167, 69, 0.25);" : "border: 1px solid var(--color-outline-variant);")">
+                            
+                            <div class="avatar-initials-circle @(option.IsCorrect ? "bg-success" : "bg-secondary bg-opacity-25 text-dark")">
+                                @label
                             </div>
+                            
+                            <div class="flex-grow-1 fs-6 text-dark fw-medium">
+                                @option.OptionContent
+                            </div>
+
+                            @if (option.IsCorrect)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2.5 py-1.5 d-flex align-items-center gap-1">
+                                    <span class="material-symbols-outlined fs-6">done</span> Đáp án đúng
+                                </span>
+                            }
                         </div>
                         optionIndex++;
                     }
@@ -78,41 +105,62 @@
             }
             else if (!string.IsNullOrWhiteSpace(detail.CorrectAnswer))
             {
-                <h6 class="fw-semibold text-dark mb-2">Đáp án đúng</h6>
-                <p class="mb-0 text-success fw-medium">@detail.CorrectAnswer</p>
+                <h6 class="fw-bold text-dark mb-2">Đáp án đúng</h6>
+                <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25 text-success fw-bold fs-6 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">done_all</span>
+                    @detail.CorrectAnswer
+                </div>
             }
 
             @if (!string.IsNullOrWhiteSpace(detail.Explanation))
             {
-                <hr class="my-4 text-muted" />
-                <h6 class="fw-semibold text-dark mb-2">Giải thích</h6>
-                <p class="text-muted mb-0">@detail.Explanation</p>
+                <div class="p-3 mt-4 rounded-3 bg-light border-start border-4 border-warning">
+                    <div class="d-flex align-items-center gap-2 mb-2 text-warning">
+                        <span class="material-symbols-outlined fs-5">lightbulb</span>
+                        <h6 class="fw-bold mb-0 text-dark">Giải thích đáp án</h6>
+                    </div>
+                    <p class="mb-0 text-secondary fs-6">@detail.Explanation</p>
+                </div>
             }
         </div>
     </div>
 
     <div class="col-lg-4">
-        <div class="card card-flat rounded-4 p-4 mb-4">
-            <h6 class="fw-bold text-dark mb-3">Tổng quan</h6>
+        <div class="card card-premium card-flat p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-4 pb-2 border-bottom d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary fs-5">analytics</span>
+                Tổng quan thống kê
+            </h6>
             <div class="d-flex flex-column gap-3">
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Học viên sai</span>
-                    <span class="fw-semibold">@detail.WrongStudentCount / @detail.ClassStudentCount</span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined fs-6">group</span> Học viên làm sai
+                    </span>
+                    <span class="fw-bold text-dark">@detail.WrongStudentCount / @detail.ClassStudentCount</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Tổng lượt sai</span>
-                    <span class="fw-semibold text-danger">@detail.TotalMistakeCount</span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined fs-6">assignment_late</span> Tổng số lượt sai
+                    </span>
+                    <span class="fw-bold text-danger">@detail.TotalMistakeCount</span>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Tỷ lệ sai</span>
-                    <span class="badge bg-danger bg-opacity-10 text-danger">@detail.WrongStudentPercent%</span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined fs-6">percent</span> Tỷ lệ làm sai
+                    </span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2.5 py-1">
+                        @detail.WrongStudentPercent%
+                    </span>
                 </div>
             </div>
         </div>
 
-        <div class="card card-flat rounded-4 overflow-hidden">
-            <div class="px-4 py-3 border-bottom bg-light">
-                <h6 class="fw-bold text-dark mb-0">Học viên làm sai</h6>
+        <div class="card card-premium card-flat overflow-hidden">
+            <div class="px-4 py-3 border-bottom" style="background-color: var(--color-surface-container-low);">
+                <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary fs-5">groups</span>
+                    Danh sách học viên sai
+                </h6>
             </div>
             @if (detail.Students.Any())
             {
@@ -120,23 +168,37 @@
                     <table class="table align-middle table-hover mb-0">
                         <thead class="table-light text-muted small">
                             <tr>
-                                <th class="ps-4">Học viên</th>
-                                <th class="text-center">Lượt sai</th>
+                                <th class="ps-4 py-3">Học viên</th>
+                                <th class="text-center py-3">Số lượt sai</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var student in detail.Students)
                             {
+                                var initials = !string.IsNullOrWhiteSpace(student.StudentName)
+                                    ? student.StudentName.Substring(0, 1).ToUpper()
+                                    : "?";
+                                var avatarClass = (student.ErrorCount > 2) ? "avatar-bg-pink" : "avatar-bg-blue";
+                                
                                 <tr>
-                                    <td class="ps-4">
-                                        <div class="fw-semibold text-dark">@student.StudentName</div>
-                                        @if (!string.IsNullOrWhiteSpace(student.MistakeType))
-                                        {
-                                            <div class="text-muted small">@student.MistakeType</div>
-                                        }
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-initials-circle @avatarClass">
+                                                @initials
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-dark">@student.StudentName</div>
+                                                @if (!string.IsNullOrWhiteSpace(student.MistakeType))
+                                                {
+                                                    <div class="text-muted small">@student.MistakeType</div>
+                                                }
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-danger bg-opacity-10 text-danger">@student.ErrorCount</span>
+                                    <td class="text-center py-3">
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1">
+                                            @student.ErrorCount
+                                        </span>
                                     </td>
                                 </tr>
                             }
@@ -146,7 +208,10 @@
             }
             else
             {
-                <div class="text-center py-4 text-muted small">Chưa có học viên nào ghi nhận lỗi sai.</div>
+                <div class="text-center py-5 text-muted small d-flex flex-column align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-2 text-muted opacity-50">check_circle</span>
+                    <span>Chưa có học viên nào ghi nhận lỗi sai.</span>
+                </div>
             }
         </div>
     </div>
