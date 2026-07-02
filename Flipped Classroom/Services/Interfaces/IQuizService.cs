@@ -25,11 +25,11 @@ namespace Flipped_Classroom.Services.Interfaces
 
         Task<DailyReviewSubmitResult> SubmitDailyReviewAsync(int studentId, Dictionary<int, int> selectedOptionIds, Dictionary<int, string> textAnswers);
 
-        Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId);
+        Task<List<QuestionMistakeStatistic>> GetMistakeStatisticsAsync(int? classId, int? managerId = null);
 
-        Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId, int? classId = null);
+        Task<QuestionMistakeDetail?> GetQuestionMistakeDetailAsync(int questionId, int? classId = null, int? managerId = null);
 
-        Task ResolveQuestionMistakesForClassAsync(int questionId, int classId);
+        Task ResolveQuestionMistakesForClassAsync(int questionId, int classId, int? managerId = null);
 
         Task<List<Class>> GetClassesAsync(int? managerId = null);
 

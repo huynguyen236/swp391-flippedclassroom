@@ -476,6 +476,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .Include(c => c.Curriculum)
                     .ThenInclude(cu => cu!.Nodes)
                         .ThenInclude(n => n.Quizzes)
+                            .ThenInclude(q => q.QuizQuestions)
                 .Include(c => c.ClassSchedules)
                 .FirstOrDefaultAsync(m => m.Id == id);
 

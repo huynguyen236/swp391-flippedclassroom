@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Quizzes
 {
-    [Authorize(Roles = "Admin,Manager,Teacher")]
+    [Authorize(Roles = "Teacher")]
     public class MistakeStatsModel : PageModel
     {
         private readonly IQuizService _quizService;
@@ -26,7 +27,14 @@ namespace Flipped_Classroom.Pages.Quizzes
 
         public async Task OnGetAsync()
         {
-            var classes = await _quizService.GetClassesAsync();
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int? managerId = null;
+            if (!User.IsInRole("Admin") && int.TryParse(userIdStr, out int userId))
+            {
+                managerId = userId;
+            }
+
+            var classes = await _quizService.GetClassesAsync(managerId);
             ClassOptions = classes
                 .Select(c => new SelectListItem
                 {
@@ -35,7 +43,7 @@ namespace Flipped_Classroom.Pages.Quizzes
                 })
                 .ToList();
 
-            Statistics = await _quizService.GetMistakeStatisticsAsync(ClassId);
+            Statistics = await _quizService.GetMistakeStatisticsAsync(ClassId, managerId);
         }
     }
 }

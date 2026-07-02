@@ -135,6 +135,7 @@ namespace Flipped_Classroom.Pages.StudentClasses
                 .Include(c => c.Curriculum)
                     .ThenInclude(curr => curr.Nodes)
                         .ThenInclude(n => n.Quizzes)
+                            .ThenInclude(q => q.QuizQuestions)
                 .Include(c => c.Manager)
                 .Include(c => c.ClassMembers)
                     .ThenInclude(cm => cm.User)

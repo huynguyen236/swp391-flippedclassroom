@@ -289,6 +289,48 @@ const JapaneseAnalyzer = (() => {
 
     const WordClassifier = {
         /**
+         * Validate a Japanese word for conjugation.
+         * @param {string} word
+         * @returns {string|null} Error message or null if valid
+         */
+        validate(word) {
+            if (!word || !word.trim()) return 'Vui lòng nhập động từ hoặc tính từ.';
+            word = word.trim();
+
+            // 1. Kiểm tra ký tự tiếng Nhật
+            for (let i = 0; i < word.length; i++) {
+                if (!CharUtils.isJapanese(word[i])) {
+                    return 'Từ nhập vào phải viết bằng tiếng Nhật (Kanji, Hiragana hoặc Katakana), không bao gồm chữ cái La-tinh, chữ số hay ký tự đặc biệt.';
+                }
+            }
+
+            // 2. Kiểm tra độ dài
+            if (word.length === 1) {
+                if (!CharUtils.isKanji(word[0])) {
+                    return 'Ký tự đơn lẻ không phải chữ Hán (Kanji) không thể là động từ hoặc tính từ hợp lệ.';
+                }
+            }
+
+            // 3. Kiểm tra xem có nhập từ đã chia thì lịch sự (Masu) hay không
+            const conjugatedEndings = ['ます', 'ません', 'ました', 'ませんでした', 'てください', 'でください'];
+            for (const ending of conjugatedEndings) {
+                if (word.endsWith(ending) && word.length > ending.length) {
+                    return `Vui lòng nhập thể nguyên mẫu (thể từ điển). Từ bạn nhập dường như đã được chia ở thể lịch sự hoặc thể khác ("${ending}").`;
+                }
+            }
+
+            // 4. Kiểm tra tính từ đã chia thì quá khứ/phủ định
+            if (word.endsWith('かった') && word.length > 3) {
+                return 'Tính từ dường như đã được chia ở thể quá khứ ("かった"). Vui lòng nhập thể nguyên mẫu kết thúc bằng "い".';
+            }
+            if (word.endsWith('くない') && word.length > 3) {
+                return 'Tính từ dường như đã được chia ở thể phủ định ("くない"). Vui lòng nhập thể nguyên mẫu kết thúc bằng "い".';
+            }
+
+            return null;
+        },
+
+        /**
          * Classify a Japanese word.
          * @param {string} word - Dictionary form of the word
          * @returns {{type: string, group: string|null, root: string, suffix: string, display: string}}
@@ -296,6 +338,20 @@ const JapaneseAnalyzer = (() => {
         classify(word) {
             if (!word || !word.trim()) return null;
             word = word.trim();
+
+            // 1. Kiểm tra tất cả ký tự có phải tiếng Nhật không
+            for (let i = 0; i < word.length; i++) {
+                if (!CharUtils.isJapanese(word[i])) {
+                    return null; // Có ký tự không phải tiếng Nhật
+                }
+            }
+
+            // 2. Kiểm tra độ dài: Chỉ chấp nhận 1 ký tự nếu đó là chữ Hán (Kanji) có nghĩa (ví dụ: 変, 楽, 楽)
+            if (word.length === 1) {
+                if (!CharUtils.isKanji(word[0])) {
+                    return null;
+                }
+            }
 
             // ── Check Group 3 verbs ──
             if (word === 'する' || word === '為る') {
@@ -935,6 +991,9 @@ const JapaneseAnalyzer = (() => {
         _overlay: null,
         _fab: null,
         _isOpen: false,
+        _flashcards: [],
+        _fcCurrentIndex: 0,
+        _fcIsLoaded: false,
 
         init() {
             this._panel = document.getElementById('jpAnalyzerPanel');
@@ -981,6 +1040,75 @@ const JapaneseAnalyzer = (() => {
                 }
             });
 
+            // --- Global Flashcards Bindings ---
+            const fcScene = document.getElementById('jpFlashcardScene');
+            const fcInner = document.getElementById('jpFlashcardInner');
+            if (fcScene && fcInner) {
+                fcScene.addEventListener('click', () => {
+                    fcInner.classList.toggle('is-flipped');
+                });
+            }
+
+            const fcPrevBtn = document.getElementById('jpPrevBtn');
+            fcPrevBtn?.addEventListener('click', () => {
+                if (this._fcCurrentIndex > 0) {
+                    this._fcCurrentIndex--;
+                    this._updateFlashcard();
+                }
+            });
+
+            const fcNextBtn = document.getElementById('jpNextBtn');
+            fcNextBtn?.addEventListener('click', () => {
+                if (this._fcCurrentIndex < this._flashcards.length - 1) {
+                    this._fcCurrentIndex++;
+                    this._updateFlashcard();
+                }
+            });
+
+            const fcShuffleBtn = document.getElementById('jpShuffleBtn');
+            fcShuffleBtn?.addEventListener('click', () => {
+                if (this._flashcards.length <= 1) return;
+                for (let i = this._flashcards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this._flashcards[i], this._flashcards[j]] = [this._flashcards[j], this._flashcards[i]];
+                }
+                this._fcCurrentIndex = 0;
+                this._updateFlashcard();
+
+                fcShuffleBtn.classList.add('bg-primary', 'text-white');
+                setTimeout(() => fcShuffleBtn.classList.remove('bg-primary', 'text-white'), 500);
+            });
+
+            const fcReloadBtn = document.getElementById('jpFlashcardReload');
+            fcReloadBtn?.addEventListener('click', () => {
+                this._loadFlashcards();
+            });
+
+            const fcSpeakBtn = document.getElementById('jpFlashcardSpeakBtn');
+            fcSpeakBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!this._flashcards.length) return;
+                const card = this._flashcards[this._fcCurrentIndex];
+                const word = card.word || card.Word;
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(word);
+                    utterance.lang = 'ja-JP';
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert("Trình duyệt không hỗ trợ phát âm.");
+                }
+            });
+
+            const fcAnalyzeBtn = document.getElementById('jpFlashcardAnalyzeBtn');
+            fcAnalyzeBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!this._flashcards.length) return;
+                const card = this._flashcards[this._fcCurrentIndex];
+                const word = card.word || card.Word;
+                this.analyzeWordDirectly(word);
+            });
+
             // ESC to close
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this._isOpen) this.close();
@@ -1019,6 +1147,10 @@ const JapaneseAnalyzer = (() => {
             this._panel.querySelectorAll('.jp-analyzer-tab-content').forEach(c => {
                 c.classList.toggle('active', c.id === tabId);
             });
+            // Auto load flashcards when tab is selected
+            if (tabId === 'tabFlashcard' && !this._fcIsLoaded) {
+                this._loadFlashcards();
+            }
             // Focus the textarea in the active tab
             setTimeout(() => {
                 const activeInput = this._panel.querySelector(`#${tabId} textarea`);
@@ -1047,6 +1179,7 @@ const JapaneseAnalyzer = (() => {
                     resultsDiv.classList.add('has-results');
                 } catch (err) {
                     resultsDiv.innerHTML = this._renderError('Lỗi phân tích: ' + err.message);
+                    resultsDiv.classList.add('has-results');
                 }
                 btn?.classList.remove('loading');
             }, 300);
@@ -1067,9 +1200,19 @@ const JapaneseAnalyzer = (() => {
 
             setTimeout(() => {
                 try {
+                    // Kiểm tra lỗi nhập liệu trước
+                    const validationError = WordClassifier.validate(text);
+                    if (validationError) {
+                        resultsDiv.innerHTML = this._renderError(validationError);
+                        resultsDiv.classList.add('has-results');
+                        btn?.classList.remove('loading');
+                        return;
+                    }
+
                     const info = WordClassifier.classify(text);
                     if (!info) {
-                        resultsDiv.innerHTML = this._renderError('Không nhận diện được loại từ.');
+                        resultsDiv.innerHTML = this._renderError('Không nhận diện được động từ hoặc tính từ hợp lệ ở thể nguyên mẫu.');
+                        resultsDiv.classList.add('has-results');
                         btn?.classList.remove('loading');
                         return;
                     }
@@ -1078,6 +1221,7 @@ const JapaneseAnalyzer = (() => {
                     resultsDiv.classList.add('has-results');
                 } catch (err) {
                     resultsDiv.innerHTML = this._renderError('Lỗi phân tích: ' + err.message);
+                    resultsDiv.classList.add('has-results');
                 }
                 btn?.classList.remove('loading');
             }, 300);
@@ -1188,6 +1332,125 @@ const JapaneseAnalyzer = (() => {
         _renderConjValue(val) {
             if (!val) return '<span class="text-muted">—</span>';
             return `<span>${val.root}</span><span class="jp-suffix">${val.suffix}</span>`;
+        },
+
+        _loadFlashcards() {
+            const progressText = document.getElementById('jpFlashcardProgress');
+            if (progressText) progressText.innerText = "Đang tải...";
+            
+            let url = '/Api/Vocabularies';
+            if (window.currentLessonNodeId) {
+                url += `?nodeId=${window.currentLessonNodeId}`;
+            }
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error("HTTP error " + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        this._flashcards = data;
+                        this._fcCurrentIndex = 0;
+                        this._fcIsLoaded = true;
+                        this._updateFlashcard();
+                    } else {
+                        this._showFlashcardEmpty("Không có từ vựng nào để ôn tập.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi tải flashcards:", err);
+                    this._showFlashcardEmpty("Lỗi khi tải từ vựng.");
+                });
+        },
+
+        _updateFlashcard() {
+            const inner = document.getElementById('jpFlashcardInner');
+            const frontText = document.getElementById('jpFrontText');
+            const romajiText = document.getElementById('jpRomajiText');
+            const backText = document.getElementById('jpBackText');
+            const pronunciationText = document.getElementById('jpPronunciationText');
+            const frontDiff = document.getElementById('jpFrontDiffBadge');
+            const backDiff = document.getElementById('jpBackDiffBadge');
+            const progressText = document.getElementById('jpFlashcardProgress');
+            const progressBar = document.getElementById('jpFlashcardProgressBar');
+            const prevBtn = document.getElementById('jpPrevBtn');
+            const nextBtn = document.getElementById('jpNextBtn');
+
+            if (!inner || !this._flashcards.length) return;
+
+            inner.classList.remove('is-flipped');
+
+            setTimeout(() => {
+                const card = this._flashcards[this._fcCurrentIndex];
+                if (frontText) frontText.innerText = card.word || card.Word;
+                if (backText) backText.innerText = card.meaning || card.Meaning;
+                if (pronunciationText) pronunciationText.innerText = card.hiragana || card.Hiragana;
+                
+                const romaji = card.romaji || card.Romaji;
+                if (romajiText) {
+                    if (romaji) {
+                        romajiText.innerText = romaji;
+                        romajiText.style.display = 'block';
+                    } else {
+                        romajiText.style.display = 'none';
+                    }
+                }
+
+                const diff = card.difficultyLevel || card.DifficultyLevel || 5;
+                const diffText = `N${diff}`;
+                if (frontDiff) frontDiff.innerText = diffText;
+                if (backDiff) backDiff.innerText = diffText;
+
+                const total = this._flashcards.length;
+                if (progressText) progressText.innerText = `Thẻ ${this._fcCurrentIndex + 1} / ${total}`;
+                
+                const percent = ((this._fcCurrentIndex + 1) / total) * 100;
+                if (progressBar) {
+                    progressBar.style.width = `${percent}%`;
+                    progressBar.setAttribute('aria-valuenow', percent);
+                }
+
+                if (prevBtn) prevBtn.disabled = this._fcCurrentIndex === 0;
+                if (nextBtn) nextBtn.disabled = this._fcCurrentIndex === total - 1;
+            }, 150);
+        },
+
+        _showFlashcardEmpty(msg) {
+            const frontText = document.getElementById('jpFrontText');
+            const backText = document.getElementById('jpBackText');
+            const pronunciationText = document.getElementById('jpPronunciationText');
+            const romajiText = document.getElementById('jpRomajiText');
+            const progressText = document.getElementById('jpFlashcardProgress');
+            const progressBar = document.getElementById('jpFlashcardProgressBar');
+            const prevBtn = document.getElementById('jpPrevBtn');
+            const nextBtn = document.getElementById('jpNextBtn');
+
+            if (frontText) frontText.innerText = "Trống";
+            if (backText) backText.innerText = msg;
+            if (pronunciationText) pronunciationText.innerText = "—";
+            if (romajiText) romajiText.style.display = 'none';
+            if (progressText) progressText.innerText = "Thẻ 0 / 0";
+            if (progressBar) {
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', 0);
+            }
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
+            
+            this._flashcards = [];
+            this._fcCurrentIndex = 0;
+        },
+
+        analyzeWordDirectly(word) {
+            if (!word) return;
+            this.open();
+            this._switchTab('tabWord');
+            const input = document.getElementById('jpInputWord');
+            if (input) {
+                input.value = word;
+                this._runWordAnalysis();
+            }
         }
     };
 

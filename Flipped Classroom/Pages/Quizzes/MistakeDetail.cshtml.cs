@@ -2,10 +2,11 @@ using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Quizzes
 {
-    [Authorize(Roles = "Admin,Manager,Teacher")]
+    [Authorize(Roles = "Teacher")]
     public class MistakeDetailModel : PageModel
     {
         private readonly IQuizService _quizService;
@@ -22,7 +23,14 @@ namespace Flipped_Classroom.Pages.Quizzes
 
         public async Task<IActionResult> OnGetAsync(int questionId)
         {
-            Detail = await _quizService.GetQuestionMistakeDetailAsync(questionId, ReturnClassId);
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int? managerId = null;
+            if (!User.IsInRole("Admin") && int.TryParse(userIdStr, out int userId))
+            {
+                managerId = userId;
+            }
+
+            Detail = await _quizService.GetQuestionMistakeDetailAsync(questionId, ReturnClassId, managerId);
             if (Detail == null)
             {
                 return NotFound();
@@ -38,7 +46,21 @@ namespace Flipped_Classroom.Pages.Quizzes
                 return BadRequest("Không xác định được lớp học.");
             }
 
-            await _quizService.ResolveQuestionMistakesForClassAsync(questionId, ReturnClassId.Value);
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int? managerId = null;
+            if (!User.IsInRole("Admin") && int.TryParse(userIdStr, out int userId))
+            {
+                managerId = userId;
+            }
+
+            try
+            {
+                await _quizService.ResolveQuestionMistakesForClassAsync(questionId, ReturnClassId.Value, managerId);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
 
             TempData["SuccessMessage"] = "Đã đánh dấu câu hỏi là đã chữa cho lớp. Câu hỏi này sẽ tạm ẩn khỏi bảng thống kê.";
             return RedirectToPage("/Quizzes/MistakeStats", new { classId = ReturnClassId });

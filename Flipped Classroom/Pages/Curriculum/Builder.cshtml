@@ -95,7 +95,7 @@
                                         <span>@rootNode.Title</span>
                                     </button>
                                     <div class="d-flex align-items-center gap-1 z-3">
-                                        <a href="/Quizzes/Randomize?IsStrictMode=true&Input.NodeId=@rootNode.Id" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" title="Tạo Test (Strict Mode)">
+                                        <a href="javascript:void(0)" onclick="redirectToRandomize(@rootNode.Id, true)" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" title="Tạo Test (Strict Mode)">
                                             <i class="bi bi-file-earmark-check text-warning"></i> <span class="d-none d-sm-inline text-warning" style="font-size: 0.8rem;">Tạo Test</span>
                                         </a>
                                         <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none d-flex align-items-center gap-1" onclick="openAddNodeModal(@rootNode.Id)" title="Thêm bài học con">
@@ -297,6 +297,13 @@
         </div>
     </div>
 </div>
+
+<!-- Hidden form for redirecting to randomize with TempData -->
+<form id="randomizeRedirectForm" method="post" asp-page-handler="RedirectToRandomize" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="nodeId" id="redirectNodeId" />
+    <input type="hidden" name="isStrictMode" id="redirectIsStrictMode" />
+</form>
 
 <!-- Modal Thêm Node (Chương/Bài học) -->
 <div class="modal fade" id="addNodeModal" tabindex="-1" aria-labelledby="addNodeModalLabel" aria-hidden="true">
@@ -551,5 +558,11 @@
                 select.dispatchEvent(triggerEvent);
             }
         });
+
+        function redirectToRandomize(nodeId, isStrictMode) {
+            document.getElementById('redirectNodeId').value = nodeId;
+            document.getElementById('redirectIsStrictMode').value = isStrictMode;
+            document.getElementById('randomizeRedirectForm').submit();
+        }
     </script>
 }

@@ -206,5 +206,12 @@ namespace Flipped_Classroom.Pages.Curriculums
             }
             return RedirectToPage(new { id });
         }
+
+        public IActionResult OnPostRedirectToRandomize(int nodeId, bool isStrictMode)
+        {
+            TempData["Randomize_NodeId"] = nodeId;
+            TempData["Randomize_IsStrictMode"] = isStrictMode;
+            return RedirectToPage("/Quizzes/Randomize");
+        }
     }
 }

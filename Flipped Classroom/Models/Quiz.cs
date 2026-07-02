@@ -11,7 +11,7 @@ public partial class Quiz
 
     public int? ClassId { get; set; }
 
-    public bool IsAlwaysOpen { get; set; }
+    public bool IsAlwaysOpen { get; set; } 
 
     public string Title { get; set; } = null!;
 
