@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services;
+using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Flipped_Classroom.Pages.Schedules
@@ -16,11 +14,11 @@ namespace Flipped_Classroom.Pages.Schedules
     [Authorize(Roles = "Admin,Manager")]
     public class DetailsModel : PageModel
     {
-        private readonly Swp391NihongoContext _context;
+        private readonly IScheduleService _scheduleService;
 
-        public DetailsModel(Swp391NihongoContext context)
+        public DetailsModel(IScheduleService scheduleService)
         {
-            _context = context;
+            _scheduleService = scheduleService;
         }
 
         public Class TargetClass { get; set; } = null!;
@@ -34,10 +32,7 @@ namespace Flipped_Classroom.Pages.Schedules
 
         public async Task<IActionResult> OnGetAsync(int classId, int? month, int? year)
         {
-            var targetClass = await _context.Classes
-                .Include(c => c.ClassSchedules)
-                .FirstOrDefaultAsync(c => c.Id == classId);
-
+            var targetClass = await _scheduleService.GetClassWithSchedulesAsync(classId);
             if (targetClass == null)
                 return NotFound();
 
@@ -71,30 +66,18 @@ namespace Flipped_Classroom.Pages.Schedules
 
         public async Task<IActionResult> OnPostUpdateRoomAsync(int scheduleId, string? roomName, int classId)
         {
-            var schedule = await _context.ClassSchedules.FindAsync(scheduleId);
-            if (schedule == null)
+            var success = await _scheduleService.UpdateRoomForScheduleAsync(scheduleId, roomName);
+            if (!success)
                 return NotFound();
 
-            schedule.Room = roomName;
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho buổi học ngày {schedule.StudyDate.ToString("dd/MM/yyyy")}.";
+            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho buổi học.";
             return RedirectToPage(new { classId });
         }
 
         public async Task<IActionResult> OnPostUpdateAllRoomsAsync(int classId, string? roomName)
         {
-            var schedules = await _context.ClassSchedules
-                .Where(s => s.ClassId == classId)
-                .ToListAsync();
-
-            foreach (var s in schedules)
-            {
-                s.Room = roomName;
-            }
-
-            await _context.SaveChangesAsync();
-            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho toàn bộ {schedules.Count} buổi học.";
+            await _scheduleService.UpdateAllRoomsForClassAsync(classId, roomName);
+            TempData["Success"] = $"Đã cập nhật phòng học thành '{roomName ?? "Trực tuyến"}' cho toàn bộ buổi học.";
             return RedirectToPage(new { classId });
         }
     }

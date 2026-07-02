@@ -1,5 +1,6 @@
 @page
 @model Flipped_Classroom.Pages.Schedules.IndexModel
+@using Flipped_Classroom.Services
 @{
     ViewData["Title"] = "Quản lý Lịch học";
 }
@@ -90,7 +91,8 @@
                             @foreach (var item in Model.ClassList)
                             {
                                 index++;
-                                var slotBadge = item.AssignedSlot switch
+                                var assignedSlot = ScheduleSlotHelper.DetectSlot(item.ClassSchedules);
+                                var slotBadge = assignedSlot switch
                                 {
                                     "N5" => "background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;",
                                     "N4" => "background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;",
@@ -135,10 +137,10 @@
                                         <span class="badge @statusBadge rounded-pill px-3">@item.Status</span>
                                     </td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.AssignedSlot))
+                                        @if (!string.IsNullOrEmpty(assignedSlot))
                                         {
                                             <span class="badge px-3 py-2 fw-normal" style="border-radius: 8px; @slotBadge">
-                                                @item.AssignedSlot
+                                                @assignedSlot
                                             </span>
                                         }
                                         else
@@ -147,9 +149,9 @@
                                         }
                                     </td>
                                     <td class="text-center">
-                                        @if (item.ScheduleCount > 0)
+                                        @if (item.ClassSchedules.Count > 0)
                                         {
-                                            <span class="badge bg-primary rounded-pill px-3">@item.ScheduleCount buổi</span>
+                                            <span class="badge bg-primary rounded-pill px-3">@item.ClassSchedules.Count buổi</span>
                                         }
                                         else
                                         {
@@ -158,7 +160,7 @@
                                     </td>
                                     <td class="text-center px-4">
                                         <div class="d-flex gap-2 justify-content-center flex-wrap">
-                                            @if (item.ScheduleCount == 0)
+                                            @if (item.ClassSchedules.Count == 0)
                                             {
                                                 @if (item.StartDate.HasValue && item.EndDate.HasValue)
                                                 {
@@ -166,7 +168,7 @@
                                                     <button type="button" class="btn btn-primary btn-sm rounded-pill px-3"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#assignModal"
-                                                            data-class-id="@item.ClassId"
+                                                            data-class-id="@item.Id"
                                                             data-class-name="@item.ClassName">
                                                         <i class="bi bi-calendar-plus me-1"></i> Gán Slot
                                                     </button>
@@ -180,13 +182,13 @@
                                             }
                                             else
                                             {
-                                                <a asp-page="./Details" asp-route-classId="@item.ClassId"
+                                                <a asp-page="./Details" asp-route-classId="@item.Id"
                                                    class="btn btn-outline-primary btn-sm rounded-pill px-3">
                                                     <i class="bi bi-eye me-1"></i> Xem
                                                 </a>
                                                 <form method="post" asp-page-handler="RemoveSchedule" class="d-inline"
                                                       onsubmit="return confirm('Bạn chắc chắn muốn xóa toàn bộ lịch học của lớp này?');">
-                                                    <input type="hidden" name="classId" value="@item.ClassId" />
+                                                    <input type="hidden" name="classId" value="@item.Id" />
                                                     <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                                                         <i class="bi bi-trash me-1"></i> Xóa
                                                     </button>
@@ -194,7 +196,7 @@
                                                 <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#assignModal"
-                                                        data-class-id="@item.ClassId"
+                                                        data-class-id="@item.Id"
                                                         data-class-name="@item.ClassName">
                                                     <i class="bi bi-arrow-repeat me-1"></i> Đổi
                                                 </button>
