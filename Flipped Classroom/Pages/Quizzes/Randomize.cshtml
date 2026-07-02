@@ -79,10 +79,14 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <span class="material-symbols-outlined text-muted fs-5">school</span>
                             </span>
-                            <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select border-start-0 ps-0" required
+                            <select asp-for="Input.ClassId" class="form-select border-start-0 ps-0" required
                                     oninvalid="this.setCustomValidity('Giảng viên bắt buộc phải chọn lớp học.')"
                                     onchange="this.setCustomValidity('')">
                                 <option value="">Chọn lớp học</option>
+                                @foreach (var c in Model.ClassesList)
+                                {
+                                    <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
+                                }
                             </select>
                         </div>
                     }
@@ -93,8 +97,12 @@
                             <span class="input-group-text bg-white border-end-0">
                                 <span class="material-symbols-outlined text-muted fs-5">school</span>
                             </span>
-                            <select asp-for="Input.ClassId" asp-items="Model.ClassOptions" class="form-select border-start-0 ps-0">
+                            <select asp-for="Input.ClassId" class="form-select border-start-0 ps-0">
                                 <option value="">Chọn lớp học (Template)</option>
+                                @foreach (var c in Model.ClassesList)
+                                {
+                                    <option value="@c.Id" data-curriculum-id="@c.CurriculumId" selected="@(Model.Input.ClassId == c.Id)">@c.ClassName</option>
+                                }
                             </select>
                         </div>
                     }
@@ -136,15 +144,6 @@
                             }
                         </select>
                     }
-                    <label asp-for="Input.NodeId" class="form-label fw-semibold text-dark mb-1">Bài học <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0">
-                            <span class="material-symbols-outlined text-muted fs-5">menu_book</span>
-                        </span>
-                        <select asp-for="Input.NodeId" asp-items="Model.NodeOptions" class="form-select border-start-0 ps-0" id="nodeSelect" required>
-                            <option value="">Chọn bài học</option>
-                        </select>
-                    </div>
                     <span asp-validation-for="Input.NodeId" class="text-danger small"></span>
                 </div>
 

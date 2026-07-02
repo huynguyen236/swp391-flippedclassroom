@@ -239,14 +239,12 @@
                                                  style="transition: all 0.2s; border-left: 4px solid var(--color-primary) !important;">
                                                 <div class="flex-grow-1">
                                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                                        <span class="badge text-white px-2 py-1 fw-normal" style="border-radius: 6px; font-size: 0.75rem; @itemColor">
-                                                            @schedule.Class?.ClassName
                                                         <span class="badge text-white px-2.5 py-1 fw-normal" style="border-radius: 6px; font-size: 0.75rem; @itemColor">
-                                                            @schedule.ClassName
+                                                            @schedule.Class?.ClassName
                                                         </span>
                                                         @if (!string.IsNullOrEmpty(detectedSlot))
                                                         {
-                                                            <span class="text-muted fw-semibold" style="font-size: 0.75rem;">@schedule.DetectedSlot</span>
+                                                            <span class="text-muted fw-semibold" style="font-size: 0.75rem;">@detectedSlot</span>
                                                         }
                                                     </div>
                                                     <div class="text-primary fw-semibold small d-flex align-items-center gap-1">
