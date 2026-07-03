@@ -49,6 +49,7 @@ namespace Flipped_Classroom.Services.Implementation
         {
             var targetClass = await _context.Classes
                 .Include(c => c.ClassSchedules)
+                .Include(c => c.Manager)
                 .FirstOrDefaultAsync(c => c.Id == classId);
 
             if (targetClass == null)
@@ -56,11 +57,6 @@ namespace Flipped_Classroom.Services.Implementation
 
             if (targetClass.StartDate == null || targetClass.EndDate == null)
                 return (false, "Lớp chưa có ngày bắt đầu hoặc kết thúc. Vui lòng cập nhật trước khi gán lịch.");
-
-            if (targetClass.ClassSchedules.Any())
-            {
-                _context.ClassSchedules.RemoveRange(targetClass.ClassSchedules);
-            }
 
             var newSchedules = ScheduleSlotHelper.GenerateSchedules(
                 classId,
@@ -71,6 +67,44 @@ namespace Flipped_Classroom.Services.Implementation
 
             if (!newSchedules.Any())
                 return (false, $"Không tạo được buổi học nào với slot {slotName}. Kiểm tra lại ngày bắt đầu/kết thúc.");
+
+            // Kiểm tra trùng lịch giảng dạy của Giáo viên phụ trách lớp
+            var teacherId = targetClass.ManagerId;
+            var startDate = targetClass.StartDate.Value;
+            var endDate = targetClass.EndDate.Value;
+
+            // Lấy tất cả các buổi học hiện tại của giáo viên đó ở các lớp khác trong khoảng thời gian này
+            var existingTeacherSchedules = await _context.ClassSchedules
+                .Include(s => s.Class)
+                .Where(s => s.Class.ManagerId == teacherId 
+                         && s.ClassId != classId
+                         && s.StudyDate >= startDate 
+                         && s.StudyDate <= endDate)
+                .ToListAsync();
+
+            foreach (var ns in newSchedules)
+            {
+                var conflict = existingTeacherSchedules.FirstOrDefault(es => 
+                    es.StudyDate == ns.StudyDate &&
+                    es.StartTime < ns.EndTime &&
+                    es.EndTime > ns.StartTime
+                );
+
+                if (conflict != null)
+                {
+                    string teacherName = targetClass.Manager != null 
+                        ? $"{targetClass.Manager.FirstName} {targetClass.Manager.LastName}" 
+                        : "Giáo viên quản lý";
+                    return (false, $"Lịch giảng dạy bị trùng với Giáo viên '{teacherName}' " +
+                                  $"tại lớp '{conflict.Class.ClassName}' vào ngày {ns.StudyDate:dd/MM/yyyy} " +
+                                  $"khung giờ {conflict.StartTime:HH:mm} - {conflict.EndTime:HH:mm}.");
+                }
+            }
+
+            if (targetClass.ClassSchedules.Any())
+            {
+                _context.ClassSchedules.RemoveRange(targetClass.ClassSchedules);
+            }
 
             _context.ClassSchedules.AddRange(newSchedules);
             await _context.SaveChangesAsync();
