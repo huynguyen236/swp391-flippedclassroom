@@ -54,6 +54,49 @@ namespace Flipped_Classroom.Pages.Classrooms
                 return Page();
             }
 
+            // Kiểm tra trùng lịch giảng dạy nếu thay đổi giáo viên phụ trách lớp
+            var originalClass = await _context.Classes.AsNoTracking().FirstOrDefaultAsync(c => c.Id == Class.Id);
+            if (originalClass != null && originalClass.ManagerId != Class.ManagerId)
+            {
+                var classSchedules = await _context.ClassSchedules
+                    .Where(s => s.ClassId == Class.Id)
+                    .ToListAsync();
+
+                if (classSchedules.Any())
+                {
+                    var newTeacherSchedules = await _context.ClassSchedules
+                        .Include(s => s.Class)
+                        .Where(s => s.Class.ManagerId == Class.ManagerId 
+                                 && s.ClassId != Class.Id)
+                        .ToListAsync();
+
+                    foreach (var session in classSchedules)
+                    {
+                        var conflict = newTeacherSchedules.FirstOrDefault(es => 
+                            es.StudyDate == session.StudyDate &&
+                            es.StartTime < session.EndTime &&
+                            es.EndTime > session.StartTime
+                        );
+
+                        if (conflict != null)
+                        {
+                            var newTeacher = await _context.Users.FindAsync(Class.ManagerId);
+                            string teacherName = newTeacher != null 
+                                ? $"{newTeacher.FirstName} {newTeacher.LastName}" 
+                                : "Giáo viên mới";
+
+                            ModelState.AddModelError(string.Empty, 
+                                $"Không thể đổi giáo viên. Giáo viên '{teacherName}' bị trùng lịch dạy ở lớp '{conflict.Class.ClassName}' " +
+                                $"vào ngày {session.StudyDate:dd/MM/yyyy} lúc {conflict.StartTime:HH:mm} - {conflict.EndTime:HH:mm}.");
+
+                            var managers = _context.Users.Where(u => u.Role == "Teacher").ToList();
+                            ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
+                            return Page();
+                        }
+                    }
+                }
+            }
+
             _context.Attach(Class).State = EntityState.Modified;
 
             _context.Entry(Class).Property(x => x.CreatedAt).IsModified = false;
