@@ -32,6 +32,22 @@
     .custom-action-btn {
         border-radius: 12px !important;
     }
+    .custom-modal-content {
+        border-radius: 24px !important;
+        border: none !important;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12) !important;
+    }
+    .warning-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        background-color: var(--color-error-container);
+        color: var(--color-error);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -172,18 +188,10 @@
                                             <span class="material-symbols-outlined text-[18px]">edit_square</span>
                                         </a>
 
-                                        <form asp-page-handler="Delete" method="post" class="d-inline m-0">
-                                            <input type="hidden" name="questionId" value="@item.Id" />
-                                            <input type="hidden" name="SearchKeyword" value="@Model.SearchKeyword" />
-                                            <input type="hidden" name="QuestionType" value="@Model.QuestionType" />
-                                            <input type="hidden" name="Category" value="@Model.Category" />
-                                            <input type="hidden" name="CurrentPage" value="@Model.CurrentPage" />
-
-                                            <button type="submit" class="p-2 custom-action-btn bg-error-container text-error hover:bg-error/10 transition-colors d-inline-flex align-items-center justify-content-center border-0"
-                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa câu hỏi #@item.Id không?');" title="Xóa">
-                                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="p-2 custom-action-btn bg-error-container text-error hover:bg-error/10 transition-colors d-inline-flex align-items-center justify-content-center border-0"
+                                                onclick="showDeleteModal('@item.Id')" title="Xóa">
+                                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -249,3 +257,49 @@
         }
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="warning-icon-wrapper">
+                        <span class="material-symbols-outlined text-[28px]">warning</span>
+                    </div>
+                    <div>
+                        <p class="mb-0 fw-semibold text-dark" id="deleteModalMessage">Bạn có chắc chắn muốn xóa câu hỏi này không?</p>
+                        <p class="mb-0 text-muted small mt-1">Hành động này không thể hoàn tác.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <form asp-page-handler="Delete" method="post" id="deleteConfirmForm" class="w-100 d-flex gap-2 mb-0">
+                    <input type="hidden" name="questionId" id="deleteQuestionId" value="" />
+                    <input type="hidden" name="SearchKeyword" value="@Model.SearchKeyword" />
+                    <input type="hidden" name="QuestionType" value="@Model.QuestionType" />
+                    <input type="hidden" name="Category" value="@Model.Category" />
+                    <input type="hidden" name="CurrentPage" value="@Model.CurrentPage" />
+                    
+                    <button type="button" class="btn btn-light custom-curved-btn flex-grow-1" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger custom-curved-btn flex-grow-1">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showDeleteModal(questionId) {
+            document.getElementById('deleteQuestionId').value = questionId;
+            document.getElementById('deleteModalMessage').textContent = 'Bạn có chắc chắn muốn xóa câu hỏi #' + questionId + ' không?';
+            var myModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            myModal.show();
+        }
+    </script>
+}
