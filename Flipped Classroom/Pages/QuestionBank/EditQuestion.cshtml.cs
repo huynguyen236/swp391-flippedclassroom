@@ -1,13 +1,15 @@
-﻿using Flipped_Classroom.Data;
+using Flipped_Classroom.Data;
 using Flipped_Classroom.Models;
 using Flipped_Classroom.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Flipped_Classroom.Pages.QuestionBank
 {
+    [Authorize(Roles = "Admin,Manager")]
     public class EditQuestionModel : PageModel
     {
         private readonly IQuestionService _questionService;

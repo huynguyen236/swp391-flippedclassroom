@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Flipped_Classroom.Pages.Quizzes
 {
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "Admin,Teacher")]
     public class MistakeStatsModel : PageModel
     {
         private readonly IQuizService _quizService;
