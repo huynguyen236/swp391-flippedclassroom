@@ -181,8 +181,9 @@ namespace Flipped_Classroom.Pages.Quizzes
                     if (timeElapsed > maxAllowedTime)
                     {
                         Response.Cookies.Delete(cookieKey);
-                        TempData["ErrorMessage"] = "Bài nộp bị từ chối do quá thời gian quy định.";
-                        return RedirectToPage(new { id });
+                        await _quizService.SubmitQuizAsync(id, studentId.Value, new Dictionary<int, int>(), new Dictionary<int, string>());
+                        TempData["ErrorMessage"] = "Bài nộp bị từ chối do quá thời gian quy định. Lượt làm bài này được tính 0 điểm.";
+                        return RedirectToPage("/Quizzes/Available");
                     }
                 }
                 catch (Exception)

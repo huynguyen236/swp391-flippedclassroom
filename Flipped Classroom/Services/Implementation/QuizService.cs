@@ -71,6 +71,7 @@ namespace Flipped_Classroom.Services.Implementation
                 .Include(q => q.Class)
                 .Include(q => q.Node)
                 .Include(q => q.QuizQuestions)
+                .Include(q => q.QuizResults.Where(qr => qr.StudentId == studentId))
                 .Where(q => q.Status == PublishedStatus
                          && q.ClassId.HasValue
                          && classIds.Contains(q.ClassId.Value)

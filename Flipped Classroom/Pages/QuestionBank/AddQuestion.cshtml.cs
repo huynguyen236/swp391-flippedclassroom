@@ -51,6 +51,42 @@ namespace Flipped_Classroom.Pages.QuestionBank
                 return PageWithForm();
             }
 
+            // Validate character limits (No migration needed)
+            bool hasLengthErrors = false;
+
+            if (NewQuestion.Content != null && NewQuestion.Content.Length > 2000)
+            {
+                ModelState.AddModelError(string.Empty, "Nội dung câu hỏi không được vượt quá 2000 ký tự.");
+                hasLengthErrors = true;
+            }
+
+            if (IsMcq(NewQuestion.QuestionType))
+            {
+                EnsureMcqOptionSlots();
+                for (int i = 0; i < 4; i++)
+                {
+                    if (Options[i].OptionContent != null && Options[i].OptionContent.Length > 500)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Nội dung đáp án {(char)(65 + i)} không được vượt quá 500 ký tự.");
+                        hasLengthErrors = true;
+                    }
+                }
+            }
+            else
+            {
+                if (NewQuestion.CorrectAnswer != null && NewQuestion.CorrectAnswer.Length > 500)
+                {
+                    ModelState.AddModelError(string.Empty, "Đáp án tham khảo không được vượt quá 500 ký tự.");
+                    hasLengthErrors = true;
+                }
+            }
+
+            if (hasLengthErrors)
+            {
+                await LoadNodesAsync();
+                return PageWithForm();
+            }
+
             if (IsMcq(NewQuestion.QuestionType))
             {
                 EnsureMcqOptionSlots();
