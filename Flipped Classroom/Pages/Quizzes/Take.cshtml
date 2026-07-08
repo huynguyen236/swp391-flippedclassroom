@@ -79,7 +79,7 @@
                                     {
                                         var labelCode = char.ConvertFromUtf32(65 + optionIndex);
                                         <label class="d-flex align-items-start gap-2 border rounded-3 p-3 option-label bg-light" style="cursor: pointer; transition: all 0.2s;">
-                                            <input class="form-check-input mt-1 option-radio" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" required data-question-idx="@questionIndex" />
+                                            <input class="form-check-input mt-1 option-radio" type="radio" name="SelectedOptions[@question.Id]" value="@option.Id" data-question-idx="@questionIndex" />
                                             <span class="fw-bold text-muted me-1">@labelCode.</span>
                                             <span class="text-dark">@option.OptionContent</span>
                                         </label>
@@ -89,7 +89,7 @@
                             }
                             else
                             {
-                                <input type="text" name="TextAnswers[@question.Id]" class="form-control bg-light option-text-input" placeholder="Nhập câu trả lời của bạn..." required data-question-idx="@questionIndex" />
+                                <input type="text" name="TextAnswers[@question.Id]" class="form-control bg-light option-text-input" placeholder="Nhập câu trả lời của bạn..." data-question-idx="@questionIndex" />
                             }
                         </div>
                     }
@@ -126,6 +126,21 @@
             </div>
         </div>
     </form>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmModal" class="custom-modal-backdrop" style="display: none;">
+        <div class="custom-modal-content card p-4 shadow-lg border-0 animate-pulse-container">
+            <div class="text-center mb-3">
+                <span class="material-symbols-outlined text-warning animate-pulse" style="font-size: 56px;">warning</span>
+            </div>
+            <h5 class="fw-bold text-dark text-center mb-2">Xác nhận nộp bài</h5>
+            <p class="text-muted text-center mb-4" id="confirmModalMessage" style="font-size: 0.95rem; line-height: 1.5;"></p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button type="button" class="btn btn-outline-secondary px-4 py-2" id="confirmModalCancel" style="border-radius: 0.5rem; font-weight: 500;">Hủy làm bài</button>
+                <button type="button" class="btn btn-primary px-4 py-2" id="confirmModalSubmit" style="border-radius: 0.5rem; font-weight: 500;">Nộp bài</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Styles {
@@ -157,6 +172,37 @@
                 transform: scale(1.05);
                 box-shadow: 0 0 10px rgba(220, 53, 69, 0.8);
             }
+        }
+
+        /* Custom Confirmation Modal Styling */
+        .custom-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-modal-backdrop.show {
+            opacity: 1;
+        }
+        .custom-modal-content {
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: #ffffff;
+            border-radius: 1.15rem !important;
+        }
+        .custom-modal-backdrop.show .custom-modal-content {
+            transform: scale(1);
         }
     </style>
 }
@@ -245,6 +291,20 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Initialize answered status for any pre-filled answers (e.g. browser autocomplete)
+            document.querySelectorAll('.option-radio:checked').forEach(radio => {
+                const qIdx = radio.dataset.questionIdx;
+                const navBtn = document.getElementById('nav-btn-' + qIdx);
+                if (navBtn) navBtn.classList.add('answered');
+            });
+            document.querySelectorAll('.option-text-input').forEach(input => {
+                if (input.value.trim() !== '') {
+                    const qIdx = input.dataset.questionIdx;
+                    const navBtn = document.getElementById('nav-btn-' + qIdx);
+                    if (navBtn) navBtn.classList.add('answered');
+                }
+            });
+
             // Answer Status Checking
             // MCQ radio checks
             const radios = document.querySelectorAll('.option-radio');
@@ -279,6 +339,81 @@
                     }
                 });
             });
+
+            // Form Submit Confirmation
+            const form = document.getElementById("quizForm");
+            const confirmModal = document.getElementById("confirmModal");
+            const confirmModalMessage = document.getElementById("confirmModalMessage");
+            const confirmModalCancel = document.getElementById("confirmModalCancel");
+            const confirmModalSubmit = document.getElementById("confirmModalSubmit");
+
+            function showConfirmModal(unansweredCount) {
+                if (confirmModalMessage) {
+                    confirmModalMessage.innerHTML = `Bạn có <strong class="text-danger">${unansweredCount}</strong> câu chưa hoàn thành.<br>Bạn có chắc chắn muốn nộp bài không?`;
+                }
+                if (confirmModal) {
+                    confirmModal.style.display = "flex";
+                    // Force reflow to enable CSS transition
+                    confirmModal.offsetHeight;
+                    confirmModal.classList.add("show");
+                }
+            }
+
+            function closeConfirmModal() {
+                if (confirmModal) {
+                    confirmModal.classList.remove("show");
+                    setTimeout(() => {
+                        confirmModal.style.display = "none";
+                    }, 200);
+                }
+            }
+
+            if (confirmModalCancel) {
+                confirmModalCancel.addEventListener('click', closeConfirmModal);
+            }
+
+            // Also close when clicking outside the modal content
+            if (confirmModal) {
+                confirmModal.addEventListener('click', function(e) {
+                    if (e.target === confirmModal) {
+                        closeConfirmModal();
+                    }
+                });
+            }
+
+            if (confirmModalSubmit && form) {
+                confirmModalSubmit.addEventListener('click', function() {
+                    closeConfirmModal();
+                    // Disable submit button on successful manual submit
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang nộp...';
+                    }
+                    form.submit();
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const totalQuestions = document.querySelectorAll('.question-nav-btn').length;
+                    const answeredQuestions = document.querySelectorAll('.question-nav-btn.answered').length;
+                    const unansweredQuestions = totalQuestions - answeredQuestions;
+
+                    if (unansweredQuestions > 0) {
+                        e.preventDefault();
+                        showConfirmModal(unansweredQuestions);
+                        return;
+                    }
+
+                    // Disable submit button on successful manual submit
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang nộp...';
+                    }
+                });
+            }
         });
     </script>
 }

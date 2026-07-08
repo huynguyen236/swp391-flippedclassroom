@@ -134,6 +134,18 @@
                     this.closest('.option-label').classList.add('checked');
                 });
             });
+
+            // Prevent double submission
+            const form = document.getElementById('reviewForm');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Đang nộp...';
+                    }
+                });
+            }
         });
     </script>
 }
