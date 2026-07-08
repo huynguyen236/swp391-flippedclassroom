@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Flipped_Classroom.Data;
+using Flipped_Classroom.Models;
+using Flipped_Classroom.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Flipped_Classroom.Data;
-using Flipped_Classroom.Models;
-using Flipped_Classroom.Models;
-using Microsoft.AspNetCore.Authorization;
-using Flipped_Classroom.Services.Interfaces;
 
 namespace Flipped_Classroom.Pages.Classrooms
 {
@@ -19,7 +18,10 @@ namespace Flipped_Classroom.Pages.Classrooms
         private readonly Flipped_Classroom.Data.Swp391NihongoContext _context;
         private readonly IQuizService _quizService;
 
-        public CreateModel(Flipped_Classroom.Data.Swp391NihongoContext context, IQuizService quizService)
+        public CreateModel(
+            Flipped_Classroom.Data.Swp391NihongoContext context,
+            IQuizService quizService
+        )
         {
             _context = context;
             _quizService = quizService;
@@ -41,13 +43,20 @@ namespace Flipped_Classroom.Pages.Classrooms
             ModelState.Remove("Class.Curriculum");
 
             // Bắt buộc chọn khung chương trình khi tạo lớp
-            if (Class == null || Class.CurriculumId == null)
+            if (Class == null || Class.CurriculumId <= 0)
             {
-                ModelState.AddModelError("Class.CurriculumId", "Vui lòng chọn khung chương trình cho lớp.");
+                ModelState.AddModelError(
+                    "Class.CurriculumId",
+                    "Vui lòng chọn khung chương trình cho lớp."
+                );
             }
 
             if (!ModelState.IsValid || _context.Classes == null || Class == null)
             {
+                if (Class != null && Class.ManagerId > 0)
+                {
+                    Class.Manager = await _context.Users.FindAsync(Class.ManagerId);
+                }
                 LoadSelectLists();
                 return Page();
             }
@@ -71,14 +80,10 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         private void LoadSelectLists()
         {
-            var managers = _context.Users
-                .Where(u => u.Role == "Teacher")
-                .ToList();
+            var managers = _context.Users.Where(u => u.Role == "Teacher").ToList();
             ViewData["ManagerId"] = new SelectList(managers, "Id", "Username");
 
-            var curriculums = _context.Curriculums
-                .OrderBy(c => c.CurriculumName)
-                .ToList();
+            var curriculums = _context.Curriculums.OrderBy(c => c.CurriculumName).ToList();
             ViewData["CurriculumId"] = new SelectList(curriculums, "Id", "CurriculumName");
         }
     }

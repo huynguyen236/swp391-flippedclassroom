@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Flipped_Classroom.Models;
 
@@ -7,10 +8,13 @@ public partial class Class
 {
     public int Id { get; set; }
 
+    [Required(ErrorMessage = "Vui lòng nhập tên lớp học.")]
+    [StringLength(100, ErrorMessage = "Tên lớp học không được vượt quá 100 ký tự.")]
     public string ClassName { get; set; } = null!;
 
     public int ManagerId { get; set; }
 
+    [Required(ErrorMessage = "Vui lòng chọn khung chương trình cho lớp.")]
     public int CurriculumId { get; set; }
 
     public string? InviteCode { get; set; }
@@ -29,7 +33,8 @@ public partial class Class
 
     public virtual ICollection<ClassMember> ClassMembers { get; set; } = new List<ClassMember>();
 
-    public virtual ICollection<GradeCategory> GradeCategories { get; set; } = new List<GradeCategory>();
+    public virtual ICollection<GradeCategory> GradeCategories { get; set; } =
+        new List<GradeCategory>();
 
     public virtual ICollection<Group> Groups { get; set; } = new List<Group>();
 
@@ -45,5 +50,6 @@ public partial class Class
 
     public virtual ICollection<QaThread> QaThreads { get; set; } = new List<QaThread>();
 
-    public virtual ICollection<ClassSchedule> ClassSchedules { get; set; } = new List<ClassSchedule>();
+    public virtual ICollection<ClassSchedule> ClassSchedules { get; set; } =
+        new List<ClassSchedule>();
 }

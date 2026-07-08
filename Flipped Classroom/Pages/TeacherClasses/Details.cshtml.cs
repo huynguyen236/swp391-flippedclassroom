@@ -250,6 +250,27 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                     .Take(Math.Abs(groupsToAdd))
                     .ToList();
 
+                var groupIdsToRemove = groupsToRemove.Select(g => g.Id).ToList();
+
+                // 1. Clear GroupMembers referencing these groups
+                var membersToRemove = await _context.GroupMembers
+                    .Where(gm => groupIdsToRemove.Contains(gm.GroupId))
+                    .ToListAsync();
+                if (membersToRemove.Any())
+                {
+                    _context.GroupMembers.RemoveRange(membersToRemove);
+                }
+
+                // 2. Set GroupId to null for Submissions referencing these groups
+                var submissionsToNullify = await _context.Submissions
+                    .Where(s => s.GroupId.HasValue && groupIdsToRemove.Contains(s.GroupId.Value))
+                    .ToListAsync();
+                foreach (var sub in submissionsToNullify)
+                {
+                    sub.GroupId = null;
+                }
+
+                // 3. Remove the groups
                 foreach (var g in groupsToRemove)
                 {
                     classExists.Groups.Remove(g);
