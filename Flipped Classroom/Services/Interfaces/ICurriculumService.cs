@@ -9,6 +9,7 @@ namespace Flipped_Classroom.Services.Interfaces
         Task<List<Curriculum>> GetAllCurriculumsAsync();
         Task<Curriculum?> GetCurriculumByIdAsync(int id);
         Task<Curriculum> CreateCurriculumAsync(Curriculum curriculum);
+        Task<(bool Success, string? Error)> DeleteCurriculumAsync(int curriculumId);
         Task<Node> CreateNodeAsync(Node node);
         Task<Material> AddMaterialAsync(Material material);
         Task<bool> DeleteNodeAsync(int nodeId);

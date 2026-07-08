@@ -44,6 +44,13 @@ namespace Flipped_Classroom.Pages.Curriculums
                 return Page();
             }
 
+            if (NewCurriculumName.Trim().Length >= 50)
+            {
+                ModelState.AddModelError(nameof(NewCurriculumName), "Tên khung chương trình phải dưới 50 ký tự.");
+                Curriculums = await _curriculumService.GetAllCurriculumsAsync();
+                return Page();
+            }
+
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdStr, out int userId))
             {
@@ -60,6 +67,16 @@ namespace Flipped_Classroom.Pages.Curriculums
             await _curriculumService.CreateCurriculumAsync(curriculum);
 
             TempData["SuccessMessage"] = "Tạo khung chương trình mới thành công!";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var (success, error) = await _curriculumService.DeleteCurriculumAsync(id);
+            if (success)
+                TempData["SuccessMessage"] = "Đã xóa khung chương trình thành công!";
+            else
+                TempData["ErrorMessage"] = error ?? "Không thể xóa khung chương trình.";
             return RedirectToPage();
         }
     }

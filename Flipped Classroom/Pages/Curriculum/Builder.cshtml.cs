@@ -75,6 +75,11 @@ namespace Flipped_Classroom.Pages.Curriculums
                 TempData["ErrorMessage"] = "Tiêu đề bài học/chương không được để trống.";
                 return RedirectToPage(new { id });
             }
+             if (NodeTitle.Length > 150)
+            {
+                TempData["ErrorMessage"] = "Tiêu đề bài học/chương không được vượt quá 150 ký tự.";
+                return RedirectToPage(new { id });
+            }
 
             var node = new Node
             {

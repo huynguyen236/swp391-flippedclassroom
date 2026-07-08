@@ -31,6 +31,16 @@
         </div>
     }
 
+    <!-- Alert Error -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 d-flex align-items-center mb-4" role="alert">
+            <span class="material-symbols-outlined text-danger me-2">error</span>
+            <div>@TempData["ErrorMessage"]</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Validation Errors -->
     @if (!ViewData.ModelState.IsValid)
     {
@@ -105,10 +115,18 @@
                                         </span>
                                     </td>
                                     <td class="pe-4 py-3 text-end">
-                                        <a asp-page="./Builder" asp-route-id="@item.Id" class="btn btn-premium-outline btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1.5 hover-scale">
-                                            <span class="material-symbols-outlined text-[16px]">map</span>
-                                            <span>Xây dựng lộ trình</span>
-                                        </a>
+                                        <div class="d-inline-flex align-items-center gap-2">
+                                            <a asp-page="./Builder" asp-route-id="@item.Id" class="btn btn-premium-outline btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1.5 hover-scale">
+                                                <span class="material-symbols-outlined text-[16px]">map</span>
+                                                <span>Xây dựng lộ trình</span>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-link text-danger p-1 hover-scale"
+                                                    title="Xóa khung chương trình"
+                                                    data-bs-toggle="modal" data-bs-target="#deleteCurriculumModal"
+                                                    data-id="@item.Id" data-name="@item.CurriculumName">
+                                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -132,7 +150,7 @@
                 <div class="modal-body py-4">
                     <div class="mb-3">
                         <label for="NewCurriculumName" class="form-label fw-semibold text-muted small mb-1">Tên Khung Chương Trình <span class="text-danger">*</span></label>
-                        <input type="text" asp-for="NewCurriculumName" class="form-control rounded-3" placeholder="Nhập tên khung chương trình..." required />
+                        <input type="text" asp-for="NewCurriculumName" class="form-control rounded-3" placeholder="Nhập tên khung chương trình..."" />
                         <span asp-validation-for="NewCurriculumName" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-0">
@@ -149,6 +167,41 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Xác Nhận Xóa -->
+<div class="modal fade" id="deleteCurriculumModal" tabindex="-1" aria-labelledby="deleteCurriculumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteCurriculumModalLabel">
+                    <span class="material-symbols-outlined">warning</span> Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="Delete">
+                <input type="hidden" name="id" id="deleteCurriculumId" />
+                <div class="modal-body py-4">
+                    <p class="mb-2">Bạn có chắc chắn muốn xóa khung chương trình <strong id="deleteCurriculumName" class="text-dark"></strong>?</p>
+                    <p class="text-danger small mb-0">Toàn bộ chương, bài học, học liệu, quiz và dữ liệu bên trong sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-end gap-2">
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('deleteCurriculumModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            document.getElementById('deleteCurriculumId').value = button.getAttribute('data-id');
+            document.getElementById('deleteCurriculumName').textContent = button.getAttribute('data-name');
+        });
+    </script>
+}
 
 @section Styles {
     <style>
