@@ -157,12 +157,12 @@
                                     }
                                     else if (isPdf)
                                     {
-                                        <div class="ratio" style="--bs-aspect-ratio: 130%;">
-                                            <iframe src="@mat.Url" title="@mat.Title" frameborder="0"></iframe>
-                                        </div>
-                                        <div class="p-3 border-top bg-light">
+                                        <div class="p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                            <span class="text-muted small d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-file-earmark-pdf text-danger"></i> Tài liệu PDF
+                                            </span>
                                             <a href="@mat.Url" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
-                                                <span class="material-symbols-outlined" style="font-size: 16px;">download</span> Tải xuống / Mở tab mới
+                                                <span class="material-symbols-outlined" style="font-size: 16px;">download</span> Tải xuống
                                             </a>
                                         </div>
                                     }

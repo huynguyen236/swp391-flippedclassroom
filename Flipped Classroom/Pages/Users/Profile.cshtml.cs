@@ -247,6 +247,10 @@ namespace Flipped_Classroom.Pages.Users
 
             if (!ModelState.IsValid)
             {
+                // Lỗi validation (mật khẩu trống, không khớp...) -> hiển thị ngay dưới ô nhập.
+                // Đồng thời đưa ra thông báo lỗi tổng quát ở đầu trang.
+                ErrorMessage = "Vui lòng kiểm tra lại thông tin đổi mật khẩu.";
+
                 // Restore profile input to display correctly on return
                 ProfileInput.FirstName = CurrentUser.FirstName;
                 ProfileInput.LastName = CurrentUser.LastName;
@@ -255,19 +259,17 @@ namespace Flipped_Classroom.Pages.Users
             }
 
             var (success, errorMsg) = await _userService.ChangePasswordAsync(
-                CurrentUser.Id, 
-                PasswordInput.CurrentPassword ?? string.Empty, 
+                CurrentUser.Id,
+                PasswordInput.CurrentPassword ?? string.Empty,
                 PasswordInput.NewPassword);
 
             if (!success)
             {
-                ErrorMessage = errorMsg;
-                
-                // Restore profile input
-                ProfileInput.FirstName = CurrentUser.FirstName;
-                ProfileInput.LastName = CurrentUser.LastName;
-                ProfileInput.PhoneNumber = CurrentUser.PhoneNumber;
-                return Page();
+                // Ví dụ: nhập sai mật khẩu hiện tại -> báo lỗi rõ ràng cho người dùng.
+                ErrorMessage = errorMsg ?? "Đổi mật khẩu thất bại. Vui lòng thử lại.";
+
+                // Redirect (PRG) để TempData luôn hiển thị được thông báo và tránh gửi lại form.
+                return RedirectToPage();
             }
 
             SuccessMessage = "Thay đổi mật khẩu thành công.";
