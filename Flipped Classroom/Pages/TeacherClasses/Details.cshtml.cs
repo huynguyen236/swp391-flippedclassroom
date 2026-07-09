@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -60,6 +61,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
         public List<int> SelectedStudentIds { get; set; } = new List<int>();
 
         [BindProperty]
+        [Range(1, 6, ErrorMessage = "Số lượng nhóm phải từ 1 đến 6.")]
         public int NumberOfGroupsToCreate { get; set; }
 
         public List<Assignment> Assignments { get; set; } = new();
@@ -218,8 +220,27 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 return RedirectToPage("/Authentication/Login");
             }
 
-            if (NumberOfGroupsToCreate <= 0)
-                return RedirectToPage(new { id });
+            if (NumberOfGroupsToCreate <= 0 || NumberOfGroupsToCreate > 6)
+            {
+                ModelState.AddModelError(
+                    "NumberOfGroupsToCreate",
+                    "Số lượng nhóm phải từ 1 đến 6."
+                );
+            }
+
+            var groupValidationState = ModelState.GetFieldValidationState(nameof(NumberOfGroupsToCreate));
+            if (groupValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            {
+                var success = await LoadTeacherClassroomDataAsync(id, userId);
+                if (!success)
+                {
+                    return NotFound();
+                }
+
+                await LoadDashboardStatsAsync(id);
+                ViewData["ShowCreateGroupModal"] = true;
+                return Page();
+            }
 
             var classExists = await _context
                 .Classes.Include(c => c.Groups)
@@ -253,8 +274,8 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 var groupIdsToRemove = groupsToRemove.Select(g => g.Id).ToList();
 
                 // 1. Clear GroupMembers referencing these groups
-                var membersToRemove = await _context.GroupMembers
-                    .Where(gm => groupIdsToRemove.Contains(gm.GroupId))
+                var membersToRemove = await _context
+                    .GroupMembers.Where(gm => groupIdsToRemove.Contains(gm.GroupId))
                     .ToListAsync();
                 if (membersToRemove.Any())
                 {
@@ -262,8 +283,10 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 }
 
                 // 2. Set GroupId to null for Submissions referencing these groups
-                var submissionsToNullify = await _context.Submissions
-                    .Where(s => s.GroupId.HasValue && groupIdsToRemove.Contains(s.GroupId.Value))
+                var submissionsToNullify = await _context
+                    .Submissions.Where(s =>
+                        s.GroupId.HasValue && groupIdsToRemove.Contains(s.GroupId.Value)
+                    )
                     .ToListAsync();
                 foreach (var sub in submissionsToNullify)
                 {
@@ -382,8 +405,34 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             if (NewAssignment == null || string.IsNullOrWhiteSpace(NewAssignment.Title))
             {
-                ModelState.AddModelError(string.Empty, "Tiêu đề bài tập không được để trống.");
+                ModelState.AddModelError("NewAssignment.Title", "Vui lòng nhập tiêu đề bài tập.");
+            }
+            else if (NewAssignment.Title.Length > 100)
+            {
+                ModelState.AddModelError("NewAssignment.Title", "Tiêu đề bài tập không được vượt quá 100 ký tự.");
+            }
+
+            if (NewAssignment != null)
+            {
+                if (NewAssignment.DueDate == default(DateTime))
+                {
+                    ModelState.AddModelError("NewAssignment.DueDate", "Vui lòng chọn hạn nộp bài.");
+                }
+                else if (NewAssignment.DueDate.Date <= DateTime.Today)
+                {
+                    ModelState.AddModelError("NewAssignment.DueDate", "Hạn nộp bài phải sau ngày hôm nay.");
+                }
+            }
+
+            var titleState = ModelState.GetFieldValidationState("NewAssignment.Title");
+            var dueDateState = ModelState.GetFieldValidationState("NewAssignment.DueDate");
+
+            if (titleState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
+                dueDateState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            {
                 await LoadTeacherClassroomDataAsync(id, userId);
+                await LoadDashboardStatsAsync(id);
+                ViewData["ShowCreateAssignmentModal"] = true;
                 return Page();
             }
 
@@ -524,18 +573,24 @@ namespace Flipped_Classroom.Pages.TeacherClasses
 
             if (GradeRequest == null)
             {
-                ModelState.AddModelError(string.Empty, "Yêu cầu chấm điểm không hợp lệ.");
+                ModelState.AddModelError("GradeRequest.Score", "Yêu cầu chấm điểm không hợp lệ.");
                 await LoadTeacherClassroomDataAsync(id, userId);
+                await LoadDashboardStatsAsync(id);
                 return Page();
             }
 
             if (GradeRequest.Score < 0m || GradeRequest.Score > 10m)
             {
                 ModelState.AddModelError(
-                    string.Empty,
+                    "GradeRequest.Score",
                     "Điểm số phải nằm trong khoảng từ 0.0 đến 10.0."
                 );
                 await LoadTeacherClassroomDataAsync(id, userId);
+                await LoadDashboardStatsAsync(id);
+                ViewData["ShowGradeSubmissionModal"] = true;
+                ViewData["GradeSubmissionId"] = GradeRequest.SubmissionId;
+                ViewData["GradeScore"] = GradeRequest.Score;
+                ViewData["GradeFeedback"] = GradeRequest.Feedback;
                 return Page();
             }
 
@@ -546,8 +601,9 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             );
             if (!success)
             {
-                ModelState.AddModelError(string.Empty, "Không tìm thấy bài nộp.");
+                ModelState.AddModelError("GradeRequest.Score", "Không tìm thấy bài nộp.");
                 await LoadTeacherClassroomDataAsync(id, userId);
+                await LoadDashboardStatsAsync(id);
                 return Page();
             }
 
@@ -617,6 +673,69 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 .ToListAsync();
 
             return true;
+        }
+
+        private async Task LoadDashboardStatsAsync(int classId)
+        {
+            // Trạng thái mở/khóa node của lớp này
+            NodeUnlockStatus = await _lessonService.GetNodeUnlockStatusAsync(classId);
+
+            // Tổng số học sinh và số HS hoàn thành mỗi node
+            TotalStudents = Class.ClassMembers?.Count ?? 0;
+            NodeCompletionCounts = await _context
+                .StudentProgresses.AsNoTracking()
+                .Where(p => p.ClassId == classId && p.IsCompleted == true)
+                .GroupBy(p => p.NodeId)
+                .Select(g => new { NodeId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.NodeId, x => x.Count);
+
+            // Tiến độ chi tiết từng học sinh trong lớp
+            var progressList = await _context
+                .StudentProgresses.AsNoTracking()
+                .Where(p => p.ClassId == classId && p.IsCompleted == true)
+                .Select(p => new
+                {
+                    p.StudentId,
+                    p.NodeId,
+                    p.CompletedAt,
+                })
+                .ToListAsync();
+
+            StudentProgressMap = progressList
+                .GroupBy(p => p.StudentId)
+                .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.NodeId, x => x.CompletedAt));
+
+            // Tính toán thống kê cho dashboard
+            if (Class.Curriculum != null && Class.Curriculum.Nodes != null)
+            {
+                var lessonNodes = Class
+                    .Curriculum.Nodes.Where(n => n.ParentNodeId != null)
+                    .ToList();
+                TotalLessonsCount = lessonNodes.Count;
+
+                if (TotalStudents > 0 && TotalLessonsCount > 0)
+                {
+                    var totalPossibleCompletions = TotalStudents * TotalLessonsCount;
+                    var completedLessonNodeIds = lessonNodes.Select(n => n.Id).ToList();
+                    var actualCompletions = progressList.Count(p =>
+                        completedLessonNodeIds.Contains(p.NodeId)
+                    );
+                    AvgClassProgress = Math.Round(
+                        (double)actualCompletions * 100 / totalPossibleCompletions,
+                        1
+                    );
+                }
+            }
+
+            if (Assignments != null && Assignments.Any() && TotalStudents > 0)
+            {
+                var totalPossibleSubmissions = Assignments.Count * TotalStudents;
+                var totalActualSubmissions = AssignmentSubmissions.Values.Sum(list => list.Count);
+                AvgSubmissionRate = Math.Round(
+                    (double)totalActualSubmissions * 100 / totalPossibleSubmissions,
+                    1
+                );
+            }
         }
 
         // Mở / khóa một node cho lớp này. Chỉ giáo viên quản lý lớp mới được thao tác.

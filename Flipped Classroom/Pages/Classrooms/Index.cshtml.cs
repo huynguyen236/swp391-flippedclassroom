@@ -52,7 +52,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                 }
 
                 // Pagination
-                int pageSize = 10;
+                int pageSize = 6;
                 var count = await classesQuery.CountAsync();
                 TotalPages = (int)System.Math.Ceiling(count / (double)pageSize);
 

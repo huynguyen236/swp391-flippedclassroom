@@ -28,13 +28,16 @@
             <span class="material-symbols-outlined text-primary fs-3">school</span>
             Lớp học của tôi
         </h2>
-        <form method="post" asp-page-handler="JoinClass" class="d-flex flex-sm-row flex-column gap-2 align-items-stretch align-items-sm-center w-100 w-sm-auto justify-content-end">
+        <form method="post" asp-page-handler="JoinClass" class="d-flex flex-sm-row flex-column gap-2 align-items-stretch align-items-sm-start w-100 w-sm-auto justify-content-end" novalidate>
             @Html.AntiForgeryToken()
-            <div class="input-group" style="max-width: 320px; height: 45px;">
-                <span class="input-group-text bg-white border-end-0" style="border-radius: 0.5rem 0 0 0.5rem; border-color: var(--color-outline-variant); height: 45px;">
-                    <span class="material-symbols-outlined text-muted" style="font-size: 20px;">key</span>
-                </span>
-                <input type="text" asp-for="InviteCode" class="form-control border-start-0 ps-1" placeholder="Nhập mã lớp để tham gia..." required style="border-radius: 0 0.5rem 0.5rem 0; border-color: var(--color-outline-variant); height: 45px;" />
+            <div class="d-flex flex-column gap-1">
+                <div class="input-group" style="max-width: 320px; height: 45px;">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 0.5rem 0 0 0.5rem; border-color: var(--color-outline-variant); height: 45px;">
+                        <span class="material-symbols-outlined text-muted" style="font-size: 20px;">key</span>
+                    </span>
+                    <input type="text" asp-for="InviteCode" class="form-control border-start-0 ps-1" placeholder="Nhập mã lớp để tham gia..." data-val="true" data-val-required="Vui lòng nhập mã lớp học." style="border-radius: 0 0.5rem 0.5rem 0; border-color: var(--color-outline-variant); height: 45px;" />
+                </div>
+                <span asp-validation-for="InviteCode" class="text-danger small d-block text-start" style="font-size: 0.8rem; margin-top: 2px;"></span>
             </div>
             <button type="submit" class="btn btn-premium-primary px-4 d-flex align-items-center justify-content-center gap-1 border-0" style="height: 45px;">
                 <span class="material-symbols-outlined" style="font-size: 20px;">group_add</span> Tham gia
@@ -137,3 +140,7 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

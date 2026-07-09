@@ -701,12 +701,9 @@
                                                         </div>
                                                     </td>
                                                     <td class="px-4 py-3 text-end">
-                                                        <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
-                                                            <input type="hidden" name="memberUserId" value="@member.UserId" />
-                                                            <button type="submit" class="btn btn-premium-danger-outline btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">
-                                                                <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Xóa
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-premium-danger-outline btn-sm" onclick="showDeleteStudentModal('@member.UserId', '@(member.User?.Username)')">
+                                                            <span class="material-symbols-outlined" style="font-size:16px;">delete</span> Xóa
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             }
@@ -1167,7 +1164,7 @@
 <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
-            <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id">
+            <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id" novalidate>
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
                     <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="createGroupModalLabel">
                         <span class="material-symbols-outlined">groups</span> Tạo Nhóm Mới
@@ -1206,7 +1203,8 @@
                     <p class="text-muted small mb-3">Nhập số lượng nhóm bạn muốn tạo cho lớp học này:</p>
                     <div class="mb-3">
                         <label for="NumberOfGroupsToCreate" class="form-label fw-bold">Số lượng nhóm</label>
-                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="6" required style="border-radius: 8px; border-color: #ced4da;" />
+                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" style="border-radius: 8px; border-color: #ced4da;" />
+                        <span asp-validation-for="NumberOfGroupsToCreate" class="text-danger small d-block mt-1"></span>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
@@ -1222,7 +1220,7 @@
 <div class="modal fade" id="createAssignmentModal" tabindex="-1" aria-labelledby="createAssignmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
-            <form method="post" asp-page-handler="CreateAssignment" asp-route-id="@Model.Class.Id">
+            <form method="post" asp-page-handler="CreateAssignment" asp-route-id="@Model.Class.Id" novalidate>
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
                     <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="createAssignmentModalLabel">
                         <span class="material-symbols-outlined">add_task</span> Tạo Chủ Đề Bài Tập Mới
@@ -1232,7 +1230,8 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label for="NewAssignment_Title" class="form-label fw-bold">Tiêu đề bài tập <span class="text-danger">*</span></label>
-                        <input type="text" name="NewAssignment.Title" id="NewAssignment_Title" class="form-control" placeholder="Ví dụ: Bài tập nói số 1..." required style="border-radius: 8px;" />
+                        <input type="text" name="NewAssignment.Title" id="NewAssignment_Title" class="form-control" placeholder="Ví dụ: Bài tập nói số 1..." data-val="true" data-val-required="Vui lòng nhập tiêu đề bài tập." data-val-length="Tiêu đề bài tập không được vượt quá 100 ký tự." data-val-length-max="100" style="border-radius: 8px;" />
+                        <span asp-validation-for="NewAssignment.Title" class="text-danger small d-block mt-1"></span>
                     </div>
 
                     <div class="mb-3">
@@ -1259,7 +1258,8 @@
 
                     <div class="mb-3">
                         <label for="NewAssignment_DueDate" class="form-label fw-bold">Hạn nộp bài <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="NewAssignment.DueDate" id="NewAssignment_DueDate" class="form-control" required style="border-radius: 8px;" />
+                        <input type="datetime-local" name="NewAssignment.DueDate" id="NewAssignment_DueDate" class="form-control" data-val="true" data-val-required="Vui lòng chọn hạn nộp bài." style="border-radius: 8px;" />
+                        <span asp-validation-for="NewAssignment.DueDate" class="text-danger small d-block mt-1"></span>
                     </div>
 
                     <input type="hidden" name="NewAssignment.Type" value="File" />
@@ -1277,7 +1277,7 @@
 <div class="modal fade" id="gradeSubmissionModal" tabindex="-1" aria-labelledby="gradeSubmissionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 15px;">
-            <form method="post" asp-page-handler="GradeSubmission" asp-route-id="@Model.Class.Id">
+            <form method="post" asp-page-handler="GradeSubmission" asp-route-id="@Model.Class.Id" novalidate>
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
                     <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="gradeSubmissionModalLabel">
                         <span class="material-symbols-outlined">edit_square</span> Chấm Điểm Bài Nộp
@@ -1289,7 +1289,8 @@
 
                     <div class="mb-3">
                         <label for="GradeRequest_Score" class="form-label fw-bold">Điểm số (Thang điểm 0 - 10) <span class="text-danger">*</span></label>
-                        <input type="number" name="GradeRequest.Score" id="GradeRequest_Score" class="form-control" min="0" max="10" step="0.1" required style="border-radius: 8px;" />
+                        <input type="number" name="GradeRequest.Score" id="GradeRequest_Score" class="form-control" step="0.1" data-val="true" data-val-required="Vui lòng nhập điểm số." data-val-range="Điểm số phải nằm trong khoảng từ 0.0 đến 10.0." data-val-range-min="0" data-val-range-max="10" style="border-radius: 8px;" />
+                        <span asp-validation-for="GradeRequest.Score" class="text-danger small d-block mt-1"></span>
                     </div>
 
                     <div class="mb-3">
@@ -1306,8 +1307,50 @@
     </div>
 </div>
 
+<!-- Modal Xác Nhận Xóa Học Viên -->
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 24px; background: var(--color-surface-container);">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteStudentModalLabel">
+                    <span class="material-symbols-outlined text-danger">warning</span> Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <span class="material-symbols-outlined text-danger mb-3" style="font-size: 56px;">person_remove</span>
+                <p class="fs-5 mb-0" style="color: var(--color-on-surface);">Bạn có chắc chắn muốn xóa học viên <strong id="deleteStudentName" class="text-dark"></strong> khỏi lớp?</p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2 justify-content-center">
+                <form id="deleteStudentForm" method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
+                    <input type="hidden" name="memberUserId" id="deleteStudentId" value="" />
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm" style="background-color: #dc3545; border: none; color: white;">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showDeleteStudentModal(userId, username) {
+            document.getElementById('deleteStudentId').value = userId;
+            document.getElementById('deleteStudentName').innerText = username;
+            var modal = new bootstrap.Modal(document.getElementById('deleteStudentModal'));
+            modal.show();
+        }
+
         function openGradeModal(submissionId, score, feedback) {
             document.getElementById('GradeRequest_SubmissionId').value = submissionId;
             document.getElementById('GradeRequest_Score').value = score !== null ? score : '';
@@ -1338,6 +1381,45 @@
                     localStorage.setItem(activeTabKey, this.id);
                 });
             });
+
+            // Auto-show createGroupModal if validation failed on postback
+            @if (true.Equals(ViewData["ShowCreateGroupModal"]))
+            {
+                <text>
+                var groupModalElement = document.getElementById('createGroupModal');
+                if (groupModalElement) {
+                    var groupModal = new bootstrap.Modal(groupModalElement);
+                    groupModal.show();
+                }
+                </text>
+            }
+
+            // Auto-show createAssignmentModal if validation failed on postback
+            @if (true.Equals(ViewData["ShowCreateAssignmentModal"]))
+            {
+                <text>
+                var assignmentModalElement = document.getElementById('createAssignmentModal');
+                if (assignmentModalElement) {
+                    var assignmentModal = new bootstrap.Modal(assignmentModalElement);
+                    assignmentModal.show();
+                }
+                </text>
+            }
+
+            // Auto-show gradeSubmissionModal if validation failed on postback
+            @if (true.Equals(ViewData["ShowGradeSubmissionModal"]))
+            {
+                <text>
+                var gradeModalElement = document.getElementById('gradeSubmissionModal');
+                if (gradeModalElement) {
+                    document.getElementById('GradeRequest_SubmissionId').value = '@ViewData["GradeSubmissionId"]';
+                    document.getElementById('GradeRequest_Score').value = '@ViewData["GradeScore"]';
+                    document.getElementById('GradeRequest_Feedback').value = '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode((string)ViewData["GradeFeedback"] ?? ""))';
+                    var gradeModal = new bootstrap.Modal(gradeModalElement);
+                    gradeModal.show();
+                }
+                </text>
+            }
 
             const studentSearchInput = document.getElementById('studentSearchInput');
             if (studentSearchInput) {
@@ -1405,7 +1487,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <p class="text-dark mb-3 fw-bold" style="white-space: pre-wrap; font-size: 1.05rem;">${result.thread.questionText}</p>
+                                    <p class="text-dark mb-3 fw-bold" style="white-space: pre-wrap; font-size: 1.05rem;">${escapeHtml(result.thread.questionText)}</p>
                                     
                                     <div class="qa-replies-container">
                                         <h6 class="fw-bold text-secondary mb-3 small d-flex align-items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;">forum</span> Câu trả lời</h6>
@@ -1491,7 +1573,7 @@
                                             </strong>
                                             <span class="text-muted small ms-2" style="font-size: 0.7rem;">${result.reply.createdAtFormatted}</span>
                                         </div>
-                                        <p class="mb-0 text-dark small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
+                                        <p class="mb-0 text-dark small" style="white-space: pre-wrap;">${escapeHtml(result.reply.replyText)}</p>
                                     </div>
                                 `;
                                 repliesList.insertAdjacentHTML('beforeend', replyHtml);
@@ -1797,4 +1879,5 @@
             });
         });
     </script>
+    <partial name="_ValidationScriptsPartial" />
 }

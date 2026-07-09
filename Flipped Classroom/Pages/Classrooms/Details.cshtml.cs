@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace Flipped_Classroom.Pages.Classrooms
 {
@@ -108,12 +109,42 @@ namespace Flipped_Classroom.Pages.Classrooms
         }
 
         [BindProperty]
+        [Range(1, 6, ErrorMessage = "Số lượng nhóm phải từ 1 đến 6.")]
         public int NumberOfGroupsToCreate { get; set; }
 
         public async Task<IActionResult> OnPostCreateGroupsAsync(int id)
         {
-            if (NumberOfGroupsToCreate <= 0)
-                return RedirectToPage(new { id });
+            if (NumberOfGroupsToCreate <= 0 || NumberOfGroupsToCreate > 6)
+            {
+                ModelState.AddModelError("NumberOfGroupsToCreate", "Số lượng nhóm phải từ 1 đến 6.");
+            }
+
+            var groupValidationState = ModelState.GetFieldValidationState(nameof(NumberOfGroupsToCreate));
+            if (groupValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            {
+                var classroom = await _context
+                    .Classes.Include(c => c.Manager)
+                    .Include(c => c.ClassMembers)
+                        .ThenInclude(cm => cm.User)
+                    .Include(c => c.Groups)
+                        .ThenInclude(g => g.GroupMembers)
+                    .FirstOrDefaultAsync(m => m.Id == id);
+                if (classroom == null)
+                {
+                    return NotFound();
+                }
+
+                Class = classroom;
+
+                var existingMemberIds = classroom.ClassMembers.Select(cm => cm.UserId).ToList();
+                AvailableUsers = await _context
+                    .Users.Where(u => !existingMemberIds.Contains(u.Id) && u.Role == "Student")
+                    .OrderBy(u => u.Username)
+                    .ToListAsync();
+
+                ViewData["ShowCreateGroupModal"] = true;
+                return Page();
+            }
 
             var classExists = await _context
                 .Classes.Include(c => c.Groups)
@@ -174,7 +205,7 @@ namespace Flipped_Classroom.Pages.Classrooms
                 _context.Groups.RemoveRange(groupsToRemove);
             }
 
-            // Standardize all group names sequentially (Nh�m 1, Nh�m 2, ...)
+            // Standardize all group names sequentially (Nhóm 1, Nhóm 2, ...)
             var allGroups = classExists
                 .Groups.OrderBy(g => g.Id == 0 ? int.MaxValue : g.Id)
                 .ToList();
