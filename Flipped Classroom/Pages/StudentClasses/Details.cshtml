@@ -741,6 +741,16 @@
 
 @section Scripts {
     <script>
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function validateStudentFile(input) {
             const file = input.files[0];
             if (!file) return;
@@ -833,7 +843,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <p class="text-dark mb-3 fs-5" style="white-space: pre-wrap;">${result.thread.questionText}</p>
+                                        <p class="text-dark mb-3 fs-5" style="white-space: pre-wrap;">${escapeHtml(result.thread.questionText)}</p>
                                         
                                         <div class="bg-light p-3 rounded" style="border-radius: 8px;">
                                             <h6 class="fw-bold text-muted mb-2 small"><i class="bi bi-chat-left-text"></i> Câu trả lời</h6>
@@ -920,7 +930,7 @@
                                             </strong>
                                             <span class="text-muted small ms-2" style="font-size: 0.75rem;">${result.reply.createdAtFormatted}</span>
                                         </div>
-                                        <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">${result.reply.replyText}</p>
+                                        <p class="mb-0 text-secondary small" style="white-space: pre-wrap;">${escapeHtml(result.reply.replyText)}</p>
                                     </div>
                                 `;
                                 repliesList.insertAdjacentHTML('beforeend', replyHtml);

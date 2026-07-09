@@ -23,7 +23,7 @@
 
                         <div class="mb-3">
                             <label asp-for="Class.ClassName" class="form-label text-muted fw-bold">Tên Lớp Học</label>
-                            <input asp-for="Class.ClassName" class="form-control" placeholder="Nhập tên lớp học..." />
+                            <input asp-for="Class.ClassName" class="form-control" placeholder="Nhập tên lớp học..." maxlength="999" />
                             <span asp-validation-for="Class.ClassName" class="text-danger"></span>
                         </div>
 

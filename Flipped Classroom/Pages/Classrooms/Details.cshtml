@@ -193,12 +193,9 @@
                                                         }
                                                     </td>
                                                     <td class="pe-4 text-end py-3">
-                                                        <form method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id" class="m-0">
-                                                            <input type="hidden" name="memberUserId" value="@member.UserId" />
-                                                            <button type="submit" class="btn btn-premium-danger-outline btn-sm d-inline-flex align-items-center" onclick="return confirm('Bạn có chắc chắn muốn xóa @(member.User?.Username) khỏi lớp?');">
-                                                                <span class="material-symbols-outlined text-[16px] me-1">delete</span> Xóa
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-premium-danger-outline btn-sm d-inline-flex align-items-center" onclick="showDeleteStudentModal('@member.UserId', '@(member.User?.Username)')">
+                                                            <span class="material-symbols-outlined text-[16px] me-1">delete</span> Xóa
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             }
@@ -303,7 +300,7 @@
 <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow" style="border-radius: 24px;">
-            <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id">
+            <form method="post" asp-page-handler="CreateGroups" asp-route-id="@Model.Class.Id" novalidate>
                 <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
                     <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-1.5" id="createGroupModalLabel">
                         <span class="material-symbols-outlined">groups</span> Tạo Nhóm Mới
@@ -344,7 +341,8 @@
                     <p class="text-muted small mb-3">Nhập số lượng nhóm bạn muốn tạo cho lớp học này:</p>
                     <div class="mb-3">
                         <label for="NumberOfGroupsToCreate" class="form-label fw-medium">Số lượng nhóm</label>
-                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" min="1" max="6" required style="border-radius: 12px; border-color: var(--color-outline-variant);" />
+                        <input type="number" asp-for="NumberOfGroupsToCreate" class="form-control shadow-sm" style="border-radius: 12px; border-color: var(--color-outline-variant);" />
+                        <span asp-validation-for="NumberOfGroupsToCreate" class="text-danger small d-block mt-1"></span>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
@@ -356,8 +354,40 @@
     </div>
 </div>
 
+<!-- Modal Xác Nhận Xóa Học Viên -->
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 24px; background: var(--color-surface-container);">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteStudentModalLabel">
+                    <span class="material-symbols-outlined text-danger">warning</span> Xác Nhận Xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <span class="material-symbols-outlined text-danger mb-3" style="font-size: 56px;">person_remove</span>
+                <p class="fs-5 mb-0" style="color: var(--color-on-surface);">Bạn có chắc chắn muốn xóa học viên <strong id="deleteStudentName" class="text-dark"></strong> khỏi lớp?</p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2 justify-content-center">
+                <form id="deleteStudentForm" method="post" asp-page-handler="RemoveStudent" asp-route-id="@Model.Class.Id">
+                    <input type="hidden" name="memberUserId" id="deleteStudentId" value="" />
+                    <button type="button" class="btn btn-premium-outline rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm" style="background-color: #dc3545; border: none; color: white;">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function showDeleteStudentModal(userId, username) {
+            document.getElementById('deleteStudentId').value = userId;
+            document.getElementById('deleteStudentName').innerText = username;
+            var modal = new bootstrap.Modal(document.getElementById('deleteStudentModal'));
+            modal.show();
+        }
+
         function copyInviteCodeDetails(btn, code) {
             navigator.clipboard.writeText(code).then(function() {
                 var originalHtml = btn.innerHTML;
@@ -388,6 +418,18 @@
                         }
                     });
                 });
+            }
+
+            // Auto-show createGroupModal if validation failed on postback
+            @if (true.Equals(ViewData["ShowCreateGroupModal"]))
+            {
+                <text>
+                var groupModalElement = document.getElementById('createGroupModal');
+                if (groupModalElement) {
+                    var groupModal = new bootstrap.Modal(groupModalElement);
+                    groupModal.show();
+                }
+                </text>
             }
 
             // Tab persistence functionality
@@ -635,4 +677,5 @@
             });
         });
     </script>
+    <partial name="_ValidationScriptsPartial" />
 }
