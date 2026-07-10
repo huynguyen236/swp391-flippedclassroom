@@ -228,8 +228,13 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 );
             }
 
-            var groupValidationState = ModelState.GetFieldValidationState(nameof(NumberOfGroupsToCreate));
-            if (groupValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            var groupValidationState = ModelState.GetFieldValidationState(
+                nameof(NumberOfGroupsToCreate)
+            );
+            if (
+                groupValidationState
+                == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid
+            )
             {
                 var success = await LoadTeacherClassroomDataAsync(id, userId);
                 if (!success)
@@ -409,7 +414,10 @@ namespace Flipped_Classroom.Pages.TeacherClasses
             }
             else if (NewAssignment.Title.Length > 100)
             {
-                ModelState.AddModelError("NewAssignment.Title", "Tiêu đề bài tập không được vượt quá 100 ký tự.");
+                ModelState.AddModelError(
+                    "NewAssignment.Title",
+                    "Tiêu đề bài tập không được vượt quá 100 ký tự."
+                );
             }
 
             if (NewAssignment != null)
@@ -420,15 +428,21 @@ namespace Flipped_Classroom.Pages.TeacherClasses
                 }
                 else if (NewAssignment.DueDate.Date <= DateTime.Today)
                 {
-                    ModelState.AddModelError("NewAssignment.DueDate", "Hạn nộp bài phải sau ngày hôm nay.");
+                    ModelState.AddModelError(
+                        "NewAssignment.DueDate",
+                        "Hạn nộp bài phải sau ngày hôm nay."
+                    );
                 }
             }
 
             var titleState = ModelState.GetFieldValidationState("NewAssignment.Title");
             var dueDateState = ModelState.GetFieldValidationState("NewAssignment.DueDate");
 
-            if (titleState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid ||
-                dueDateState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+            if (
+                titleState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid
+                || dueDateState
+                    == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid
+            )
             {
                 await LoadTeacherClassroomDataAsync(id, userId);
                 await LoadDashboardStatsAsync(id);

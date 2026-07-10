@@ -308,6 +308,18 @@ namespace Flipped_Classroom.Services.Implementations
             );
         }
 
+        private static string EncodeHeaderValue(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            if (value.All(c => c < 128))
+            {
+                return value;
+            }
+            var bytes = Encoding.UTF8.GetBytes(value);
+            var base64 = Convert.ToBase64String(bytes);
+            return $"=?utf-8?B?{base64}?=";
+        }
+
         private static string BuildRawMimeMessage(
             string from,
             string to,
@@ -318,7 +330,7 @@ namespace Flipped_Classroom.Services.Implementations
             var mime = new StringBuilder()
                 .AppendLine($"From: {from}")
                 .AppendLine($"To: {to}")
-                .AppendLine($"Subject: {subject}")
+                .AppendLine($"Subject: {EncodeHeaderValue(subject)}")
                 .AppendLine("MIME-Version: 1.0")
                 .AppendLine("Content-Type: text/html; charset=utf-8")
                 .AppendLine()
