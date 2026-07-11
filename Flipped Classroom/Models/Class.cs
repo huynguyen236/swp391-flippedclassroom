@@ -33,9 +33,6 @@ public partial class Class
 
     public virtual ICollection<ClassMember> ClassMembers { get; set; } = new List<ClassMember>();
 
-    public virtual ICollection<GradeCategory> GradeCategories { get; set; } =
-        new List<GradeCategory>();
-
     public virtual ICollection<Group> Groups { get; set; } = new List<Group>();
 
     public virtual User Manager { get; set; } = null!;
@@ -45,8 +42,6 @@ public partial class Class
     public virtual ICollection<Node> Nodes { get; set; } = new List<Node>();
 
     public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
-
-    public virtual ICollection<Project> Projects { get; set; } = new List<Project>();
 
     public virtual ICollection<QaThread> QaThreads { get; set; } = new List<QaThread>();
 

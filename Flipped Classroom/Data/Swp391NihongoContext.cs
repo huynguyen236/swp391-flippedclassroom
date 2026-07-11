@@ -30,21 +30,13 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<FeedbackComment> FeedbackComments { get; set; }
 
-    public virtual DbSet<Grade> Grades { get; set; }
-
-    public virtual DbSet<GradeCategory> GradeCategories { get; set; }
-
     public virtual DbSet<Group> Groups { get; set; }
 
     public virtual DbSet<GroupMember> GroupMembers { get; set; }
 
     public virtual DbSet<Material> Materials { get; set; }
 
-    public virtual DbSet<Milestone> Milestones { get; set; }
-
     public virtual DbSet<Node> Nodes { get; set; }
-
-    public virtual DbSet<Project> Projects { get; set; }
 
     public virtual DbSet<QaReply> QaReplies { get; set; }
 
@@ -229,38 +221,6 @@ public partial class Swp391NihongoContext : DbContext
                 .HasConstraintName("FK_Feedback_Submission");
         });
 
-        modelBuilder.Entity<Grade>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Grades__3214EC0732B994D3");
-
-            entity.Property(e => e.GradedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Score).HasColumnType("decimal(5, 2)");
-
-            entity.HasOne(d => d.Category).WithMany(p => p.Grades)
-                .HasForeignKey(d => d.CategoryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Grade_Cat");
-
-            entity.HasOne(d => d.Student).WithMany(p => p.Grades)
-                .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Grade_Student");
-        });
-
-        modelBuilder.Entity<GradeCategory>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__GradeCat__3214EC076B3DA5A8");
-
-            entity.Property(e => e.CategoryName).HasMaxLength(100);
-
-            entity.HasOne(d => d.Class).WithMany(p => p.GradeCategories)
-                .HasForeignKey(d => d.ClassId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_GradeCat_Class");
-        });
-
         modelBuilder.Entity<Group>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Groups__3214EC07F0DFEE88");
@@ -308,19 +268,6 @@ public partial class Swp391NihongoContext : DbContext
                 .HasConstraintName("FK_Material_Node");
         });
 
-        modelBuilder.Entity<Milestone>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Mileston__3214EC076EA52477");
-
-            entity.Property(e => e.Deadline).HasColumnType("datetime");
-            entity.Property(e => e.Title).HasMaxLength(200);
-
-            entity.HasOne(d => d.Project).WithMany(p => p.Milestones)
-                .HasForeignKey(d => d.ProjectId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Milestone_Project");
-        });
-
         modelBuilder.Entity<Node>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Nodes__3214EC07510306F0");
@@ -341,21 +288,6 @@ public partial class Swp391NihongoContext : DbContext
             entity.HasOne(d => d.ParentNode).WithMany(p => p.InverseParentNode)
                 .HasForeignKey(d => d.ParentNodeId)
                 .HasConstraintName("FK_Node_Parent");
-        });
-
-        modelBuilder.Entity<Project>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Projects__3214EC07187C8DAE");
-
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.ProjectName).HasMaxLength(200);
-
-            entity.HasOne(d => d.Class).WithMany(p => p.Projects)
-                .HasForeignKey(d => d.ClassId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Project_Class");
         });
 
         modelBuilder.Entity<QaReply>(entity =>

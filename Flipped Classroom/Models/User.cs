@@ -51,8 +51,6 @@ public partial class User
 
     public virtual ICollection<FeedbackComment> FeedbackComments { get; set; } = new List<FeedbackComment>();
 
-    public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
-
     public virtual ICollection<GroupMember> GroupMembers { get; set; } = new List<GroupMember>();
 
     public virtual ICollection<QaReply> QaReplies { get; set; } = new List<QaReply>();
