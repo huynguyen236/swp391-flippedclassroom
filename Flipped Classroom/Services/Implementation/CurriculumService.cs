@@ -243,9 +243,6 @@ namespace Flipped_Classroom.Services.Implementations
                 .Select(a => a.Id).ToListAsync();
             if (assignmentIds.Count > 0)
             {
-                var submissionIds = await _db.Submissions.Where(s => assignmentIds.Contains(s.AssignmentId))
-                    .Select(s => s.Id).ToListAsync();
-                await _db.FeedbackComments.Where(f => submissionIds.Contains(f.SubmissionId)).ExecuteDeleteAsync();
                 await _db.Submissions.Where(s => assignmentIds.Contains(s.AssignmentId)).ExecuteDeleteAsync();
                 await _db.Assignments.Where(a => assignmentIds.Contains(a.Id)).ExecuteDeleteAsync();
             }

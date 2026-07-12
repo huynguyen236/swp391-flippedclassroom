@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Flipped_Classroom.Models;
@@ -27,7 +27,6 @@ public partial class Submission
 
     public virtual Assignment Assignment { get; set; } = null!;
 
-    public virtual ICollection<FeedbackComment> FeedbackComments { get; set; } = new List<FeedbackComment>();
 
     public virtual Group? Group { get; set; }
 

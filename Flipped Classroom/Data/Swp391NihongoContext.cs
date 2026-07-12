@@ -28,7 +28,6 @@ public partial class Swp391NihongoContext : DbContext
 
     public virtual DbSet<DailyReviewLog> DailyReviewLogs { get; set; }
 
-    public virtual DbSet<FeedbackComment> FeedbackComments { get; set; }
 
     public virtual DbSet<Group> Groups { get; set; }
 
@@ -195,30 +194,6 @@ public partial class Swp391NihongoContext : DbContext
                 .HasForeignKey(d => d.StudentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_DailyReviewLog_Student");
-        });
-
-        modelBuilder.Entity<FeedbackComment>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Feedback__3214EC07504212DA");
-
-            entity.ToTable("Feedback_Comments");
-
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.TimelineStamp)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.Reviewer).WithMany(p => p.FeedbackComments)
-                .HasForeignKey(d => d.ReviewerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Feedback_Reviewer");
-
-            entity.HasOne(d => d.Submission).WithMany(p => p.FeedbackComments)
-                .HasForeignKey(d => d.SubmissionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Feedback_Submission");
         });
 
         modelBuilder.Entity<Group>(entity =>

@@ -4,6 +4,7 @@ using Flipped_Classroom.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flipped_Classroom.Migrations
 {
     [DbContext(typeof(Swp391NihongoContext))]
-    partial class Swp391NihongoContextModelSnapshot : ModelSnapshot
+    [Migration("20260712071929_RemoveFeedbackCommentsTable")]
+    partial class RemoveFeedbackCommentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -53,24 +53,14 @@ namespace Flipped_Classroom.Services.Implementation
 
         public async Task<bool> DeleteAssignmentAsync(int assignmentId)
         {
-            // Tìm bài tập cần xóa cùng các bài nộp và phản hồi liên quan
+            // Tìm bài tập cần xóa cùng các bài nộp liên quan
             var assignment = await _context
                 .Assignments.Include(a => a.Submissions)
-                    .ThenInclude(s => s.FeedbackComments)
                 .FirstOrDefaultAsync(a => a.Id == assignmentId);
 
             if (assignment == null)
             {
                 return false;
-            }
-
-            // Xóa phản hồi (feedback comments) của các bài nộp trước
-            var feedbackComments = assignment
-                .Submissions.SelectMany(s => s.FeedbackComments)
-                .ToList();
-            if (feedbackComments.Any())
-            {
-                _context.FeedbackComments.RemoveRange(feedbackComments);
             }
 
             // Xóa các bài nộp trước để tránh lỗi ràng buộc khóa ngoại (foreign key constraint)
