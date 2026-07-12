@@ -80,6 +80,16 @@ namespace Flipped_Classroom.Pages.StudentClasses
                 return RedirectToPage();
             }
 
+            var duplicateCurriculumClass = await _context.Classes
+                .FirstOrDefaultAsync(c => c.CurriculumId == targetClass.CurriculumId && 
+                                         c.ClassMembers.Any(cm => cm.UserId == userId));
+
+            if (duplicateCurriculumClass != null)
+            {
+                TempData["ErrorMessage"] = $"Bạn không thể tham gia lớp này vì đã tham gia lớp '{duplicateCurriculumClass.ClassName}' có cùng khung chương trình.";
+                return RedirectToPage();
+            }
+
             var classMember = new ClassMember
             {
                 ClassId = targetClass.Id,
