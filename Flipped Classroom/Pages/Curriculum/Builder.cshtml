@@ -159,9 +159,6 @@
                                                     <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-3 py-1.5">
                                                         <i class="bi bi-file-earmark-check-fill text-warning"></i>
                                                         <span class="fw-medium fs-8 text-dark">@quiz.Title (@quiz.DurationMinutes phút)</span>
-                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
-                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
-                                                        </form>
                                                     </span>
                                                 }
                                             </div>
@@ -224,9 +221,6 @@
                                                                     <span class="badge bg-warning-subtle text-warning border rounded-pill d-inline-flex align-items-center gap-1.5 px-2.5 py-1">
                                                                         <i class="bi bi-file-earmark-check-fill text-warning"></i>
                                                                         <span class="fw-medium fs-8 text-dark text-truncate" style="max-width: 150px;">@quiz.Title (@quiz.DurationMinutes phút)</span>
-                                                                        <form method="post" asp-page-handler="DeleteQuiz" asp-route-quizId="@quiz.Id" class="d-inline" onsubmit="return confirm('Xóa bài test này?');">
-                                                                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-1 d-flex align-items-center justify-content-center" style="line-height: 1;"><i class="bi bi-x fs-6"></i></button>
-                                                                        </form>
                                                                     </span>
                                                                 }
                                                             </div>
