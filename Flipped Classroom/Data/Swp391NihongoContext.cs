@@ -578,5 +578,22 @@ public partial class Swp391NihongoContext : DbContext
         OnModelCreatingPartial(modelBuilder);
     }
 
+    public async Task AutoInactivateExpiredClassesAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var expiredClasses = await Classes
+            .Where(c => c.Status == "Active" && c.EndDate != null && c.EndDate < today)
+            .ToListAsync();
+
+        if (expiredClasses.Any())
+        {
+            foreach (var c in expiredClasses)
+            {
+                c.Status = "Inactive";
+            }
+            await SaveChangesAsync();
+        }
+    }
+
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

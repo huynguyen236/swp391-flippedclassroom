@@ -42,6 +42,8 @@ namespace Flipped_Classroom.Pages.Classrooms
 
         public async Task OnGetAsync()
         {
+            await _context.AutoInactivateExpiredClassesAsync();
+
             if (_context.Classes != null)
             {
                 var classesQuery = _context.Classes.Include(c => c.Manager).AsQueryable();
