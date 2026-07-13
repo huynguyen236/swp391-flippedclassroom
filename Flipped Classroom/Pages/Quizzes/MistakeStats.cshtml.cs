@@ -43,6 +43,11 @@ namespace Flipped_Classroom.Pages.Quizzes
                 })
                 .ToList();
 
+            if (ClassId == null && classes.Any())
+            {
+                ClassId = classes.First().Id;
+            }
+
             Statistics = await _quizService.GetMistakeStatisticsAsync(ClassId, managerId);
         }
     }
