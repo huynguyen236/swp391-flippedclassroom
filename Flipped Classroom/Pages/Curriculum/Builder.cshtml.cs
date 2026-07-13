@@ -104,6 +104,12 @@ namespace Flipped_Classroom.Pages.Curriculums
                 return RedirectToPage(new { id });
             }
 
+            if (MaterialTitle.Trim().Length > 100)
+            {
+                TempData["ErrorMessage"] = "Tiêu đề học liệu không được vượt quá 100 ký tự.";
+                return RedirectToPage(new { id });
+            }
+
             string url = string.Empty;
             string? speechTargetText = null;
             string? speechMeaning = null;
