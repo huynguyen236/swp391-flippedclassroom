@@ -301,7 +301,7 @@
     }
 
     @* ── Japanese Language Analyzer Extension ── *@
-    @if (isAuthenticated)
+    @if (isAuthenticated && !isAdmin)
     {
         <button class="jp-analyzer-fab" id="jpAnalyzerFab" title="Công cụ phân tích ngữ pháp">
             <i class="bi bi-translate"></i>
@@ -441,7 +441,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    @if (isAuthenticated)
+    @if (isAuthenticated && !isAdmin)
     {
         <script src="~/js/japanese-analyzer.js" asp-append-version="true"></script>
     }
