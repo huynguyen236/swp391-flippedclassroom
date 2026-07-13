@@ -39,6 +39,8 @@ namespace Flipped_Classroom.Services.Implementation
 
         public async Task<List<Class>> GetClassScheduleOverviewListAsync()
         {
+            await _context.AutoInactivateExpiredClassesAsync();
+
             return await _context.Classes
                 .Include(c => c.ClassSchedules)
                 .OrderByDescending(c => c.CreatedAt)

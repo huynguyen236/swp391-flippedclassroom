@@ -28,6 +28,8 @@ namespace Flipped_Classroom.Pages.StudentClasses
 
         public async Task<IActionResult> OnGetAsync()
         {
+            await _context.AutoInactivateExpiredClassesAsync();
+
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out int userId))
             {
