@@ -46,7 +46,10 @@ namespace Flipped_Classroom.Pages.Classrooms
 
             if (_context.Classes != null)
             {
-                var classesQuery = _context.Classes.Include(c => c.Manager).AsQueryable();
+                var classesQuery = _context
+                    .Classes.Include(c => c.Manager)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .AsQueryable();
 
                 if (!string.IsNullOrEmpty(SearchString))
                 {
