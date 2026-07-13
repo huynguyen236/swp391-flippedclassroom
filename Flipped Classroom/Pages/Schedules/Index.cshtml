@@ -64,15 +64,15 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
-                        <tr style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);">
-                            <th class="text-white fw-semibold py-3 px-4">#</th>
-                            <th class="text-white fw-semibold py-3">Tên lớp</th>
-                            <th class="text-white fw-semibold py-3">Ngày bắt đầu</th>
-                            <th class="text-white fw-semibold py-3">Ngày kết thúc</th>
-                            <th class="text-white fw-semibold py-3">Trạng thái</th>
-                            <th class="text-white fw-semibold py-3">Slot đã gán</th>
-                            <th class="text-white fw-semibold py-3 text-center">Số buổi</th>
-                            <th class="text-white fw-semibold py-3 text-center px-4">Thao tác</th>
+                        <tr style="background-color: #e8f0fe;">
+                            <th class="fw-semibold py-3 px-4" style="color: #1a73e8; background-color: #e8f0fe;">#</th>
+                            <th class="fw-semibold py-3" style="color: #1a73e8; background-color: #e8f0fe;">Tên lớp</th>
+                            <th class="fw-semibold py-3" style="color: #1a73e8; background-color: #e8f0fe;">Ngày bắt đầu</th>
+                            <th class="fw-semibold py-3" style="color: #1a73e8; background-color: #e8f0fe;">Ngày kết thúc</th>
+                            <th class="fw-semibold py-3" style="color: #1a73e8; background-color: #e8f0fe;">Trạng thái</th>
+                            <th class="fw-semibold py-3" style="color: #1a73e8; background-color: #e8f0fe;">Slot đã gán</th>
+                            <th class="fw-semibold py-3 text-center" style="color: #1a73e8; background-color: #e8f0fe;">Số buổi</th>
+                            <th class="fw-semibold py-3 text-center px-4" style="color: #1a73e8; background-color: #e8f0fe;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -186,13 +186,13 @@
                                                    class="btn btn-outline-primary btn-sm rounded-pill px-3">
                                                     <i class="bi bi-eye me-1"></i> Xem
                                                 </a>
-                                                <form method="post" asp-page-handler="RemoveSchedule" class="d-inline"
-                                                      onsubmit="return confirm('Bạn chắc chắn muốn xóa toàn bộ lịch học của lớp này?');">
-                                                    <input type="hidden" name="classId" value="@item.Id" />
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                                                        <i class="bi bi-trash me-1"></i> Xóa
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deleteConfirmModal"
+                                                        data-class-id="@item.Id"
+                                                        data-class-name="@item.ClassName">
+                                                    <i class="bi bi-trash me-1"></i> Xóa
+                                                </button>
                                                 <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#assignModal"
@@ -272,6 +272,37 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 15px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa lịch học
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="RemoveSchedule">
+                <div class="modal-body pt-2">
+                    <input type="hidden" name="classId" id="deleteModalClassId" />
+                    <p class="text-muted">
+                        Bạn có chắc chắn muốn xóa toàn bộ lịch học của lớp <strong id="deleteModalClassName" class="text-dark"></strong>?
+                    </p>
+                    <div class="alert alert-warning border-0 small" style="border-radius: 10px;">
+                        <i class="bi bi-info-circle me-1"></i> Hành động này không thể hoàn tác. Toàn bộ các buổi học đã gán sẽ bị xóa bỏ.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">
+                        <i class="bi bi-trash me-1"></i> Xác nhận xóa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
         .slot-option:hover {
@@ -308,6 +339,19 @@
                 // Reset radio selection
                 const radios = assignModal.querySelectorAll('input[type="radio"]');
                 radios.forEach(r => r.checked = false);
+            });
+        }
+
+        // Populate delete modal fields when "Xóa" button is clicked
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        if (deleteConfirmModal) {
+            deleteConfirmModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const classId = button.getAttribute('data-class-id');
+                const className = button.getAttribute('data-class-name');
+
+                document.getElementById('deleteModalClassId').value = classId;
+                document.getElementById('deleteModalClassName').textContent = className;
             });
         }
     </script>
