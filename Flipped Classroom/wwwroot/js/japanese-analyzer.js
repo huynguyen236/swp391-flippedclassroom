@@ -327,6 +327,19 @@ const JapaneseAnalyzer = (() => {
                 return 'Tính từ dường như đã được chia ở thể phủ định ("くない"). Vui lòng nhập thể nguyên mẫu kết thúc bằng "い".';
             }
 
+            // 5. Kiểm tra khoảng trắng (chứa nhiều từ)
+            if (/\s/.test(word)) {
+                return 'Vui lòng chỉ nhập một từ đơn lẻ (không chứa khoảng trắng).';
+            }
+
+            // 6. Sử dụng bộ tách câu để chặn nếu nhập cả câu (chứa trợ từ hoặc dấu câu)
+            const tokens = SentenceSplitter.split(word);
+            const hasParticle = tokens.some(t => t.type === 'particle');
+            const hasPunctuation = tokens.some(t => t.type === 'punctuation');
+            if (hasParticle || hasPunctuation) {
+                return 'Từ bạn nhập dường như là một câu hoặc cụm từ (có chứa trợ từ hoặc dấu câu). Vui lòng sang tab "Tách Câu" để phân tích hoặc chỉ nhập một từ đơn lẻ (động từ/tính từ nguyên mẫu) tại đây.';
+            }
+
             return null;
         },
 

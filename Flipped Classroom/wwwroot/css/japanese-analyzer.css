@@ -556,15 +556,24 @@
 }
 
 
+
+
+
 /* ============================================================
    15. CONJUGATION MATRIX TABLE
    ============================================================ */
+.jp-conjugation-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+}
+
 .jp-conjugation-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
@@ -581,6 +590,7 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: left;
+    white-space: nowrap;
 }
 
 .jp-conjugation-table td {
@@ -589,6 +599,7 @@
     font-size: 0.95rem;
     color: var(--text-dark);
     border-top: 1px solid var(--border-soft);
+    white-space: nowrap;
 }
 
 .jp-conjugation-table tbody tr {
@@ -598,7 +609,6 @@
 .jp-conjugation-table tbody tr:hover {
     background: rgba(var(--accent-rgb), 0.03);
 }
-
 
 /* ============================================================
    16. SUFFIX HIGHLIGHT
