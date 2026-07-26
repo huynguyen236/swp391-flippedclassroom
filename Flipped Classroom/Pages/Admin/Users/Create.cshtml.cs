@@ -95,7 +95,6 @@ namespace Flipped_Classroom.Pages.Admin.Users
                 return Page();
             }
 
-            // Create and save User
             var user = new User
             {
                 Username = Input.Username.Trim(),
@@ -113,7 +112,7 @@ namespace Flipped_Classroom.Pages.Admin.Users
 
             TempData["SuccessMessage"] = $"Đã tạo thành công tài khoản {user.Username}.";
 
-            return RedirectToPage("/Admin/Users/Index");
+            return RedirectToPage("/Admin/Users/Create");
         }
 
     }
