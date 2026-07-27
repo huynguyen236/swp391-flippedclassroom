@@ -47,6 +47,69 @@ namespace Flipped_Classroom.Services.Implementation
                 .ToListAsync();
         }
 
+        public async Task<(bool Ok, string Message)> ValidateSlotForTeacherAsync(
+            int teacherId,
+            DateOnly startDate,
+            DateOnly endDate,
+            string slotName,
+            int? excludeClassId = null
+        )
+        {
+            if (string.IsNullOrWhiteSpace(slotName))
+                return (false, "Vui lòng chọn slot học cho lớp.");
+
+            if (endDate < startDate)
+                return (false, "Ngày kết thúc phải sau ngày bắt đầu.");
+
+            // classId = 0 vì đây chỉ là danh sách tạm để tính ngày/giờ, không ghi vào DB
+            var newSchedules = ScheduleSlotHelper.GenerateSchedules(0, startDate, endDate, slotName);
+
+            if (!newSchedules.Any())
+                return (
+                    false,
+                    $"Không tạo được buổi học nào với slot {slotName}. Kiểm tra lại ngày bắt đầu/kết thúc."
+                );
+
+            // Lấy tất cả các buổi học hiện tại của giáo viên đó ở các lớp khác trong khoảng thời gian này
+            var existingTeacherSchedules = await _context
+                .ClassSchedules.Include(s => s.Class)
+                .Where(s =>
+                    s.Class.ManagerId == teacherId
+                    && (excludeClassId == null || s.ClassId != excludeClassId)
+                    && s.StudyDate >= startDate
+                    && s.StudyDate <= endDate
+                )
+                .ToListAsync();
+
+            foreach (var ns in newSchedules)
+            {
+                var conflict = existingTeacherSchedules.FirstOrDefault(es =>
+                    es.StudyDate == ns.StudyDate
+                    && es.StartTime < ns.EndTime
+                    && es.EndTime > ns.StartTime
+                );
+
+                if (conflict != null)
+                {
+                    var teacher = await _context.Users.FindAsync(teacherId);
+                    string teacherName =
+                        teacher != null
+                            ? $"{teacher.FirstName} {teacher.LastName}"
+                            : "Giáo viên được chọn";
+
+                    return (
+                        false,
+                        $"Giáo viên '{teacherName}' đã có lịch dạy lớp '{conflict.Class.ClassName}' "
+                            + $"vào ngày {ns.StudyDate:dd/MM/yyyy} khung giờ "
+                            + $"{conflict.StartTime:HH\\:mm} - {conflict.EndTime:HH\\:mm}. "
+                            + $"Vui lòng chọn slot khác hoặc giáo viên khác."
+                    );
+                }
+            }
+
+            return (true, $"Slot {slotName} khả dụng — sẽ tạo {newSchedules.Count} buổi học.");
+        }
+
         public async Task<(bool Success, string Message)> AssignSlotToClassAsync(int classId, string slotName)
         {
             var targetClass = await _context.Classes
@@ -60,48 +123,24 @@ namespace Flipped_Classroom.Services.Implementation
             if (targetClass.StartDate == null || targetClass.EndDate == null)
                 return (false, "Lớp chưa có ngày bắt đầu hoặc kết thúc. Vui lòng cập nhật trước khi gán lịch.");
 
+            // Dùng chung một rule validate với màn hình Tạo lớp
+            var check = await ValidateSlotForTeacherAsync(
+                targetClass.ManagerId,
+                targetClass.StartDate.Value,
+                targetClass.EndDate.Value,
+                slotName,
+                excludeClassId: classId
+            );
+
+            if (!check.Ok)
+                return (false, check.Message);
+
             var newSchedules = ScheduleSlotHelper.GenerateSchedules(
                 classId,
                 targetClass.StartDate.Value,
                 targetClass.EndDate.Value,
                 slotName
             );
-
-            if (!newSchedules.Any())
-                return (false, $"Không tạo được buổi học nào với slot {slotName}. Kiểm tra lại ngày bắt đầu/kết thúc.");
-
-            // Kiểm tra trùng lịch giảng dạy của Giáo viên phụ trách lớp
-            var teacherId = targetClass.ManagerId;
-            var startDate = targetClass.StartDate.Value;
-            var endDate = targetClass.EndDate.Value;
-
-            // Lấy tất cả các buổi học hiện tại của giáo viên đó ở các lớp khác trong khoảng thời gian này
-            var existingTeacherSchedules = await _context.ClassSchedules
-                .Include(s => s.Class)
-                .Where(s => s.Class.ManagerId == teacherId 
-                         && s.ClassId != classId
-                         && s.StudyDate >= startDate 
-                         && s.StudyDate <= endDate)
-                .ToListAsync();
-
-            foreach (var ns in newSchedules)
-            {
-                var conflict = existingTeacherSchedules.FirstOrDefault(es => 
-                    es.StudyDate == ns.StudyDate &&
-                    es.StartTime < ns.EndTime &&
-                    es.EndTime > ns.StartTime
-                );
-
-                if (conflict != null)
-                {
-                    string teacherName = targetClass.Manager != null 
-                        ? $"{targetClass.Manager.FirstName} {targetClass.Manager.LastName}" 
-                        : "Giáo viên quản lý";
-                    return (false, $"Lịch giảng dạy bị trùng với Giáo viên '{teacherName}' " +
-                                  $"tại lớp '{conflict.Class.ClassName}' vào ngày {ns.StudyDate:dd/MM/yyyy} " +
-                                  $"khung giờ {conflict.StartTime:HH:mm} - {conflict.EndTime:HH:mm}.");
-                }
-            }
 
             if (targetClass.ClassSchedules.Any())
             {

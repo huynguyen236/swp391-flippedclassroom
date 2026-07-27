@@ -13,6 +13,19 @@ namespace Flipped_Classroom.Services.Interfaces
         // Phục vụ màn hình quản lý danh sách lịch học của Manager
         Task<List<Class>> GetClassScheduleOverviewListAsync();
         Task<(bool Success, string Message)> AssignSlotToClassAsync(int classId, string slotName);
+
+        /// <summary>
+        /// Kiểm tra slot có trùng lịch giảng dạy của giáo viên hay không.
+        /// Dùng được cho cả lớp chưa tồn tại (excludeClassId = null).
+        /// </summary>
+        Task<(bool Ok, string Message)> ValidateSlotForTeacherAsync(
+            int teacherId,
+            DateOnly startDate,
+            DateOnly endDate,
+            string slotName,
+            int? excludeClassId = null
+        );
+
         Task<bool> RemoveScheduleFromClassAsync(int classId);
 
         // Phục vụ màn hình chi tiết lịch và gán phòng học của Manager
