@@ -499,7 +499,7 @@ namespace Flipped_Classroom.Pages.TeacherClasses
     <li><strong>Hạn nộp:</strong> {(assignment.DueDate.HasValue ? assignment.DueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Không có hạn chót")}</li>
 </ul>
 <p>Vui lòng đăng nhập vào Nihongo Portal để xem chi tiết yêu cầu và nộp bài đúng hạn.</p>
-<p>Trân trọng,<br/>Zenith Education</p>";
+";
 
                         // Send asynchronously in a background task to prevent blocking the UI thread
                         _ = Task.Run(async () =>
