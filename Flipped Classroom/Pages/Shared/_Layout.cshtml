@@ -47,6 +47,10 @@
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/japanese-analyzer.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FlippedClassroom.styles.css" asp-append-version="true" />
+    @if (isAuthenticated)
+    {
+        <link rel="stylesheet" href="~/css/ai-chatbot.css" asp-append-version="true" />
+    }
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -487,5 +491,13 @@
     }
 
     @await RenderSectionAsync("Scripts", required: false)
+
+    @if (isAuthenticated)
+    {
+        <form id="__AiAntiForgeryForm" method="post" style="display:none;">
+            @Html.AntiForgeryToken()
+        </form>
+        <script src="~/js/ai-chatbot.js" asp-append-version="true"></script>
+    }
 </body>
 </html>

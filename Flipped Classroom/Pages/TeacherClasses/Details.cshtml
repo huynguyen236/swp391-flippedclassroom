@@ -877,9 +877,20 @@
                                                                             <td class="text-end">
                                                                                 @if (sub != null)
                                                                                 {
-                                                                                    <button type="button" class="btn btn-premium-primary btn-sm px-3 py-1" style="font-size:0.8rem;" onclick="openGradeModal(@sub.Id, @(sub.Score?.ToString() ?? "null"), '@Html.Raw(sub.Feedback?.Replace("'", "\\'"))')">
-                                                                                        Chấm điểm
-                                                                                    </button>
+                                                                                    <div class="d-flex gap-1 justify-content-end flex-wrap">
+                                                                                        <button type="button" class="btn btn-premium-primary btn-sm px-3 py-1" style="font-size:0.8rem;" onclick="openGradeModal(@sub.Id, @(sub.Score?.ToString() ?? "null"), '@Html.Raw(sub.Feedback?.Replace("'", "\\'"))')">
+                                                                                            Chấm điểm
+                                                                                        </button>
+                                                                                        @if (sub.Status != "Graded")
+                                                                                        {
+                                                                                            <button type="button" class="btn-ai-grade" 
+                                                                                                    id="aiGradeBtn_@sub.Id"
+                                                                                                    onclick="AiGrade.gradeSubmission(@sub.Id, document.getElementById('aiGradeResult_@sub.Id'), this)">
+                                                                                                🤖 AI Chấm
+                                                                                            </button>
+                                                                                        }
+                                                                                    </div>
+                                                                                    <div id="aiGradeResult_@sub.Id" style="display:none;"></div>
                                                                                 }
                                                                                 else
                                                                                 {
@@ -888,6 +899,7 @@
                                                                                     </button>
                                                                                 }
                                                                             </td>
+
                                                                         </tr>
                                                                     }
                                                                 </tbody>

@@ -78,8 +78,29 @@ builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IWordExcelImportService, WordExcelImportService>();
 
+// AI Integration
+builder.Services.Configure<Flipped_Classroom.Models.AiSettings>(
+    builder.Configuration.GetSection("AiSettings"));
+builder.Services.AddHttpClient<IAiService, AiService>();
+
 builder.Services.AddAuthorization();
 var app = builder.Build();
+
+// Tự động khởi tạo và seed dữ liệu mẫu nếu Database trống
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<Swp391NihongoContext>();
+        DbInitializer.Initialize(dbContext);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Đã xảy ra lỗi khi khởi tạo dữ liệu mẫu cho Database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
