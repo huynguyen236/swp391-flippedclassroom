@@ -443,6 +443,70 @@
  */
 window.AiGrade = {
     /**
+     * Khởi tạo hoặc lấy modal popup kết quả chấm điểm của AI
+     */
+    ensureAiGradeModal: function() {
+        if (document.getElementById('aiGradeResultModal')) return;
+
+        const modalHtml = `
+<div class="modal fade" id="aiGradeResultModal" tabindex="-1" aria-labelledby="aiGradeResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background-color: #ffffff;">
+            <div class="modal-header border-bottom-0 text-white p-4" style="background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="aiGradeResultModalLabel">
+                    <i class="bi bi-robot"></i> AI Sensei Chấm Điểm
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <div class="row g-4">
+                    <!-- Cột trái: Điểm số gợi ý và Nút hành động -->
+                    <div class="col-md-4 text-center d-flex flex-column align-items-center justify-content-center border-end pb-4 pb-md-0" style="border-color: #e2e8f0 !important;">
+                        <div class="p-3 bg-white rounded-circle shadow-sm d-flex flex-column align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; border: 4px solid #e2e8f0; margin: 0 auto;">
+                            <span class="text-muted small fw-bold" style="font-size: 11px; letter-spacing: 1px;">ĐIỂM GỢI Ý</span>
+                            <span class="fw-bold text-primary display-4 my-1" id="aiGradeResultScore" style="font-family: 'Outfit', 'Inter', sans-serif;">0.0</span>
+                            <span class="text-secondary fw-semibold" style="font-size: 14px;">/ 10</span>
+                        </div>
+                        <div class="w-100 px-2 mt-2">
+                            <button type="button" class="btn btn-primary w-100 rounded-pill py-2.5 mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2" id="aiGradeAcceptBtn" style="font-weight: 600; font-size: 0.95rem;">
+                                <i class="bi bi-check-circle-fill"></i> Chấp nhận điểm
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2.5 d-flex align-items-center justify-content-center gap-2" id="aiGradeEditBtn" style="font-weight: 600; font-size: 0.95rem;">
+                                <i class="bi bi-pencil-square"></i> Chỉnh sửa điểm
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Cột phải: Nhận xét và Phân tích chi tiết -->
+                    <div class="col-md-8 d-flex flex-column gap-3 text-start">
+                        <div>
+                            <h6 class="fw-bold text-secondary d-flex align-items-center gap-2 mb-2" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <i class="bi bi-chat-left-quote-fill text-primary"></i> Nhận Xét Của AI Sensei
+                            </h6>
+                            <div class="p-3 bg-white rounded-3 shadow-sm border-start border-primary border-4" id="aiGradeResultFeedback" style="font-style: italic; color: #334155; line-height: 1.6; font-size: 0.95rem;">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h6 class="fw-bold text-secondary d-flex align-items-center gap-2 mb-2" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                <i class="bi bi-journal-text text-primary"></i> Phân Tích Chi Tiết
+                            </h6>
+                            <div class="p-3 bg-white rounded-3 shadow-sm border" id="aiGradeResultReasoning" style="color: #475569; font-size: 0.95rem; line-height: 1.7; max-height: 250px; overflow-y: auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        `;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = modalHtml;
+        document.body.appendChild(wrapper.firstElementChild);
+    },
+
+    /**
      * Gọi AI chấm điểm cho một submission
      */
     gradeSubmission: async function (submissionId, resultContainer, triggerBtn) {
@@ -465,35 +529,38 @@ window.AiGrade = {
             const data = await response.json();
 
             if (data.success) {
-                if (resultContainer) {
-                    resultContainer.innerHTML = `
-                        <div class="ai-grade-result">
-                            <div class="d-flex align-items-center gap-3 mb-2">
-                                <div>
-                                    <div class="ai-grade-label">Điểm AI Gợi Ý</div>
-                                    <div class="ai-grade-score">${data.suggestedScore.toFixed(1)}<span style="font-size:16px; color:#737686;">/10</span></div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="ai-grade-label">Nhận Xét Của AI Sensei</div>
-                                    <div class="ai-grade-feedback">${data.feedback}</div>
-                                </div>
-                            </div>
-                            <div class="ai-grade-reasoning">
-                                <strong><i class="bi bi-card-checklist text-primary"></i> Phân tích chi tiết:</strong><br>
-                                ${data.reasoning}
-                            </div>
-                            <div class="ai-grade-actions">
-                                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" onclick="AiGrade.acceptScore(${submissionId}, ${data.suggestedScore.toFixed(1)}, '${escapeJsString(data.feedback)}')">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Chấp nhận điểm AI
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="openGradeModal(${submissionId}, ${data.suggestedScore.toFixed(1)}, '${escapeJsString(data.feedback)}')">
-                                    <i class="bi bi-pencil-square me-1"></i> Chỉnh sửa
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    resultContainer.style.display = 'block';
-                }
+                // Đảm bảo modal HTML đã được thêm vào body
+                this.ensureAiGradeModal();
+
+                // Điền dữ liệu vào modal
+                document.getElementById('aiGradeResultScore').innerText = data.suggestedScore.toFixed(1);
+                document.getElementById('aiGradeResultFeedback').innerText = data.feedback;
+                document.getElementById('aiGradeResultReasoning').innerHTML = data.reasoning.replace(/\n/g, '<br>');
+
+                // Gán hành động cho nút "Chấp nhận điểm"
+                const acceptBtn = document.getElementById('aiGradeAcceptBtn');
+                acceptBtn.onclick = () => {
+                    const modalEl = document.getElementById('aiGradeResultModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                    this.acceptScore(submissionId, data.suggestedScore, data.feedback);
+                };
+
+                // Gán hành động cho nút "Chỉnh sửa điểm"
+                const editBtn = document.getElementById('aiGradeEditBtn');
+                editBtn.onclick = () => {
+                    const modalEl = document.getElementById('aiGradeResultModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                    
+                    if (typeof window.openGradeModal === 'function') {
+                        window.openGradeModal(submissionId, data.suggestedScore, data.feedback);
+                    }
+                };
+
+                // Hiển thị modal
+                const myModal = new bootstrap.Modal(document.getElementById('aiGradeResultModal'));
+                myModal.show();
             } else {
                 alert('⚠️ ' + (data.error || 'AI không thể chấm điểm bài này.'));
             }
